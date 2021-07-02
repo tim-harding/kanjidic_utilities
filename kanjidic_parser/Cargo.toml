@@ -5,3 +5,4 @@ edition = "2018"
 
 [dependencies]
 quick-xml = "0.22"
+thiserror = "1"
