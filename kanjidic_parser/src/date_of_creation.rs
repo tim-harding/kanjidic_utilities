@@ -2,7 +2,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::IResult;
+use crate::shared::{IResult, NomErrorReason};
 use nom::{
     bytes::complete::take_while, character::complete::char, combinator::map_res, sequence::tuple,
 };
@@ -22,21 +22,6 @@ pub struct DateOfCreation {
     pub year: u16,
     pub month: u8,
     pub date: u8,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NomErrorReason {
-    Incomplete,
-    Error(nom::error::ErrorKind),
-}
-
-impl From<nom::Err<nom::error::Error<&str>>> for NomErrorReason {
-    fn from(err: nom::Err<nom::error::Error<&str>>) -> Self {
-        match err {
-            nom::Err::Incomplete(_) => NomErrorReason::Incomplete,
-            nom::Err::Error(e) | nom::Err::Failure(e) => NomErrorReason::Error(e.code),
-        }
-    }
 }
 
 impl<'a, 'b> TryFrom<Node<'a, 'b>> for DateOfCreation {

@@ -1,9 +1,6 @@
-use crate::shared::IResult;
+use crate::shared::{IResult, NomErrorReason};
 use nom::{
-    bytes::complete::{take_while},
-    character::complete::char,
-    combinator::map_res,
-    sequence::tuple,
+    bytes::complete::take_while, character::complete::char, combinator::map_res, sequence::tuple,
 };
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -14,7 +11,7 @@ pub enum DatabaseVersionError {
     #[error("No text in database version node")]
     NoText,
     #[error("Database version was not in a recognized format")]
-    Format,
+    Format(NomErrorReason),
     #[error("Could not parse an integer")]
     Integer,
 }
@@ -30,10 +27,9 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for DatabaseVersion {
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         match node.text() {
-            Some(text) => match map_res(take_db_version, map_db_version)(text) {
-                Ok((_, s)) => Ok(s),
-                Err(_) => Err(DatabaseVersionError::Format),
-            },
+            Some(text) => map_res(take_db_version, map_db_version)(text)
+                .map(|(_, s)| s)
+                .map_err(|e| DatabaseVersionError::Format(e.into())),
             None => Err(DatabaseVersionError::NoText),
         }
     }

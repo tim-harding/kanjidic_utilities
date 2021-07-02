@@ -1,7 +1,7 @@
 mod database_version;
-mod shared;
-mod header;
 mod date_of_creation;
+mod header;
+mod shared;
 
 #[cfg(test)]
 mod test_shared;
