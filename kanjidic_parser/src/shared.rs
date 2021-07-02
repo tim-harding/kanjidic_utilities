@@ -1,0 +1,1 @@
+pub type IResult<'a, T> = nom::IResult<&'a str, T>;

@@ -7,3 +7,6 @@ edition = "2018"
 thiserror = "1"
 roxmltree = "0.14"
 nom = "6"
+
+[dev-dependencies]
+lazy_static = "1.4"
