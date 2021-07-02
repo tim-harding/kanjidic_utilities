@@ -12,7 +12,7 @@ pub enum DateOfCreationError {
     #[error("No text in database version node")]
     NoText,
     #[error("Database version was not in a recognized format")]
-    Format,
+    Format(NomErrorReason),
     #[error("Could not parse an integer")]
     Integer,
 }
@@ -24,15 +24,29 @@ pub struct DateOfCreation {
     pub date: u8,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NomErrorReason {
+    Incomplete,
+    Error(nom::error::ErrorKind),
+}
+
+impl From<nom::Err<nom::error::Error<&str>>> for NomErrorReason {
+    fn from(err: nom::Err<nom::error::Error<&str>>) -> Self {
+        match err {
+            nom::Err::Incomplete(_) => NomErrorReason::Incomplete,
+            nom::Err::Error(e) | nom::Err::Failure(e) => NomErrorReason::Error(e.code),
+        }
+    }
+}
+
 impl<'a, 'b> TryFrom<Node<'a, 'b>> for DateOfCreation {
     type Error = DateOfCreationError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         match node.text() {
-            Some(text) => match map_res(take_db_version, map_db_version)(text) {
-                Ok((_, s)) => Ok(s),
-                Err(_) => Err(DateOfCreationError::Format),
-            },
+            Some(text) => map_res(take_db_version, map_db_version)(text)
+                .map(|(_, s)| s)
+                .map_err(|e| DateOfCreationError::Format(e.into())),
             None => Err(DateOfCreationError::NoText),
         }
     }
