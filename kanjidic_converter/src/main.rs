@@ -1,14 +1,22 @@
-use kanjidic_parser::stuff;
+use kanjidic_parser::parse;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 enum KdcError {
     #[error("Error reading or writing file")]
     Io(#[from] std::io::Error),
+    #[error("Error parsing file")]
+    Parse(#[from] kanjidic_parser::KdpError),
+    #[error("Could not skip DTD section")]
+    DtdSkip,
+    #[error("Failed to get back UTF8 after skipping DTD")]
+    DtdSkipUtf8(#[from] std::str::Utf8Error),
 }
 
 fn main() -> Result<(), KdcError> {
-    let xml = std::fs::read_to_string("./assets/kanjidic.xml")?;
-    stuff(&xml);
+    let xml = std::fs::read_to_string("./assets/kanjidic2.xml")?;
+    let start = xml.find("<kanjidic2>").ok_or(KdcError::DtdSkip)?;
+    let skipped = std::str::from_utf8(&xml.as_bytes()[start..])?;
+    parse(&skipped)?;
     Ok(())
 }
