@@ -1,6 +1,6 @@
 use crate::shared::IResult;
 use nom::{
-    bytes::complete::{take, take_while},
+    bytes::complete::{take_while},
     character::complete::char,
     combinator::map_res,
     sequence::tuple,
@@ -43,7 +43,7 @@ type DbVersionParts<'a> = (&'a str, char, &'a str);
 
 fn take_db_version(s: &str) -> IResult<DbVersionParts> {
     tuple((
-        take(4u8),
+        take_while(|c: char| c.is_ascii_digit()),
         char('-'),
         take_while(|c: char| c.is_ascii_digit()),
     ))(s)
