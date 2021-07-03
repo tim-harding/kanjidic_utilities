@@ -20,6 +20,7 @@ mod spahn_hadamitzky;
 mod stroke_count;
 mod translation;
 mod variant;
+mod node_number;
 
 #[cfg(test)]
 mod test_shared;
