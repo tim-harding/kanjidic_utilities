@@ -1,11 +1,15 @@
-// http://www.edrdg.org/wwwjdic/deroo.html
-
+/// Identification of a kanji in the De Roo system.
+/// http://www.edrdg.org/wwwjdic/deroo.html
 pub struct DeRoo {
-    extreme_top: ExtremeTop,
-    extreme_bottom: ExtremeBottom,
+    /// The graphic element that appears at the top of the kanji.
+    pub extreme_top: ExtremeTop,
+
+    /// The graphic element that appears at the bottom of the kanji.
+    pub extreme_bottom: ExtremeBottom,
 }
 
 pub enum ExtremeTop {
+    // Dot
     Dot = 3,
     RoofDot,
     DottedCliff,
@@ -13,6 +17,8 @@ pub enum ExtremeTop {
     KanaU,
     Lid,
     Horns,
+    
+    // Vertical line
     SmallOnBox,
     Small,
     VerticalLine,
@@ -23,6 +29,8 @@ pub enum ExtremeTop {
     Woman,
     Tree,
     LetterH,
+    
+    // Diagonal line
     KanaNo,
     ManOnTheLeft,
     Thousand,
@@ -33,6 +41,8 @@ pub enum ExtremeTop {
     LeftArrow,
     RoofDiagonalLine,
     X,
+    
+    // Horizontal line
     HorizontalLine,
     Fourth,
     Bald,
@@ -46,9 +56,12 @@ pub enum ExtremeTop {
 }
 
 pub enum ExtremeBottom {
-    FourDots,
+    // Dot
+    FourDots = 40,
     Small,
     Water,
+    
+    // Left hook
     KanaRi,
     Seal,
     SwordBottom,
@@ -60,13 +73,21 @@ pub enum ExtremeBottom {
     Animal,
     BowBottom,
     LeftHook,
+    
+    // Vertical line
     VerticalLine,
     Cross,
+    
+    // Right hook
     RightHook,
     Legs,
     Heart,
     TasseledSpearBottom,
+    
+    // Diagonal line
     KanaNo,
+    
+    // Back diagonal line
     SmallPodium,
     BackKanaNo,
     Big,
@@ -76,8 +97,14 @@ pub enum ExtremeBottom {
     Again,
     WindyAgain,
     Woman,
+    
+    // Head bottom
     HeadBottom,
+    
+    // Watakushi bottom
     WatakushiBottom,
+    
+    // Horizontal line
     HorizontalLine,
     StandingBottom,
     DishBottom,

@@ -77,7 +77,7 @@ mod tests {
                 date_of_creation: DateOfCreation {
                     year: 2021,
                     month: 6,
-                    date: 25,
+                    day: 25,
                 },
                 database_version: DatabaseVersion {
                     year: 2021,

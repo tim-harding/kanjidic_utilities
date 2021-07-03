@@ -7,21 +7,33 @@ use nom::{
     bytes::complete::take_while1, character::complete::char, combinator::map_res, sequence::tuple,
 };
 
+/// Error while parsing date of creation
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum DateOfCreationError {
+    /// No text in database version node
     #[error("No text in database version node")]
     NoText,
+
+    /// Database version was not in a recognized format
     #[error("Database version was not in a recognized format")]
     Format(NomErrorReason),
+
+    /// Could not parse an integer
     #[error("Could not parse an integer")]
     Integer,
 }
 
+/// The date the file was created
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DateOfCreation {
+    /// Year of creation
     pub year: u16,
+    
+    /// Month of creation
     pub month: u8,
-    pub date: u8,
+    
+    /// Day of creation
+    pub day: u8,
 }
 
 impl<'a, 'b> TryFrom<Node<'a, 'b>> for DateOfCreation {
@@ -54,7 +66,7 @@ fn map_db_version(parts: DateOfCreationParts) -> Result<DateOfCreation, DateOfCr
     let year: u16 = year.parse().map_err(|_| DateOfCreationError::Integer)?;
     let month: u8 = month.parse().map_err(|_| DateOfCreationError::Integer)?;
     let date: u8 = date.parse().map_err(|_| DateOfCreationError::Integer)?;
-    Ok(DateOfCreation { year, month, date })
+    Ok(DateOfCreation { year, month, day: date })
 }
 
 #[cfg(test)]
@@ -74,7 +86,7 @@ mod tests {
             Ok(DateOfCreation {
                 year: 2021,
                 month: 6,
-                date: 25,
+                day: 25,
             })
         )
     }

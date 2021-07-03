@@ -6,19 +6,30 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
+/// Error while parsing the database version
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum DatabaseVersionError {
+    /// No text in database version node
     #[error("No text in database version node")]
     NoText,
+
+    /// Database version was not in a recognized format
     #[error("Database version was not in a recognized format")]
     Format(NomErrorReason),
+
+    /// Could not parse an integer
     #[error("Could not parse an integer")]
     Integer,
 }
 
+/// The version of the file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DatabaseVersion {
+    /// The year of release.
     pub year: u16,
+
+    /// The version that came out in the given year,
+    /// with the counter being reset annually.
     pub version: u16,
 }
 
