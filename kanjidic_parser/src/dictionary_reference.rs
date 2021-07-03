@@ -1,0 +1,30 @@
+pub enum DictionaryReference {
+    NelsonClassic(u16),
+    NelsonNew(u16),
+    Njecd(u16),
+    Kkd(u16),
+    Kkld(u16),
+    Kkld2ed(u16),
+    Heisig(u16),
+    Heisig6(u16),
+    Gakken(u16),
+    OneillNames(u16),
+    OneillKk(u16),
+    Moro(Moro),
+    Henshall(u16),
+    ShKk(u16),
+    ShKk2(u16),
+    Sakade(u16),
+    Jfcards(u16),
+    Crowley(u16),
+    KanjiInContext(u16),
+    BusyPeople(u16),
+    KodanshaCompact(u16),
+    Maniette(u16),
+}
+
+pub struct Moro {
+    pub volume: Option<u8>,
+    pub page: Option<u16>,
+    pub item: u16,
+}

@@ -1,9 +1,25 @@
+mod character;
+mod codepoint;
 mod database_version;
 mod date_of_creation;
-mod header;
-mod shared;
-mod character;
+mod de_roo;
+mod dictionary_reference;
 mod file_version;
+mod four_corner;
+mod header;
+mod kunyomi;
+mod kuten;
+mod meaning;
+mod pin_yin;
+mod query_code;
+mod radical;
+mod reading;
+mod shared;
+mod skip;
+mod spahn_hadamitzky;
+mod stroke_count;
+mod translation;
+mod variant;
 
 #[cfg(test)]
 mod test_shared;
