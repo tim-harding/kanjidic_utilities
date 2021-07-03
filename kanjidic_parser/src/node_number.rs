@@ -22,6 +22,7 @@ pub enum NodeNumberError {
     Convert,
 }
 
+/// Gets a number from a leaf node.
 pub fn node_number<T: FromStr>(node: Node) -> Result<T, NodeNumberError> {
     let file_version_text = node.text().ok_or(NodeNumberError::NoText)?;
     Ok(digits(file_version_text)

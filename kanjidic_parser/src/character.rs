@@ -1,4 +1,4 @@
-use crate::{codepoint::Codepoint, grade::Grade, radical::Radical, stroke_count::StrokeCount, variant::Variant};
+use crate::{codepoint::Codepoint, grade::Grade, meaning::Meaning, radical::Radical, stroke_count::StrokeCount, variant::Variant};
 
 /// Information about a kanji.
 pub struct Character<'a> {
@@ -29,4 +29,7 @@ pub struct Character<'a> {
     /// Old JLPT level of the kanji. Based on pre-2010 test levels 
     /// that go up to four, not five.
     pub jlpt: Option<u8>,
+    
+    /// Different meanings of the kanji.
+    pub meanings: Vec<Meaning<'a>>,
 }
