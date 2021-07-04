@@ -1,5 +1,28 @@
+use nom::{character::complete::char, sequence::tuple};
+use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
+use roxmltree::Node;
+use std::convert::TryFrom;
+use thiserror::Error;
+
+use crate::shared::{digit, IResult};
+
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum SkipError {
+    #[error("Invalid solid pattern")]
+    InvalidSolidPattern(#[from] TryFromPrimitiveError<SolidSubpattern>),
+    #[error("Node contains no text")]
+    NoText,
+    #[error("Did not fit the format for a skip code")]
+    Format,
+    #[error("The digit indicating the pattern was not valid")]
+    SkipKind,
+    #[error("Not a valid solid subpattern")]
+    SolidSubpattern,
+}
+
 /// Kanji code from the SKIP system of indexing.
 /// http://www.edrdg.org/wwwjdic/SKIP.html
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Skip {
     /// Pattern 1, the kanji can be divided into left and right parts.
     Horizontal(SkipHorizontal),
@@ -14,7 +37,45 @@ pub enum Skip {
     Solid(SkipSolid),
 }
 
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
+    type Error = SkipError;
+
+    fn try_from(node: Node) -> Result<Self, Self::Error> {
+        let text = node.text().ok_or(SkipError::NoText)?;
+        let (_i, (pattern_kind, _, first, _, second)) =
+            parts(text).map_err(|_| SkipError::Format)?;
+        match pattern_kind {
+            1 => Ok(Skip::Horizontal(SkipHorizontal {
+                left: first,
+                right: second,
+            })),
+            2 => Ok(Skip::Vertical(SkipVertical {
+                top: first,
+                bottom: second,
+            })),
+            3 => Ok(Skip::Enclosure(SkipEnclosure {
+                exterior: first,
+                interior: second,
+            })),
+            4 => {
+                let solid_subpattern =
+                    SolidSubpattern::try_from(second).map_err(|_| SkipError::SolidSubpattern)?;
+                Ok(Skip::Solid(SkipSolid {
+                    total_stroke_count: first,
+                    solid_subpattern,
+                }))
+            }
+            _ => Err(SkipError::SkipKind),
+        }
+    }
+}
+
+fn parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
+    tuple((digit, char('-'), digit, char('-'), digit))(s)
+}
+
 /// Left and right parts of the kanji.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SkipHorizontal {
     /// Number of strokes in the left part.
     pub left: u8,
@@ -24,6 +85,7 @@ pub struct SkipHorizontal {
 }
 
 /// Top and bottom parts of the kanji.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SkipVertical {
     /// Number of strokes in the top part.
     pub top: u8,
@@ -33,6 +95,7 @@ pub struct SkipVertical {
 }
 
 /// Interior and exterior parts of the kanji.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SkipEnclosure {
     /// Number of strokes in the exterior part.
     pub exterior: u8,
@@ -42,6 +105,7 @@ pub struct SkipEnclosure {
 }
 
 /// Classification for kanji that don't fit another pattern.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SkipSolid {
     /// The total number of strokes in the kanji.
     pub total_stroke_count: u8,
@@ -51,6 +115,8 @@ pub struct SkipSolid {
 }
 
 /// An identifying characteristic of the kanji.
+#[derive(TryFromPrimitive, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u8)]
 pub enum SolidSubpattern {
     /// Contains a top line.
     TopLine = 1,
@@ -63,4 +129,9 @@ pub enum SolidSubpattern {
 
     /// Does not contain any of the above.
     Other,
+}
+
+#[cfg(test)]
+mod tests {
+    // Should use impls for str and node so that testing is a bit easier
 }
