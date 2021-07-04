@@ -2,7 +2,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{IResult, NomErrorReason};
+use crate::shared::{digit, IResult, NomErrorReason};
 use nom::{
     bytes::complete::take_while1, character::complete::char, combinator::map_res, sequence::tuple,
 };
@@ -28,10 +28,10 @@ pub enum DateOfCreationError {
 pub struct DateOfCreation {
     /// Year of creation
     pub year: u16,
-    
+
     /// Month of creation
     pub month: u8,
-    
+
     /// Day of creation
     pub day: u8,
 }
@@ -49,24 +49,19 @@ impl<'a, 'b> TryFrom<Node<'a, 'b>> for DateOfCreation {
     }
 }
 
-type DateOfCreationParts<'a> = (&'a str, char, &'a str, char, &'a str);
+type DateOfCreationParts<'a> = (u16, char, u8, char, u8);
 
 fn take_db_version(s: &str) -> IResult<DateOfCreationParts> {
-    tuple((
-        take_while1(|c: char| c.is_ascii_digit()),
-        char('-'),
-        take_while1(|c: char| c.is_ascii_digit()),
-        char('-'),
-        take_while1(|c: char| c.is_ascii_digit()),
-    ))(s)
+    tuple((digit, char('-'), digit, char('-'), digit))(s)
 }
 
 fn map_db_version(parts: DateOfCreationParts) -> Result<DateOfCreation, DateOfCreationError> {
     let (year, _, month, _, date) = parts;
-    let year: u16 = year.parse().map_err(|_| DateOfCreationError::Integer)?;
-    let month: u8 = month.parse().map_err(|_| DateOfCreationError::Integer)?;
-    let date: u8 = date.parse().map_err(|_| DateOfCreationError::Integer)?;
-    Ok(DateOfCreation { year, month, day: date })
+    Ok(DateOfCreation {
+        year,
+        month,
+        day: date,
+    })
 }
 
 #[cfg(test)]

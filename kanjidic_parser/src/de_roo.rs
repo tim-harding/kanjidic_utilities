@@ -17,7 +17,7 @@ pub enum ExtremeTop {
     KanaU,
     Lid,
     Horns,
-    
+
     // Vertical line
     SmallOnBox,
     Small,
@@ -29,7 +29,7 @@ pub enum ExtremeTop {
     Woman,
     Tree,
     LetterH,
-    
+
     // Diagonal line
     KanaNo,
     ManOnTheLeft,
@@ -41,7 +41,7 @@ pub enum ExtremeTop {
     LeftArrow,
     RoofDiagonalLine,
     X,
-    
+
     // Horizontal line
     HorizontalLine,
     Fourth,
@@ -60,7 +60,7 @@ pub enum ExtremeBottom {
     FourDots = 40,
     Small,
     Water,
-    
+
     // Left hook
     KanaRi,
     Seal,
@@ -73,20 +73,20 @@ pub enum ExtremeBottom {
     Animal,
     BowBottom,
     LeftHook,
-    
+
     // Vertical line
     VerticalLine,
     Cross,
-    
+
     // Right hook
     RightHook,
     Legs,
     Heart,
     TasseledSpearBottom,
-    
+
     // Diagonal line
     KanaNo,
-    
+
     // Back diagonal line
     SmallPodium,
     BackKanaNo,
@@ -97,13 +97,13 @@ pub enum ExtremeBottom {
     Again,
     WindyAgain,
     Woman,
-    
+
     // Head bottom
     HeadBottom,
-    
+
     // Watakushi bottom
     WatakushiBottom,
-    
+
     // Horizontal line
     HorizontalLine,
     StandingBottom,

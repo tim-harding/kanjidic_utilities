@@ -1,4 +1,4 @@
-use crate::shared::{IResult, NomErrorReason};
+use crate::shared::{digit, IResult, NomErrorReason};
 use nom::{
     bytes::complete::take_while1, character::complete::char, combinator::map_res, sequence::tuple,
 };
@@ -46,20 +46,14 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for DatabaseVersion {
     }
 }
 
-type DbVersionParts<'a> = (&'a str, char, &'a str);
+type DbVersionParts<'a> = (u16, char, u16);
 
 fn take_db_version(s: &str) -> IResult<DbVersionParts> {
-    tuple((
-        take_while1(|c: char| c.is_ascii_digit()),
-        char('-'),
-        take_while1(|c: char| c.is_ascii_digit()),
-    ))(s)
+    tuple((digit, char('-'), digit))(s)
 }
 
 fn map_db_version(parts: DbVersionParts) -> Result<DatabaseVersion, DatabaseVersionError> {
     let (year, _, version) = parts;
-    let year: u16 = year.parse().map_err(|_| DatabaseVersionError::Integer)?;
-    let version: u16 = version.parse().map_err(|_| DatabaseVersionError::Integer)?;
     Ok(DatabaseVersion { year, version })
 }
 

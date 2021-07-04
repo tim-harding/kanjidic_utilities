@@ -4,12 +4,13 @@ mod database_version;
 mod date_of_creation;
 mod de_roo;
 mod dictionary_reference;
-mod grade;
 mod four_corner;
+mod grade;
 mod header;
 mod kunyomi;
 mod kuten;
 mod meaning;
+mod node_number;
 mod pin_yin;
 mod query_code;
 mod radical;
@@ -20,7 +21,6 @@ mod spahn_hadamitzky;
 mod stroke_count;
 mod translation;
 mod variant;
-mod node_number;
 
 #[cfg(test)]
 mod test_shared;

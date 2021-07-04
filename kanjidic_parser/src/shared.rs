@@ -1,3 +1,6 @@
+use std::str::FromStr;
+
+use nom::{bytes::complete::take_while1, combinator::map_res};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -35,4 +38,15 @@ pub fn descendant<'a, 'input>(
     node.descendants()
         .find(|child| child.has_tag_name(tag))
         .ok_or(SharedError::MissingTag(tag))
+}
+
+fn take_digits(s: &str) -> IResult<&str> {
+    take_while1(|c: char| c.is_ascii_digit())(s)
+}
+
+pub fn digit<T: FromStr>(s: &str) -> IResult<T> {
+    map_res(take_digits, |s| -> Result<T, <T as FromStr>::Err> {
+        let n: T = s.parse()?;
+        Ok(n)
+    })(s)
 }
