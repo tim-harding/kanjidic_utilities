@@ -1,6 +1,6 @@
 use crate::shared::{digit, IResult, NomErrorReason};
 use nom::{
-    bytes::complete::take_while1, character::complete::char, combinator::map_res, sequence::tuple,
+    character::complete::char, combinator::map_res, sequence::tuple,
 };
 use roxmltree::Node;
 use std::convert::TryFrom;

@@ -4,7 +4,7 @@ use thiserror::Error;
 
 use crate::shared::{digit, IResult, NomErrorReason};
 use nom::{
-    bytes::complete::take_while1, character::complete::char, combinator::map_res, sequence::tuple,
+    character::complete::char, combinator::map_res, sequence::tuple,
 };
 
 /// Error while parsing date of creation
@@ -17,10 +17,6 @@ pub enum DateOfCreationError {
     /// Database version was not in a recognized format
     #[error("Database version was not in a recognized format")]
     Format(NomErrorReason),
-
-    /// Could not parse an integer
-    #[error("Could not parse an integer")]
-    Integer,
 }
 
 /// The date the file was created
