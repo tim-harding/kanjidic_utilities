@@ -133,5 +133,28 @@ pub enum SolidSubpattern {
 
 #[cfg(test)]
 mod tests {
-    // Should use impls for str and node so that testing is a bit easier
+    use super::*;
+    use crate::test_shared::DOC;
+
+    #[test]
+    fn de_roo() {
+        let node = DOC
+            .descendants()
+            .find(|node| {
+                node.has_tag_name("q_code")
+                    && node
+                        .attribute("qc_type")
+                        .map(|value| value.eq("skip"))
+                        .unwrap_or(false)
+            })
+            .unwrap();
+        let skip = Skip::try_from(node);
+        assert_eq!(
+            skip,
+            Ok(Skip::Solid(SkipSolid {
+                total_stroke_count: 7,
+                solid_subpattern: SolidSubpattern::TopLine,
+            }))
+        )
+    }
 }
