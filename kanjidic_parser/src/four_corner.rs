@@ -1,5 +1,26 @@
+use std::{convert::TryFrom, str::Chars};
+
+use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
+use roxmltree::Node;
+use thiserror::Error;
+
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum FourCornerError {
+    #[error("Node contained no text")]
+    NoText,
+    #[error("Failed attempt to extract a stroke")]
+    Stroke(#[from] TryFromPrimitiveError<Stroke>),
+    #[error("Not enough characters for four corners")]
+    ToFewCharacters,
+    #[error("Expected a digit")]
+    Digit,
+    #[error("Expected a period to delimit the fifth corner")]
+    Pattern,
+}
+
 /// A kanji classification using the Four Corner system.
 /// http://www.edrdg.org/wwwjdic/FOURCORNER.html
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct FourCorner {
     /// The stroke at the top left corner.
     pub top_left: Stroke,
@@ -16,10 +37,62 @@ pub struct FourCorner {
     /// Where necessary to differentiate between other
     /// characters with the same strokes, this extra stroke
     /// is found above the bottom right stroke.
+    ///
+    /// In the database, we only ever see this with the fifth
+    /// corner. Still, not including it is technically
+    /// allowed, so I include it here for generality.
     pub fifth_corner: Option<Stroke>,
 }
 
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for FourCorner {
+    type Error = FourCornerError;
+
+    fn try_from(node: Node) -> Result<Self, Self::Error> {
+        let text = node.text().ok_or(FourCornerError::NoText)?;
+        let mut iter = text.chars();
+        let top_left = take_stroke(&mut iter)?;
+        let top_right = take_stroke(&mut iter)?;
+        let bottom_left = take_stroke(&mut iter)?;
+        let bottom_right = take_stroke(&mut iter)?;
+        if iter.next() != Some('.') {
+            return Err(FourCornerError::Pattern);
+        }
+        let fifth_corner = take_stroke(&mut iter)?;
+        Ok(Self {
+            top_left,
+            top_right,
+            bottom_left,
+            bottom_right,
+            fifth_corner: Some(fifth_corner),
+        })
+    }
+}
+
+fn take_stroke(chars: &mut Chars) -> Result<Stroke, FourCornerError> {
+    let int: u8 = char_to_u8(chars.next().ok_or(FourCornerError::ToFewCharacters)?)?;
+    let stroke = Stroke::try_from(int)?;
+    Ok(stroke)
+}
+
+fn char_to_u8(c: char) -> Result<u8, FourCornerError> {
+    match c {
+        '0' => Ok(0),
+        '1' => Ok(1),
+        '2' => Ok(2),
+        '3' => Ok(3),
+        '4' => Ok(4),
+        '5' => Ok(5),
+        '6' => Ok(6),
+        '7' => Ok(7),
+        '8' => Ok(8),
+        '9' => Ok(9),
+        _ => Err(FourCornerError::Digit),
+    }
+}
+
 /// A stroke shape in the Four Corner system.
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, TryFromPrimitive)]
+#[repr(u8)]
 pub enum Stroke {
     /// 亠
     Lid,
@@ -50,4 +123,35 @@ pub enum Stroke {
 
     /// 小
     Chiisai,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_shared::DOC;
+
+    #[test]
+    fn de_roo() {
+        let node = DOC
+            .descendants()
+            .find(|node| {
+                node.has_tag_name("q_code")
+                    && node
+                        .attribute("qc_type")
+                        .map(|value| value.eq("four_corner"))
+                        .unwrap_or(false)
+            })
+            .unwrap();
+        let four_corner = FourCorner::try_from(node);
+        assert_eq!(
+            four_corner,
+            Ok(FourCorner {
+                top_left: Stroke::LineHorizontal,
+                top_right: Stroke::Lid,
+                bottom_left: Stroke::LineHorizontal,
+                bottom_right: Stroke::Lid,
+                fifth_corner: Some(Stroke::Box),
+            })
+        )
+    }
 }
