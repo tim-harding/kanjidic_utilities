@@ -137,7 +137,7 @@ mod tests {
     use crate::test_shared::DOC;
 
     #[test]
-    fn de_roo() {
+    fn skip() {
         let node = DOC
             .descendants()
             .find(|node| {
