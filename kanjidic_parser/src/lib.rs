@@ -21,6 +21,7 @@ mod spahn_hadamitzky;
 mod stroke_count;
 mod translation;
 mod variant;
+mod kangxi;
 
 #[cfg(test)]
 mod test_shared;
