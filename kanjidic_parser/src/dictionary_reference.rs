@@ -1,3 +1,5 @@
+use crate::{busy_people::BusyPeople, moro::Moro};
+
 /// An index number into a particular kanji dictionary or reference book.
 pub enum DictionaryReference {
     /// Modern Reader's Japanese-English Dictionary by Andrew Nelson
@@ -65,35 +67,4 @@ pub enum DictionaryReference {
 
     /// Les Kanjis dans la tete by Yves Maniette
     Maniette(u16),
-}
-
-/// A location in Japanese for Busy People.
-pub struct BusyPeople {
-    /// The volume
-    volume: u8,
-
-    /// The chapter
-    chapter: Chapter,
-}
-
-/// Either the chapter number of chapter A in Japanese for Busy People.
-pub enum Chapter {
-    /// A chapter number.
-    Chapter(u8),
-
-    /// Some of the chapter are called "A",
-    /// but it isn't specified anywhere what that means.
-    A,
-}
-
-/// An entry in the dictionary Daikanwajiten.
-pub struct Moro {
-    /// The volume
-    pub volume: Option<u8>,
-
-    /// The page
-    pub page: Option<u16>,
-
-    /// The item number
-    pub item: u16,
 }
