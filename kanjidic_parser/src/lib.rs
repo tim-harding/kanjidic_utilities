@@ -23,7 +23,6 @@ mod translation;
 mod variant;
 mod kangxi;
 mod moro;
-mod chapter;
 mod busy_people;
 
 #[cfg(test)]
