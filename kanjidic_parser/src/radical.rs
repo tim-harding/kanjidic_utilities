@@ -1,12 +1,14 @@
-use std::convert::TryFrom;
 use crate::kangxi::KangXi;
 use roxmltree::Node;
+use std::convert::TryFrom;
 use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Error)]
 pub enum RadicalError {
     #[error("Node contains no text")]
     NoText,
+    #[error("No attribute specifying radical type")]
+    NoType,
     #[error("The radical is not in a valid range")]
     OutOfRange,
     #[error("Could not parse text content as a number")]
@@ -28,8 +30,33 @@ pub enum Radical {
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Radical {
     type Error = RadicalError;
-    
+
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        
+        let text = node.text().ok_or(RadicalError::NoText)?;
+        let kang_xi_number: u8 = text.parse().map_err(|_| RadicalError::Number)?;
+        let kang_xi = KangXi::try_from(kang_xi_number).map_err(|_| RadicalError::OutOfRange)?;
+        let tag = node.attribute("rad_type").ok_or(RadicalError::NoType)?;
+        match tag {
+            "classical" => Ok(Radical::Classical(kang_xi)),
+            "nelson_c" => Ok(Radical::Nelson(kang_xi)),
+            _ => Err(RadicalError::Kind),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{kangxi::KangXi, test_shared::DOC};
+    use std::convert::TryFrom;
+    use super::Radical;
+
+    #[test]
+    fn parse_radical() {
+        let node = DOC
+            .descendants()
+            .find(|node| node.has_tag_name("rad_value"))
+            .unwrap();
+        let radical = Radical::try_from(node);
+        assert_eq!(radical, Ok(Radical::Classical(KangXi::Two)))
     }
 }

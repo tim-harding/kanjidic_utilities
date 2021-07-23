@@ -219,10 +219,7 @@ pub enum KangXi {
     Flute,
 }
 
-/*
-*/
-
-impl Into<&'static str> for KangXi {
+impl Into<RadicalGlyph> for KangXi {
     fn into(self) -> RadicalGlyph {
         use KangXi::*;
         match self {
