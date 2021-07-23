@@ -7,8 +7,8 @@ edition = "2018"
 thiserror = "1"
 roxmltree = "0.14"
 nom = "6"
-iso639-1 = "0.3"
 num_enum = "0.5"
+isolang = "1.0"
 
 [dev-dependencies]
 lazy_static = "1.4"
