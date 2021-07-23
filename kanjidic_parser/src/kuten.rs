@@ -6,7 +6,7 @@ use thiserror::Error;
 
 use crate::shared::{digit, IResult};
 
-#[derive(Debug, Error, PartialEq, Eq)]
+#[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KutenError {
     #[error("Failed to parse kuten")]
     Parse,
@@ -16,7 +16,7 @@ pub enum KutenError {
 
 /// A kuten representation of a JIS X 0213 character.
 /// http://unicode-iphone.blogspot.com/2010/05/kuten-code-to-unicode.html
-#[derive(Debug, PartialEq, Clone, Copy, Eq)]
+#[derive(Debug, PartialEq, Clone, Copy, Eq, PartialOrd, Ord, Hash)]
 pub struct Kuten {
     /// The plane on which a kuten representation is found.
     pub plane: u8,
@@ -28,14 +28,22 @@ pub struct Kuten {
     pub ten: u8,
 }
 
+impl<'a> TryFrom<&'a str> for Kuten {
+    type Error = KutenError;
+
+    fn try_from(text: &'a str) -> Result<Self, Self::Error> {
+        let (_i, o) = kuten_parts(text).map_err(|_| KutenError::Parse)?;
+        let (plane, _, ku, _, ten) = o;
+        Ok(Self { plane, ku, ten })
+    }
+}
+
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kuten {
     type Error = KutenError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         let text = node.text().ok_or(KutenError::NoText)?;
-        let (_i, o) = kuten_parts(text).map_err(|_| KutenError::Parse)?;
-        let (plane, _, ku, _, ten) = o;
-        Ok(Self { plane, ku, ten })
+        Self::try_from(text)
     }
 }
 
@@ -49,7 +57,7 @@ mod tests {
     use std::convert::TryFrom;
 
     #[test]
-    fn parse_kuten_test() {
+    fn parse_kuten() {
         let node = DOC
             .descendants()
             .find(|node| {
