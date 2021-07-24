@@ -1,4 +1,7 @@
-use crate::shared::{take_uint, IResult};
+use crate::{
+    pos_error::PosError,
+    shared::{self, take_uint, IResult, SharedError},
+};
 use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -6,10 +9,10 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum ShError {
-    #[error("Node contained no text")]
-    NoText,
-    #[error("Did not recognize the pattern of an SH descriptor")]
-    InvalidFormat,
+    #[error("Error from shared utilities: {0}")]
+    Shared(#[from] SharedError),
+    #[error("Invalid Spahn Hadamitzky descriptor: {0}")]
+    InvalidFormat(PosError),
 }
 
 // They are in the form nxnn.n,
@@ -23,13 +26,10 @@ pub enum ShError {
 pub struct ShDesc {
     /// Number of strokes in the identifying radical.
     pub radical_strokes: u8,
-
     /// The letter for the radical in the identification system.
     pub radical: char,
-
     /// The number of strokes not included in the radical.
     pub other_strokes: u8,
-
     /// The position of the kanji in the sequence described
     /// by the other descriptor parts.
     pub sequence: u8,
@@ -39,9 +39,9 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for ShDesc {
     type Error = ShError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(ShError::NoText)?;
+        let text = shared::text(node)?;
         let (_i, (radical_strokes, radical, other_strokes, _, sequence)) =
-            parts(text).map_err(|_| ShError::InvalidFormat)?;
+            parts(text).map_err(|_| ShError::InvalidFormat(PosError::from(node)))?;
         let radical = radical.chars().next().unwrap();
         Ok(Self {
             radical_strokes,
