@@ -58,11 +58,9 @@ pub struct KanjidicDocument<'input> {
 impl<'input> KanjidicDocument<'input> {
     pub fn new(xml: &'input str) -> Result<Self, KanjidicError> {
         let doc = roxmltree::Document::parse(xml)?;
-        Ok(Self {
-            doc,
-        })
+        Ok(Self { doc })
     }
-    
+
     pub fn kanjidic<'a, 'b: 'a>(&'b self) -> Result<Kanjidic<'a>, KanjidicError> {
         Kanjidic::new(&self.doc)
     }
@@ -78,8 +76,7 @@ impl<'a, 'b: 'a> Kanjidic<'a> {
     fn new(doc: &'b Document) -> Result<Kanjidic<'a>, KanjidicError> {
         let root = doc.root_element();
         let header = Header::try_from(
-            root
-                .children()
+            root.children()
                 .find(|child| child.has_tag_name("header"))
                 .ok_or(KanjidicError::MissingHeader)?,
         )?;
@@ -98,7 +95,14 @@ mod tests {
     use isolang::Language;
 
     use super::*;
-    use crate::{kunyomi::{Kunyomi, KunyomiKind}, meaning::Meaning, pin_yin::PinYin, reading::Reading, test_shared::DOC, translation::Translation};
+    use crate::{
+        kunyomi::{Kunyomi, KunyomiKind},
+        meaning::Meaning,
+        pin_yin::PinYin,
+        reading::Reading,
+        test_shared::DOC,
+        translation::Translation,
+    };
 
     #[test]
     fn meaning() {

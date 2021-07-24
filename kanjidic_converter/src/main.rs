@@ -1,4 +1,4 @@
-use kanjidic_parser::{KanjidicDocument};
+use kanjidic_parser::KanjidicDocument;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
