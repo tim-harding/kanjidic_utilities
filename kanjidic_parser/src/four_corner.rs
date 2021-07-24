@@ -1,21 +1,24 @@
-use std::{convert::TryFrom, str::Chars};
-
+use crate::{
+    pos_error::PosError,
+    shared::{self, SharedError},
+};
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
+use std::{convert::TryFrom, str::Chars};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum FourCornerError {
-    #[error("Node contained no text")]
-    NoText,
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
     #[error("Failed attempt to extract a stroke")]
     Stroke(#[from] TryFromPrimitiveError<Stroke>),
     #[error("Not enough characters for four corners")]
-    ToFewCharacters,
+    ToFewCharacters(PosError),
     #[error("Expected a digit")]
-    Digit,
+    Digit(PosError),
     #[error("Expected a period to delimit the fifth corner")]
-    Pattern,
+    Pattern(PosError),
 }
 
 /// A kanji classification using the Four Corner system.
@@ -24,16 +27,12 @@ pub enum FourCornerError {
 pub struct FourCorner {
     /// The stroke at the top left corner.
     pub top_left: Stroke,
-
     /// The stroke at the top right corner.
     pub top_right: Stroke,
-
     /// The stroke at the bottom left corner.
     pub bottom_left: Stroke,
-
     /// The stroke at the bottom right corner.
     pub bottom_right: Stroke,
-
     /// Where necessary to differentiate between other
     /// characters with the same strokes, this extra stroke
     /// is found above the bottom right stroke.
@@ -48,16 +47,16 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for FourCorner {
     type Error = FourCornerError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(FourCornerError::NoText)?;
+        let text = shared::text(node)?;
         let mut iter = text.chars();
-        let top_left = take_stroke(&mut iter)?;
-        let top_right = take_stroke(&mut iter)?;
-        let bottom_left = take_stroke(&mut iter)?;
-        let bottom_right = take_stroke(&mut iter)?;
+        let top_left = take_stroke(&mut iter, node)?;
+        let top_right = take_stroke(&mut iter, node)?;
+        let bottom_left = take_stroke(&mut iter, node)?;
+        let bottom_right = take_stroke(&mut iter, node)?;
         if iter.next() != Some('.') {
-            return Err(FourCornerError::Pattern);
+            return Err(FourCornerError::Pattern(PosError::from(node)));
         }
-        let fifth_corner = take_stroke(&mut iter)?;
+        let fifth_corner = take_stroke(&mut iter, node)?;
         Ok(Self {
             top_left,
             top_right,
@@ -68,13 +67,18 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for FourCorner {
     }
 }
 
-fn take_stroke(chars: &mut Chars) -> Result<Stroke, FourCornerError> {
-    let int: u8 = char_to_u8(chars.next().ok_or(FourCornerError::ToFewCharacters)?)?;
+fn take_stroke(chars: &mut Chars, node: Node) -> Result<Stroke, FourCornerError> {
+    let int: u8 = char_to_u8(
+        chars
+            .next()
+            .ok_or(FourCornerError::ToFewCharacters(PosError::from(node)))?,
+        node,
+    )?;
     let stroke = Stroke::try_from(int)?;
     Ok(stroke)
 }
 
-fn char_to_u8(c: char) -> Result<u8, FourCornerError> {
+fn char_to_u8(c: char, node: Node) -> Result<u8, FourCornerError> {
     match c {
         '0' => Ok(0),
         '1' => Ok(1),
@@ -86,7 +90,7 @@ fn char_to_u8(c: char) -> Result<u8, FourCornerError> {
         '7' => Ok(7),
         '8' => Ok(8),
         '9' => Ok(9),
-        _ => Err(FourCornerError::Digit),
+        _ => Err(FourCornerError::Digit(PosError::from(node))),
     }
 }
 
@@ -96,31 +100,22 @@ fn char_to_u8(c: char) -> Result<u8, FourCornerError> {
 pub enum Stroke {
     /// 亠
     Lid,
-
     /// 一
     LineHorizontal,
-
     /// ｜
     LineVertical,
-
     /// 丶
     Dot,
-
     /// 十
     Cross,
-
     /// キ
     Skewer,
-
     /// 口
     Box,
-
     /// 厂
     Angle,
-
     /// 八
     Hachi,
-
     /// 小
     Chiisai,
 }
