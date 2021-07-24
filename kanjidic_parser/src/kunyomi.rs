@@ -1,4 +1,7 @@
-use crate::shared::IResult;
+use crate::{
+    pos_error::PosError,
+    shared::{self, IResult, SharedError},
+};
 use nom::{
     bytes::complete::is_not,
     character::complete::char,
@@ -12,10 +15,10 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KunyomiError {
-    #[error("Node contains no text")]
-    NoText,
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
     #[error("Kunyomi format not recognized")]
-    Format,
+    Format(PosError),
 }
 
 /// A kunyomi kanji reading.
@@ -23,7 +26,6 @@ pub enum KunyomiError {
 pub struct Kunyomi<'a> {
     /// The okurigana
     pub okurigana: Vec<&'a str>,
-
     /// Whether the reading is as a prefix or suffix.
     pub kind: KunyomiKind,
 }
@@ -33,10 +35,8 @@ pub struct Kunyomi<'a> {
 pub enum KunyomiKind {
     /// A normal reading
     Normal,
-
     /// A prefix
     Prefix,
-
     /// A suffix
     Suffix,
 }
@@ -45,8 +45,9 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi<'a> {
     type Error = KunyomiError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(KunyomiError::NoText)?;
-        let (_i, (pre, okurigana, post)) = parts(text).map_err(|_| KunyomiError::Format)?;
+        let text = shared::text(node)?;
+        let (_i, (pre, okurigana, post)) =
+            parts(text).map_err(|_| KunyomiError::Format(PosError::from(node)))?;
         let kind = if pre {
             KunyomiKind::Prefix
         } else if post {
