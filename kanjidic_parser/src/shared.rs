@@ -52,14 +52,14 @@ fn take_digits(s: &str) -> IResult<&str> {
     take_while1(|c: char| c.is_ascii_digit())(s)
 }
 
-pub fn uint<T: FromStr>(s: &str) -> IResult<T> {
+pub fn take_uint<T: FromStr>(s: &str) -> IResult<T> {
     map_res(take_digits, |s| -> Result<T, <T as FromStr>::Err> {
         let n: T = s.parse()?;
         Ok(n)
     })(s)
 }
 
-pub fn numeric_code<T: FromStr>(node: Node) -> Result<T, SharedError> {
+pub fn text_uint<T: FromStr>(node: Node) -> Result<T, SharedError> {
     text(node)?
         .parse::<T>()
         .map_err(|_| SharedError::Numeric(PosError::from(node)))

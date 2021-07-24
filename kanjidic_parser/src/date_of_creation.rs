@@ -2,7 +2,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{uint, IResult, NomErrorReason};
+use crate::shared::{take_uint, IResult, NomErrorReason};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 
 /// Error while parsing date of creation
@@ -46,7 +46,7 @@ impl<'a, 'b> TryFrom<Node<'a, 'b>> for DateOfCreation {
 type DateOfCreationParts<'a> = (u16, char, u8, char, u8);
 
 fn take_db_version(s: &str) -> IResult<DateOfCreationParts> {
-    tuple((uint, char('-'), uint, char('-'), uint))(s)
+    tuple((take_uint, char('-'), take_uint, char('-'), take_uint))(s)
 }
 
 fn map_db_version(parts: DateOfCreationParts) -> Result<DateOfCreation, DateOfCreationError> {

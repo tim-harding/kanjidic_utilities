@@ -1,4 +1,4 @@
-use crate::shared::{uint, IResult, NomErrorReason};
+use crate::shared::{take_uint, IResult, NomErrorReason};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -47,7 +47,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for DatabaseVersion {
 type DbVersionParts<'a> = (u16, char, u16);
 
 fn take_db_version(s: &str) -> IResult<DbVersionParts> {
-    tuple((uint, char('-'), uint))(s)
+    tuple((take_uint, char('-'), take_uint))(s)
 }
 
 fn map_db_version(parts: DbVersionParts) -> Result<DatabaseVersion, DatabaseVersionError> {

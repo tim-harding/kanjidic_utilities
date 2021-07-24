@@ -2,14 +2,17 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
+use crate::{
+    pos_error::PosError,
+    shared::{text_uint, SharedError},
+};
+
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum StrokeCountError {
-    #[error("Node contains no text")]
-    NoText,
-    #[error("Could not parse node text as a number")]
-    Number,
-    #[error("Expected at least one entry for stroke count")]
-    Accepted,
+    #[error("Error from shared utilities: {0}")]
+    Shared(#[from] SharedError),
+    #[error("Expected at least one entry for stroke count: {0}")]
+    Accepted(PosError),
 }
 
 /// The number of strokes in a kanji.
@@ -17,7 +20,6 @@ pub enum StrokeCountError {
 pub struct StrokeCount {
     /// The accepted number of strokes.
     pub accepted: u8,
-
     /// Possible miscounts of the stroke count.
     pub miscounts: Vec<u8>,
 }
@@ -27,14 +29,15 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for StrokeCount {
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let mut children = node
-            .descendants()
+            .children()
             .filter(|child| child.has_tag_name("stroke_count"))
             .map(|child| {
-                let text = child.text().ok_or(StrokeCountError::NoText)?;
-                let strokes: u8 = text.parse().map_err(|_| StrokeCountError::Number)?;
+                let strokes = text_uint(child)?;
                 Ok(strokes)
             });
-        let accepted = children.next().ok_or(StrokeCountError::Accepted)??;
+        let accepted = children
+            .next()
+            .ok_or(StrokeCountError::Accepted(PosError::from(node)))??;
         let miscounts: Result<Vec<u8>, StrokeCountError> = children.collect();
         let miscounts = miscounts?;
         Ok(Self {

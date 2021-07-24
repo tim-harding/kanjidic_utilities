@@ -4,7 +4,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{uint, IResult};
+use crate::shared::{take_uint, IResult};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KutenError {
@@ -48,7 +48,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kuten {
 }
 
 fn kuten_parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
-    tuple((uint, char('-'), uint, char('-'), uint))(s)
+    tuple((take_uint, char('-'), take_uint, char('-'), take_uint))(s)
 }
 
 #[cfg(test)]

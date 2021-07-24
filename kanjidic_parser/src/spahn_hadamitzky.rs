@@ -1,4 +1,4 @@
-use crate::shared::{uint, IResult};
+use crate::shared::{take_uint, IResult};
 use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -53,7 +53,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for ShDesc {
 }
 
 fn parts(s: &str) -> IResult<(u8, &str, u8, char, u8)> {
-    tuple((uint, take(1u8), uint, char('.'), uint))(s)
+    tuple((take_uint, take(1u8), take_uint, char('.'), take_uint))(s)
 }
 
 #[cfg(test)]

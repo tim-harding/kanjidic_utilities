@@ -2,7 +2,7 @@ use crate::{
     de_roo::{DeRoo, DeRooError},
     kuten::{Kuten, KutenError},
     pos_error::PosError,
-    shared::{attr, numeric_code, SharedError},
+    shared::{attr, text_uint, SharedError},
     spahn_hadamitzky::{ShDesc, ShError},
 };
 use roxmltree::Node;
@@ -58,11 +58,11 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Variant {
             "jis212" => Ok(Variant::Jis212(Kuten::try_from(node)?)),
             "jis213" => Ok(Variant::Jis213(Kuten::try_from(node)?)),
             "deroo" => Ok(Variant::DeRoo(DeRoo::try_from(node)?)),
-            "njecd" => Ok(Variant::Halpern(numeric_code::<u16>(node)?)),
+            "njecd" => Ok(Variant::Halpern(text_uint::<u16>(node)?)),
             "s_h" => Ok(Variant::Sh(ShDesc::try_from(node)?)),
-            "nelson_c" => Ok(Variant::Nelson(numeric_code::<u16>(node)?)),
-            "oneill" => Ok(Variant::ONeill(numeric_code::<u16>(node)?)),
-            "ucs" => Ok(Variant::Unicode(numeric_code::<u32>(node)?)),
+            "nelson_c" => Ok(Variant::Nelson(text_uint::<u16>(node)?)),
+            "oneill" => Ok(Variant::ONeill(text_uint::<u16>(node)?)),
+            "ucs" => Ok(Variant::Unicode(text_uint::<u32>(node)?)),
             _ => Err(VariantError::UnknownVariant(PosError::from(node))),
         }
     }
