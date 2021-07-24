@@ -63,9 +63,20 @@ impl<'input> KanjidicDocument<'input> {
         })
     }
     
-    pub fn kanjidic(&self) -> Result<Kanjidic, KanjidicError> {
-        let root = self.doc.root_element();
-        println!("{:?}", root);
+    pub fn kanjidic<'a, 'b: 'a>(&'b self) -> Result<Kanjidic<'a>, KanjidicError> {
+        Kanjidic::new(&self.doc)
+    }
+}
+
+#[derive(Debug)]
+pub struct Kanjidic<'a> {
+    pub header: Header,
+    pub characters: Vec<Character<'a>>,
+}
+
+impl<'a, 'b: 'a> Kanjidic<'a> {
+    fn new(doc: &'b Document) -> Result<Kanjidic<'a>, KanjidicError> {
+        let root = doc.root_element();
         let header = Header::try_from(
             root
                 .children()
@@ -82,8 +93,99 @@ impl<'input> KanjidicDocument<'input> {
     }
 }
 
-#[derive(Debug)]
-pub struct Kanjidic<'a> {
-    pub header: Header,
-    pub characters: Vec<Character<'a>>,
+#[cfg(test)]
+mod tests {
+    use isolang::Language;
+
+    use super::*;
+    use crate::{kunyomi::{Kunyomi, KunyomiKind}, meaning::Meaning, pin_yin::PinYin, reading::Reading, test_shared::DOC, translation::Translation};
+
+    #[test]
+    fn meaning() {
+        let kanjidic = Kanjidic::new(&DOC).unwrap();
+        // assert_eq!(
+        //     meaning,
+        //     Ok(Meaning {
+        //         nanori: vec!["や", "つぎ", "つぐ",],
+        //         readings: vec![
+        //             Reading::PinYin(PinYin {
+        //                 romanization: "ya",
+        //                 tone: crate::pin_yin::Tone::Falling,
+        //             }),
+        //             Reading::KoreanRomanized("a"),
+        //             Reading::KoreanHangul("아"),
+        //             Reading::Vietnam("A"),
+        //             Reading::Vietnam("Á"),
+        //             Reading::Onyomi("ア"),
+        //             Reading::Kunyomi(Kunyomi {
+        //                 kind: KunyomiKind::Normal,
+        //                 okurigana: vec!["つ", "ぐ",]
+        //             })
+        //         ],
+        //         translations: vec![
+        //             Translation {
+        //                 text: "Asia",
+        //                 language: Language::Eng,
+        //             },
+        //             Translation {
+        //                 text: "rank next",
+        //                 language: Language::Eng,
+        //             },
+        //             Translation {
+        //                 text: "come after",
+        //                 language: Language::Eng,
+        //             },
+        //             Translation {
+        //                 text: "-ous",
+        //                 language: Language::Eng,
+        //             },
+        //             Translation {
+        //                 text: "Asie",
+        //                 language: Language::Fra,
+        //             },
+        //             Translation {
+        //                 text: "suivant",
+        //                 language: Language::Fra,
+        //             },
+        //             Translation {
+        //                 text: "sub-",
+        //                 language: Language::Fra,
+        //             },
+        //             Translation {
+        //                 text: "sous-",
+        //                 language: Language::Fra,
+        //             },
+        //             Translation {
+        //                 text: "pref. para indicar",
+        //                 language: Language::Spa,
+        //             },
+        //             Translation {
+        //                 text: "venir después de",
+        //                 language: Language::Spa,
+        //             },
+        //             Translation {
+        //                 text: "Asia",
+        //                 language: Language::Spa,
+        //             },
+        //             Translation {
+        //                 text: "Ásia",
+        //                 language: Language::Por,
+        //             },
+        //             Translation {
+        //                 text: "próxima",
+        //                 language: Language::Por,
+        //             },
+        //             Translation {
+        //                 text: "o que vem depois",
+        //                 language: Language::Por,
+        //             },
+        //             Translation {
+        //                 text: "-ous",
+        //                 language: Language::Por,
+        //             },
+        //         ],
+        //     })
+        // )
+        println!("{:?}", kanjidic);
+    }
 }
