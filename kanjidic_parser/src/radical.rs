@@ -3,6 +3,7 @@ use crate::{
     pos_error::PosError,
     shared::{attr, text_uint, SharedError},
 };
+use num_enum::TryFromPrimitiveError;
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -12,7 +13,7 @@ pub enum RadicalError {
     #[error("Error from shared utilities: {0}")]
     Shared(#[from] SharedError),
     #[error("The radical is not in a valid range")]
-    OutOfRange(PosError),
+    OutOfRange(#[from] TryFromPrimitiveError<KangXi>),
     #[error("Not a recognized radical kind")]
     Kind(PosError),
 }
@@ -32,8 +33,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Radical {
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let kang_xi_number: u8 = text_uint(node)?;
-        let kang_xi = KangXi::try_from(kang_xi_number)
-            .map_err(|_| RadicalError::OutOfRange(PosError::from(node)))?;
+        let kang_xi = KangXi::try_from(kang_xi_number)?;
         let tag = attr(node, "rad_type")?;
         match tag {
             "classical" => Ok(Radical::Classical(kang_xi)),

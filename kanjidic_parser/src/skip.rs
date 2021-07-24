@@ -4,20 +4,18 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{take_uint, IResult};
+use crate::{pos_error::PosError, shared::{self, IResult, SharedError, take_uint}};
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum SkipError {
-    #[error("Invalid solid pattern")]
+    #[error("Invalid solid pattern: {0}")]
     InvalidSolidPattern(#[from] TryFromPrimitiveError<SolidSubpattern>),
-    #[error("Node contains no text")]
-    NoText,
+    #[error("Shared utility error: {0}")]
+    Shared(#[from] SharedError),
     #[error("Did not fit the format for a skip code")]
-    Format,
+    Format(PosError),
     #[error("The digit indicating the pattern was not valid")]
-    SkipKind,
-    #[error("Not a valid solid subpattern")]
-    SolidSubpattern,
+    SkipKind(PosError),
 }
 
 /// Kanji code from the SKIP system of indexing.
@@ -26,13 +24,10 @@ pub enum SkipError {
 pub enum Skip {
     /// Pattern 1, the kanji can be divided into left and right parts.
     Horizontal(SkipHorizontal),
-
     /// Pattern 2, the kanji can be divided into top and bottom parts.
     Vertical(SkipVertical),
-
     /// Pattern 3, the kanji can be divided by an enclosure element.
     Enclosure(SkipEnclosure),
-
     /// Pattern 4, the cannot be classified by any of the above patterns.
     Solid(SkipSolid),
 }
@@ -41,9 +36,9 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
     type Error = SkipError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(SkipError::NoText)?;
+        let text = shared::text(node)?;
         let (_i, (pattern_kind, _, first, _, second)) =
-            parts(text).map_err(|_| SkipError::Format)?;
+            parts(text).map_err(|_| SkipError::Format(PosError::from(node)))?;
         match pattern_kind {
             1 => Ok(Skip::Horizontal(SkipHorizontal {
                 left: first,
@@ -59,13 +54,13 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
             })),
             4 => {
                 let solid_subpattern =
-                    SolidSubpattern::try_from(second).map_err(|_| SkipError::SolidSubpattern)?;
+                    SolidSubpattern::try_from(second)?;
                 Ok(Skip::Solid(SkipSolid {
                     total_stroke_count: first,
                     solid_subpattern,
                 }))
             }
-            _ => Err(SkipError::SkipKind),
+            _ => Err(SkipError::SkipKind(PosError::from(node))),
         }
     }
 }
@@ -79,7 +74,6 @@ fn parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
 pub struct SkipHorizontal {
     /// Number of strokes in the left part.
     pub left: u8,
-
     /// Number of strokes in the right part.
     pub right: u8,
 }
@@ -89,7 +83,6 @@ pub struct SkipHorizontal {
 pub struct SkipVertical {
     /// Number of strokes in the top part.
     pub top: u8,
-
     /// Number of strokes in the bottom part.
     pub bottom: u8,
 }
@@ -99,7 +92,6 @@ pub struct SkipVertical {
 pub struct SkipEnclosure {
     /// Number of strokes in the exterior part.
     pub exterior: u8,
-
     /// Number of strokes in the interior part.
     pub interior: u8,
 }
@@ -109,7 +101,6 @@ pub struct SkipEnclosure {
 pub struct SkipSolid {
     /// The total number of strokes in the kanji.
     pub total_stroke_count: u8,
-
     /// The subpattern that defines the kanji.
     pub solid_subpattern: SolidSubpattern,
 }
@@ -120,13 +111,10 @@ pub struct SkipSolid {
 pub enum SolidSubpattern {
     /// Contains a top line.
     TopLine = 1,
-
     /// Contains a bottom line.
     BottomLine,
-
     /// Contains a through line.
     ThroughLine,
-
     /// Does not contain any of the above.
     Other,
 }

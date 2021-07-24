@@ -10,6 +10,7 @@ pub type IResult<'a, T> = nom::IResult<&'a str, T>;
 
 pub type NomErr<'a> = nom::Err<nom::error::Error<&'a str>>;
 
+// Todo: Improve Nom error handling
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NomErrorReason {
     Incomplete,
