@@ -4,7 +4,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Eq)]
+#[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum ShError {
     #[error("Node contained no text")]
     NoText,
@@ -19,7 +19,7 @@ pub enum ShError {
 // the 2nd kanji in the 3k11 sequence.
 
 /// Descriptor code for The Kanji Dictionary.
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 pub struct SpahnHadamitzkyDescriptor {
     /// Number of strokes in the identifying radical.
     pub radical_strokes: u8,

@@ -3,7 +3,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-#[derive(Debug, Error, Eq, PartialEq)]
+#[derive(Debug, Error, Eq, PartialEq, Clone)]
 pub enum DeRooError {
     #[error("The node contained no text")]
     NoText,
@@ -21,7 +21,7 @@ pub enum DeRooError {
 
 /// Identification of a kanji in the De Roo system.
 /// http://www.edrdg.org/wwwjdic/deroo.html
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 pub struct DeRoo {
     /// The graphic element that appears at the top of the kanji.
     pub top: ExtremeTop,
@@ -56,7 +56,7 @@ fn u8_from_slice(text: &str, start: usize, count: usize) -> Result<u8, DeRooErro
     Ok(top)
 }
 
-#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy)]
+#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord, Hash)]
 #[repr(u8)]
 pub enum ExtremeTop {
     // Dot
@@ -105,7 +105,7 @@ pub enum ExtremeTop {
     EyeTop,
 }
 
-#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy)]
+#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord, Hash)]
 #[repr(u8)]
 pub enum ExtremeBottom {
     // Dot
