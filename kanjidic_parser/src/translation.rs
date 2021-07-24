@@ -11,8 +11,9 @@ pub enum TranslationError {
     UnknownLanguage,
 }
 
+// Todo: Identify suffixes and prefixes
 /// A translation of a kanji meaning into another language.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Translation<'a> {
     /// The word in the target language.
     pub text: &'a str,

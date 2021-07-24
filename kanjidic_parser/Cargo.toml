@@ -8,7 +8,8 @@ thiserror = "1"
 roxmltree = "0.14"
 nom = "6"
 num_enum = "0.5"
-isolang = "1.0"
+isolang = { git = "https://github.com/humenda/isolang-rs", branch = "master" }
+
 
 [dev-dependencies]
 lazy_static = "1.4"
