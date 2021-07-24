@@ -3,14 +3,20 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
+use crate::{pos_error::PosError, shared::{SharedError, text}};
+
 #[derive(Debug, Error, Eq, PartialEq, Clone)]
 pub enum DeRooError {
-    #[error("The node contained no text")]
-    NoText,
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
+    #[error("A De Roo code should be three or four digits: {0}")]
+    InvalidLength(PosError),
     #[error("A De Roo code should be three or four digits")]
-    InvalidLength,
+    InvalidLengthSimple,
     #[error("Could not parse part of the code as a number")]
-    Number,
+    NumberSimple,
+    #[error("Could not parse part of the code as a number: {0}")]
+    Number(PosError),
     #[error("Subslice could not be treated as UTF-8")]
     Utf8(#[from] std::str::Utf8Error),
     #[error("The extreme top code was not valid")]
@@ -25,21 +31,31 @@ pub enum DeRooError {
 pub struct DeRoo {
     /// The graphic element that appears at the top of the kanji.
     pub top: ExtremeTop,
-
     /// The graphic element that appears at the bottom of the kanji.
     pub bottom: ExtremeBottom,
+}
+
+impl TryFrom<&str> for DeRoo {
+    type Error = DeRooError;
+
+    fn try_from(text: &str) -> Result<Self, Self::Error> {
+        match text.len() {
+            3 => from_slices(text, 1),
+            4 => from_slices(text, 2),
+            _ => Err(DeRooError::InvalidLengthSimple),
+        }
+    }
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for DeRoo {
     type Error = DeRooError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(DeRooError::NoText)?;
-        match text.len() {
-            3 => from_slices(text, 1),
-            4 => from_slices(text, 2),
-            _ => Err(DeRooError::InvalidLength),
-        }
+        DeRoo::try_from(text(node)?).map_err(|err| match err {
+            DeRooError::NumberSimple => DeRooError::Number(PosError::from(node)),
+            DeRooError::InvalidLengthSimple => DeRooError::InvalidLength(PosError::from(node)),
+            other => other,
+        })
     }
 }
 
@@ -52,7 +68,7 @@ fn from_slices(text: &str, first: usize) -> Result<DeRoo, DeRooError> {
 fn u8_from_slice(text: &str, start: usize, count: usize) -> Result<u8, DeRooError> {
     let top = &text.as_bytes()[start..start + count];
     let top = std::str::from_utf8(top)?;
-    let top: u8 = top.parse().map_err(|_| DeRooError::Number)?;
+    let top: u8 = top.parse().map_err(|_| DeRooError::NumberSimple)?;
     Ok(top)
 }
 
