@@ -3,16 +3,18 @@ use std::convert::TryFrom;
 use crate::{
     kunyomi::{Kunyomi, KunyomiError},
     pin_yin::{PinYin, PinYinError},
+    pos_error::PosError,
+    shared::{attr, text, SharedError},
 };
 use roxmltree::Node;
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum ReadingError {
-    #[error("Node contains no text")]
-    NoText,
+    #[error("Error from shared utilities")]
+    Shared(#[from] SharedError),
     #[error("qc_type not recognized")]
-    UnrecognizedType,
+    UnrecognizedType(PosError),
     #[error("Error while parsing pin yin reading")]
     PinYin(#[from] PinYinError),
     #[error("Error while parsing kunyomi reading")]
@@ -40,19 +42,15 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reading<'a> {
     type Error = ReadingError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let r_type = node.attribute("r_type").ok_or(ReadingError::NoText)?;
+        let r_type = attr(node, "r_type")?;
         match r_type {
             "pinyin" => Ok(Reading::PinYin(PinYin::try_from(node)?)),
-            "korean_r" => Ok(Reading::KoreanRomanized(
-                node.text().ok_or(ReadingError::NoText)?,
-            )),
-            "korean_h" => Ok(Reading::KoreanHangul(
-                node.text().ok_or(ReadingError::NoText)?,
-            )),
-            "vietnam" => Ok(Reading::Vietnam(node.text().ok_or(ReadingError::NoText)?)),
-            "ja_on" => Ok(Reading::Onyomi(node.text().ok_or(ReadingError::NoText)?)),
+            "korean_r" => Ok(Reading::KoreanRomanized(text(node)?)),
+            "korean_h" => Ok(Reading::KoreanHangul(text(node)?)),
+            "vietnam" => Ok(Reading::Vietnam(text(node)?)),
+            "ja_on" => Ok(Reading::Onyomi(text(node)?)),
             "ja_kun" => Ok(Reading::Kunyomi(Kunyomi::try_from(node)?)),
-            _ => Err(ReadingError::UnrecognizedType),
+            _ => Err(ReadingError::UnrecognizedType(PosError::from(node))),
         }
     }
 }
