@@ -10,7 +10,9 @@ pub type IResult<'a, T> = nom::IResult<&'a str, T>;
 
 pub type NomErr<'a> = nom::Err<nom::error::Error<&'a str>>;
 
+// Todo: Make sure all error display strings are good
 // Todo: Improve Nom error handling
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NomErrorReason {
     Incomplete,
@@ -24,7 +26,9 @@ pub enum SharedError {
     #[error("Node contains no text")]
     NoText(PosError),
     #[error("Could not parse text as a uint")]
-    Numeric(PosError),
+    TextUint(PosError),
+    #[error("Could not parse attribute as a uint")]
+    AttrUint(PosError),
     #[error("Missing node attribute: {0}, attribute '{1}'")]
     MissingAttribute(PosError, &'static str),
 }
@@ -63,7 +67,7 @@ pub fn take_uint<T: FromStr>(s: &str) -> IResult<T> {
 pub fn text_uint<T: FromStr>(node: Node) -> Result<T, SharedError> {
     text(node)?
         .parse::<T>()
-        .map_err(|_| SharedError::Numeric(PosError::from(node)))
+        .map_err(|_| SharedError::TextUint(PosError::from(node)))
 }
 
 pub fn text<'a, 'input>(node: Node<'a, 'input>) -> Result<&'a str, SharedError> {
@@ -79,4 +83,19 @@ pub fn attr<'a, 'input>(
             PosError::from(node),
             attribute,
         ))
+}
+
+pub fn attr_uint<T: FromStr>(
+    node: Node,
+    attribute: &'static str,
+) -> Result<Option<T>, SharedError> {
+    match node.attribute(attribute) {
+        Some(text) => {
+            let parsed: T = text
+                .parse()
+                .map_err(|_| SharedError::AttrUint(PosError::from(node)))?;
+            Ok(Some(parsed))
+        }
+        None => Ok(None),
+    }
 }
