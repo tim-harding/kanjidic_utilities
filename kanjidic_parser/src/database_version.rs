@@ -21,7 +21,7 @@ pub enum DatabaseVersionError {
 }
 
 /// The version of the file.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DatabaseVersion {
     /// The year of release.
     pub year: u16,

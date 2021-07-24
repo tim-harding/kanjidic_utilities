@@ -18,7 +18,7 @@ pub enum DateOfCreationError {
 }
 
 /// The date the file was created
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DateOfCreation {
     /// Year of creation
     pub year: u16,

@@ -32,18 +32,58 @@ mod test_shared;
 #[macro_use]
 extern crate lazy_static;
 
-use database_version::DatabaseVersionError;
+use std::convert::TryFrom;
+
+use character::{Character, CharacterError};
+use header::{Header, HeaderError};
+use roxmltree::Document;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum KdpError {
+pub enum KanjidicError {
     #[error("Error parsing XML file")]
     Xml(#[from] roxmltree::Error),
+    #[error("Could not find header node")]
+    MissingHeader,
     #[error("Error parsing database version")]
-    DatabaseVersion(#[from] DatabaseVersionError),
+    Header(#[from] HeaderError),
+    #[error("Error parsing a character")]
+    Character(#[from] CharacterError),
 }
 
-pub fn parse(xml: &str) -> Result<(), KdpError> {
-    let _doc = roxmltree::Document::parse(xml)?;
-    Ok(())
+pub struct KanjidicDocument<'input> {
+    doc: Document<'input>,
+}
+
+impl<'input> KanjidicDocument<'input> {
+    pub fn new(xml: &'input str) -> Result<Self, KanjidicError> {
+        let doc = roxmltree::Document::parse(xml)?;
+        Ok(Self {
+            doc,
+        })
+    }
+    
+    pub fn kanjidic(&self) -> Result<Kanjidic, KanjidicError> {
+        let root = self.doc.root_element();
+        println!("{:?}", root);
+        let header = Header::try_from(
+            root
+                .children()
+                .find(|child| child.has_tag_name("header"))
+                .ok_or(KanjidicError::MissingHeader)?,
+        )?;
+        let characters: Result<Vec<Character>, CharacterError> = root
+            .children()
+            .filter(|child| child.has_tag_name("character"))
+            .map(|node| Character::try_from(node))
+            .collect();
+        let characters = characters?;
+        Ok(Kanjidic { header, characters })
+    }
+}
+
+#[derive(Debug)]
+pub struct Kanjidic<'a> {
+    pub header: Header,
+    pub characters: Vec<Character<'a>>,
 }
