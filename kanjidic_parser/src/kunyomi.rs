@@ -10,7 +10,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Eq)]
+#[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KunyomiError {
     #[error("Node contains no text")]
     NoText,
@@ -19,7 +19,7 @@ pub enum KunyomiError {
 }
 
 /// A kunyomi kanji reading.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord, Hash)]
 pub struct Kunyomi<'a> {
     /// The okurigana
     pub okurigana: Vec<&'a str>,
@@ -29,7 +29,7 @@ pub struct Kunyomi<'a> {
 }
 
 /// The kind of kunyomi reading.
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
 pub enum KunyomiKind {
     /// A normal reading
     Normal,
