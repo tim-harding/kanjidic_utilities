@@ -20,7 +20,7 @@ pub enum ShError {
 
 /// Descriptor code for The Kanji Dictionary.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
-pub struct SpahnHadamitzkyDescriptor {
+pub struct ShDesc {
     /// Number of strokes in the identifying radical.
     pub radical_strokes: u8,
 
@@ -35,7 +35,7 @@ pub struct SpahnHadamitzkyDescriptor {
     pub sequence: u8,
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for SpahnHadamitzkyDescriptor {
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for ShDesc {
     type Error = ShError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
@@ -73,10 +73,10 @@ mod tests {
                         .unwrap_or(false)
             })
             .unwrap();
-        let sh = SpahnHadamitzkyDescriptor::try_from(node);
+        let sh = ShDesc::try_from(node);
         assert_eq!(
             sh,
-            Ok(SpahnHadamitzkyDescriptor {
+            Ok(ShDesc {
                 radical_strokes: 2,
                 radical: 'k',
                 other_strokes: 4,

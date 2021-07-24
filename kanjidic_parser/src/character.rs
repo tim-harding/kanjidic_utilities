@@ -227,7 +227,7 @@ mod tests {
         pin_yin::PinYin,
         reading::Reading,
         skip::{Skip, SkipSolid, SolidSubpattern},
-        spahn_hadamitzky::SpahnHadamitzkyDescriptor,
+        spahn_hadamitzky::ShDesc,
         test_shared::DOC,
         translation::Translation,
     };
@@ -298,7 +298,7 @@ mod tests {
                         total_stroke_count: 7,
                         solid_subpattern: SolidSubpattern::TopLine,
                     })),
-                    QueryCode::SpahnHadamitzky(SpahnHadamitzkyDescriptor {
+                    QueryCode::SpahnHadamitzky(ShDesc {
                         radical_strokes: 0,
                         radical: 'a',
                         other_strokes: 7,

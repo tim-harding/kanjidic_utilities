@@ -4,7 +4,7 @@ use crate::{
     de_roo::{DeRoo, DeRooError},
     four_corner::{FourCorner, FourCornerError},
     skip::{Skip, SkipError},
-    spahn_hadamitzky::{ShError, SpahnHadamitzkyDescriptor},
+    spahn_hadamitzky::{ShError, ShDesc},
 };
 use roxmltree::Node;
 use thiserror::Error;
@@ -35,7 +35,7 @@ pub enum QueryCode {
     Skip(Skip),
 
     /// Desrcriptor codes from The Kanji Dictionary
-    SpahnHadamitzky(SpahnHadamitzkyDescriptor),
+    SpahnHadamitzky(ShDesc),
 
     /// The Four Corner code
     FourCorner(FourCorner),
@@ -87,7 +87,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for QueryCode {
                 }
             }
             "sh_desc" => Ok(QueryCode::SpahnHadamitzky(
-                SpahnHadamitzkyDescriptor::try_from(node)?,
+                ShDesc::try_from(node)?,
             )),
             "four_corner" => Ok(QueryCode::FourCorner(FourCorner::try_from(node)?)),
             "deroo" => Ok(QueryCode::DeRoo(DeRoo::try_from(node)?)),

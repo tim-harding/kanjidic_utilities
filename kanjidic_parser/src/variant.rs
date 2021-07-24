@@ -3,7 +3,7 @@ use crate::{
     kuten::{Kuten, KutenError},
     pos_error::PosError,
     shared::{attr, numeric_code, SharedError},
-    spahn_hadamitzky::{ShError, SpahnHadamitzkyDescriptor},
+    spahn_hadamitzky::{ShDesc, ShError},
 };
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -11,15 +11,15 @@ use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum VariantError {
-    #[error("var_type not recognized")]
+    #[error("var_type not recognized: {0}")]
     UnknownVariant(PosError),
     #[error("Error from shared utility: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error while parsing kuten code")]
+    #[error("Error while parsing kuten code: {0}")]
     Kuten(#[from] KutenError),
-    #[error("Error while parsing de roo code")]
+    #[error("Error while parsing de roo code: {0}")]
     DeRoo(#[from] DeRooError),
-    #[error("Error while parsing Spahn Hadamitzky descriptor")]
+    #[error("Error while parsing Spahn Hadamitzky descriptor: {0}")]
     SpahnHadamitzky(#[from] ShError),
 }
 
@@ -41,7 +41,7 @@ pub enum Variant {
     /// Index in the NJECD system.
     Halpern(u16),
     /// The Kanji Dictionary kanji code.
-    SpahnHadamitzky(SpahnHadamitzkyDescriptor),
+    Sh(ShDesc),
     /// Index in the Modern Reader's Japanese-English dictionary.
     Nelson(u16),
     /// Index in Japanese Names by P.G. O'Neill.
@@ -59,9 +59,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Variant {
             "jis213" => Ok(Variant::Jis213(Kuten::try_from(node)?)),
             "deroo" => Ok(Variant::DeRoo(DeRoo::try_from(node)?)),
             "njecd" => Ok(Variant::Halpern(numeric_code::<u16>(node)?)),
-            "s_h" => Ok(Variant::SpahnHadamitzky(
-                SpahnHadamitzkyDescriptor::try_from(node)?,
-            )),
+            "s_h" => Ok(Variant::Sh(ShDesc::try_from(node)?)),
             "nelson_c" => Ok(Variant::Nelson(numeric_code::<u16>(node)?)),
             "oneill" => Ok(Variant::ONeill(numeric_code::<u16>(node)?)),
             "ucs" => Ok(Variant::Unicode(numeric_code::<u32>(node)?)),
