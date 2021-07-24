@@ -20,7 +20,7 @@ pub enum FourCornerError {
 
 /// A kanji classification using the Four Corner system.
 /// http://www.edrdg.org/wwwjdic/FOURCORNER.html
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub struct FourCorner {
     /// The stroke at the top left corner.
     pub top_left: Stroke,
@@ -91,7 +91,7 @@ fn char_to_u8(c: char) -> Result<u8, FourCornerError> {
 }
 
 /// A stroke shape in the Four Corner system.
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, TryFromPrimitive)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, TryFromPrimitive, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum Stroke {
     /// 亠

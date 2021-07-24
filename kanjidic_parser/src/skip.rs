@@ -22,7 +22,7 @@ pub enum SkipError {
 
 /// Kanji code from the SKIP system of indexing.
 /// http://www.edrdg.org/wwwjdic/SKIP.html
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Skip {
     /// Pattern 1, the kanji can be divided into left and right parts.
     Horizontal(SkipHorizontal),
@@ -75,7 +75,7 @@ fn parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
 }
 
 /// Left and right parts of the kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SkipHorizontal {
     /// Number of strokes in the left part.
     pub left: u8,
@@ -85,7 +85,7 @@ pub struct SkipHorizontal {
 }
 
 /// Top and bottom parts of the kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SkipVertical {
     /// Number of strokes in the top part.
     pub top: u8,
@@ -95,7 +95,7 @@ pub struct SkipVertical {
 }
 
 /// Interior and exterior parts of the kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SkipEnclosure {
     /// Number of strokes in the exterior part.
     pub exterior: u8,
@@ -105,7 +105,7 @@ pub struct SkipEnclosure {
 }
 
 /// Classification for kanji that don't fit another pattern.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SkipSolid {
     /// The total number of strokes in the kanji.
     pub total_stroke_count: u8,
@@ -115,7 +115,7 @@ pub struct SkipSolid {
 }
 
 /// An identifying characteristic of the kanji.
-#[derive(TryFromPrimitive, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(TryFromPrimitive, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u8)]
 pub enum SolidSubpattern {
     /// Contains a top line.
