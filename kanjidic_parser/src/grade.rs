@@ -14,7 +14,7 @@ pub enum GradeError {
 }
 
 /// The grade level in which the kanji is learned.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Grade {
     /// A Kyouiku kanji learned in grades 1-6.
     Kyouiku(u8),

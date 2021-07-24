@@ -1,6 +1,8 @@
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash, TryFromPrimitive, IntoPrimitive)]
+#[derive(
+    Debug, Eq, PartialEq, Copy, Clone, Hash, TryFromPrimitive, IntoPrimitive, PartialOrd, Ord,
+)]
 #[repr(u8)]
 pub enum KangXi {
     One = 1,

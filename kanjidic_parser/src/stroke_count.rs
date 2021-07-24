@@ -13,7 +13,7 @@ pub enum StrokeCountError {
 }
 
 /// The number of strokes in a kanji.
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
 pub struct StrokeCount {
     /// The accepted number of strokes.
     pub accepted: u8,

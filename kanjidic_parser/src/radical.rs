@@ -18,7 +18,7 @@ pub enum RadicalError {
 }
 
 /// A kanji classification based on its radical.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
 pub enum Radical {
     /// Based on the KangXi Zidian system.
     /// Referenced from the Shibano JIS Kanwa Jiten.
