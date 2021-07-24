@@ -1,20 +1,20 @@
-use crate::kangxi::KangXi;
+use crate::{
+    kangxi::KangXi,
+    pos_error::PosError,
+    shared::{attr, text_uint, SharedError},
+};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Debug, PartialEq, Eq, Clone, Error)]
 pub enum RadicalError {
-    #[error("Node contains no text")]
-    NoText,
-    #[error("No attribute specifying radical type")]
-    NoType,
+    #[error("Error from shared utilities: {0}")]
+    Shared(#[from] SharedError),
     #[error("The radical is not in a valid range")]
-    OutOfRange,
-    #[error("Could not parse text content as a number")]
-    Number,
+    OutOfRange(PosError),
     #[error("Not a recognized radical kind")]
-    Kind,
+    Kind(PosError),
 }
 
 /// A kanji classification based on its radical.
@@ -23,7 +23,6 @@ pub enum Radical {
     /// Based on the KangXi Zidian system.
     /// Referenced from the Shibano JIS Kanwa Jiten.
     Classical(KangXi),
-
     /// As used in the classic Modern Japanese-English Character Dictionary.
     Nelson(KangXi),
 }
@@ -32,14 +31,14 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Radical {
     type Error = RadicalError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(RadicalError::NoText)?;
-        let kang_xi_number: u8 = text.parse().map_err(|_| RadicalError::Number)?;
-        let kang_xi = KangXi::try_from(kang_xi_number).map_err(|_| RadicalError::OutOfRange)?;
-        let tag = node.attribute("rad_type").ok_or(RadicalError::NoType)?;
+        let kang_xi_number: u8 = text_uint(node)?;
+        let kang_xi = KangXi::try_from(kang_xi_number)
+            .map_err(|_| RadicalError::OutOfRange(PosError::from(node)))?;
+        let tag = attr(node, "rad_type")?;
         match tag {
             "classical" => Ok(Radical::Classical(kang_xi)),
             "nelson_c" => Ok(Radical::Nelson(kang_xi)),
-            _ => Err(RadicalError::Kind),
+            _ => Err(RadicalError::Kind(PosError::from(node))),
         }
     }
 }
