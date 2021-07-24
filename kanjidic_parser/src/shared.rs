@@ -53,6 +53,21 @@ pub fn child<'a, 'input>(
         .ok_or(SharedError::MissingChild(PosError::from(node), tag))
 }
 
+pub fn children<'a, 'input, T, E, F>(
+    node: Node<'a, 'input>,
+    tag: &'static str,
+    cb: F,
+) -> Result<Vec<T>, E>
+where
+    E: std::error::Error,
+    F: Fn(Node<'a, 'input>) -> Result<T, E>,
+{
+    node.children()
+        .filter(|child| child.has_tag_name(tag))
+        .map(cb)
+        .collect()
+}
+
 fn take_digits(s: &str) -> IResult<&str> {
     take_while1(|c: char| c.is_ascii_digit())(s)
 }

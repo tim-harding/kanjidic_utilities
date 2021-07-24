@@ -1,7 +1,9 @@
 use std::convert::TryFrom;
 
 use crate::{
+    pos_error::PosError,
     reading::{Reading, ReadingError},
+    shared::{child, children, text, SharedError},
     translation::{Translation, TranslationError},
 };
 use roxmltree::Node;
@@ -9,10 +11,10 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum MeaningError {
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
     #[error("Nanori node is missing text content")]
-    NanoriText,
-    #[error("No rmgroup tag")]
-    MissingGroup,
+    NanoriText(PosError),
     #[error("Error while parsing reading")]
     Reading(#[from] ReadingError),
     #[error("Error while parsing translation")]
@@ -34,28 +36,12 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning<'a> {
     type Error = MeaningError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let nanori: Option<Vec<&str>> = node
-            .children()
-            .filter(|child| child.has_tag_name("nanori"))
-            .map(|node| node.text())
-            .collect();
-        let nanori = nanori.ok_or(MeaningError::NanoriText)?;
-        let rmgroup = node
-            .children()
-            .find(|child| child.has_tag_name("rmgroup"))
-            .ok_or(MeaningError::MissingGroup)?;
-        let readings: Result<Vec<Reading>, ReadingError> = rmgroup
-            .children()
-            .filter(|child| child.has_tag_name("reading"))
-            .map(|node| Reading::try_from(node))
-            .collect();
-        let readings = readings?;
-        let translations: Result<Vec<Translation>, TranslationError> = rmgroup
-            .children()
-            .filter(|child| child.has_tag_name("meaning"))
-            .map(|node| Translation::try_from(node))
-            .collect();
-        let translations = translations?;
+        let nanori = children(node, "nanori", |child| {
+            text(child).map_err(|_| MeaningError::NanoriText(PosError::from(node)))
+        })?;
+        let rmgroup = child(node, "rmgroup")?;
+        let readings = children(rmgroup, "reading", |child| Reading::try_from(child))?;
+        let translations = children(rmgroup, "meaning", |child| Translation::try_from(child))?;
         Ok(Meaning {
             readings,
             translations,
