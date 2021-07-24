@@ -24,6 +24,7 @@ mod spahn_hadamitzky;
 mod stroke_count;
 mod translation;
 mod variant;
+mod xml_error;
 
 #[cfg(test)]
 mod test_shared;
