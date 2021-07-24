@@ -1,4 +1,4 @@
-use crate::shared::{digit, IResult};
+use crate::shared::{uint, IResult};
 use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -53,7 +53,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for SpahnHadamitzkyDescriptor {
 }
 
 fn parts(s: &str) -> IResult<(u8, &str, u8, char, u8)> {
-    tuple((digit, take(1u8), digit, char('.'), digit))(s)
+    tuple((uint, take(1u8), uint, char('.'), uint))(s)
 }
 
 #[cfg(test)]

@@ -1,23 +1,20 @@
-use std::{convert::TryFrom, str::FromStr};
-
 use crate::{
     de_roo::{DeRoo, DeRooError},
     kuten::{Kuten, KutenError},
+    pos_error::PosError,
+    shared::{attr, numeric_code, SharedError},
     spahn_hadamitzky::{ShError, SpahnHadamitzkyDescriptor},
 };
 use roxmltree::Node;
+use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum VariantError {
-    #[error("Node contains no text")]
-    NoText,
-    #[error("Could not parse node text as a number")]
-    Numeric,
-    #[error("Missing var_type attribute")]
-    NoType,
     #[error("var_type not recognized")]
-    UnknownVariant,
+    UnknownVariant(PosError),
+    #[error("Error from shared utility: {0}")]
+    Shared(#[from] SharedError),
     #[error("Error while parsing kuten code")]
     Kuten(#[from] KutenError),
     #[error("Error while parsing de roo code")]
@@ -55,7 +52,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Variant {
     type Error = VariantError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let variant_type = node.attribute("var_type").ok_or(VariantError::NoType)?;
+        let variant_type = attr(node, "var_type")?;
         match variant_type {
             "jis208" => Ok(Variant::Jis208(Kuten::try_from(node)?)),
             "jis212" => Ok(Variant::Jis212(Kuten::try_from(node)?)),
@@ -68,14 +65,9 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Variant {
             "nelson_c" => Ok(Variant::Nelson(numeric_code::<u16>(node)?)),
             "oneill" => Ok(Variant::ONeill(numeric_code::<u16>(node)?)),
             "ucs" => Ok(Variant::Unicode(numeric_code::<u32>(node)?)),
-            _ => Err(VariantError::UnknownVariant),
+            _ => Err(VariantError::UnknownVariant(PosError::from(node))),
         }
     }
-}
-
-fn numeric_code<T: FromStr>(node: Node) -> Result<T, VariantError> {
-    let text = node.text().ok_or(VariantError::NoText)?;
-    text.parse::<T>().map_err(|_| VariantError::Numeric)
 }
 
 #[cfg(test)]

@@ -5,7 +5,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::digit;
+use crate::shared::uint;
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum PinYinError {
@@ -60,7 +60,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin<'a> {
 }
 
 fn parts(s: &str) -> IResult<(&str, u8)> {
-    tuple((take_while1(|c: char| c.is_ascii_alphabetic()), digit))(s)
+    tuple((take_while1(|c: char| c.is_ascii_alphabetic()), uint))(s)
 }
 
 #[cfg(test)]

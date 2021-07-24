@@ -4,7 +4,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{digit, IResult};
+use crate::shared::{uint, IResult};
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum SkipError {
@@ -71,7 +71,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
 }
 
 fn parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
-    tuple((digit, char('-'), digit, char('-'), digit))(s)
+    tuple((uint, char('-'), uint, char('-'), uint))(s)
 }
 
 /// Left and right parts of the kanji.
