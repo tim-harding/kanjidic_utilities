@@ -18,8 +18,8 @@ pub enum NomErrorReason {
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum SharedError {
-    #[error("Could not find a node with the given tag: {0}")]
-    MissingTag(&'static str),
+    #[error("Could not find a node with the given tag: {0}, attribute '{1}'")]
+    MissingChild(PosError, &'static str),
     #[error("Node contains no text")]
     NoText(PosError),
     #[error("Could not parse text as a uint")]
@@ -39,13 +39,13 @@ impl<'a> From<NomErr<'a>> for NomErrorReason {
     }
 }
 
-pub fn descendant<'a, 'input>(
+pub fn child<'a, 'input>(
     node: Node<'a, 'input>,
     tag: &'static str,
 ) -> Result<Node<'a, 'input>, SharedError> {
-    node.descendants()
+    node.children()
         .find(|child| child.has_tag_name(tag))
-        .ok_or(SharedError::MissingTag(tag))
+        .ok_or(SharedError::MissingChild(PosError::from(node), tag))
 }
 
 fn take_digits(s: &str) -> IResult<&str> {
