@@ -1,6 +1,10 @@
 use std::{convert::TryFrom, str::FromStr};
 
-use crate::{de_roo::{DeRoo, DeRooError}, kuten::{Kuten, KutenError}, spahn_hadamitzky::{ShError, SpahnHadamitzkyDescriptor}};
+use crate::{
+    de_roo::{DeRoo, DeRooError},
+    kuten::{Kuten, KutenError},
+    spahn_hadamitzky::{ShError, SpahnHadamitzkyDescriptor},
+};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -83,9 +87,7 @@ mod tests {
     fn variant() {
         let node = DOC
             .descendants()
-            .find(|node| {
-                node.has_tag_name("variant")
-            })
+            .find(|node| node.has_tag_name("variant"))
             .unwrap();
         let variant = Variant::try_from(node);
         assert_eq!(

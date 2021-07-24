@@ -46,9 +46,9 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Radical {
 
 #[cfg(test)]
 mod tests {
+    use super::Radical;
     use crate::{kangxi::KangXi, test_shared::DOC};
     use std::convert::TryFrom;
-    use super::Radical;
 
     #[test]
     fn parse_radical() {

@@ -1,7 +1,5 @@
 use crate::shared::{digit, IResult, NomErrorReason};
-use nom::{
-    character::complete::char, combinator::map_res, sequence::tuple,
-};
+use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;

@@ -91,10 +91,7 @@ mod tests {
         assert_eq!(
             kunyomi,
             Ok(Kunyomi {
-                okurigana: vec![
-                    "つ",
-                    "ぐ",
-                ],
+                okurigana: vec!["つ", "ぐ",],
                 kind: KunyomiKind::Normal,
             })
         )

@@ -1,6 +1,6 @@
+use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
-use roxmltree::Node;
 
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum StrokeCountError {
@@ -46,8 +46,8 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for StrokeCount {
 
 #[cfg(test)]
 mod tests {
-    use std::convert::TryFrom;
     use crate::{stroke_count::StrokeCount, test_shared::DOC};
+    use std::convert::TryFrom;
 
     #[test]
     fn parses_stroke_count() {
@@ -57,7 +57,7 @@ mod tests {
             .unwrap();
         let count = StrokeCount::try_from(character);
         assert_eq!(
-            count, 
+            count,
             Ok(StrokeCount {
                 accepted: 7,
                 miscounts: vec![],

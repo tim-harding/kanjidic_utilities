@@ -1,3 +1,4 @@
+mod busy_people;
 mod character;
 mod codepoint;
 mod database_version;
@@ -7,9 +8,11 @@ mod dictionary_reference;
 mod four_corner;
 mod grade;
 mod header;
+mod kangxi;
 mod kunyomi;
 mod kuten;
 mod meaning;
+mod moro;
 mod node_number;
 mod pin_yin;
 mod query_code;
@@ -21,9 +24,6 @@ mod spahn_hadamitzky;
 mod stroke_count;
 mod translation;
 mod variant;
-mod kangxi;
-mod moro;
-mod busy_people;
 
 #[cfg(test)]
 mod test_shared;

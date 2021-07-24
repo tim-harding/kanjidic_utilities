@@ -60,7 +60,10 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reading<'a> {
 #[cfg(test)]
 mod tests {
     use super::Reading;
-    use crate::{pin_yin::{PinYin, Tone}, test_shared::DOC};
+    use crate::{
+        pin_yin::{PinYin, Tone},
+        test_shared::DOC,
+    };
     use std::convert::TryFrom;
 
     #[test]

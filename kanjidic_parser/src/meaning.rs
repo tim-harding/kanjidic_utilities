@@ -1,6 +1,9 @@
 use std::convert::TryFrom;
 
-use crate::{reading::{Reading, ReadingError}, translation::{Translation, TranslationError}};
+use crate::{
+    reading::{Reading, ReadingError},
+    translation::{Translation, TranslationError},
+};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -61,114 +64,106 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning<'a> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use isolang::Language;
 
     use super::*;
-    use crate::{kunyomi::{Kunyomi, KunyomiKind}, pin_yin::PinYin, test_shared::DOC};
+    use crate::{
+        kunyomi::{Kunyomi, KunyomiKind},
+        pin_yin::PinYin,
+        test_shared::DOC,
+    };
 
     #[test]
     fn meaning() {
         let node = DOC
             .descendants()
-            .find(|node| {
-                node.has_tag_name("reading_meaning")
-            })
+            .find(|node| node.has_tag_name("reading_meaning"))
             .unwrap();
         let meaning = Meaning::try_from(node);
         assert_eq!(
             meaning,
-            Ok(
-                Meaning {
-                    nanori: vec![
-                        "や",
-                        "つぎ",
-                        "つぐ",
-                    ],
-                    readings: vec![
-                        Reading::PinYin(PinYin {
-                            romanization: "ya",
-                            tone: crate::pin_yin::Tone::Falling,
-                        }),
-                        Reading::KoreanRomanized("a"),
-                        Reading::KoreanHangul("아"),
-                        Reading::Vietnam("A"),
-                        Reading::Vietnam("Á"),
-                        Reading::Onyomi("ア"),
-                        Reading::Kunyomi(Kunyomi {
-                            kind: KunyomiKind::Normal,
-                            okurigana: vec![
-                                "つ",
-                                "ぐ",
-                            ]
-                        })
-                    ],
-                    translations: vec![
-                        Translation {
-                            text: "Asia",
-                            language: Language::Eng,
-                        },
-                        Translation {
-                            text: "rank next",
-                            language: Language::Eng,
-                        },
-                        Translation {
-                            text: "come after",
-                            language: Language::Eng,
-                        },
-                        Translation {
-                            text: "-ous",
-                            language: Language::Eng,
-                        },
-                        Translation {
-                            text: "Asie",
-                            language: Language::Fra,
-                        },
-                        Translation {
-                            text: "suivant",
-                            language: Language::Fra,
-                        },
-                        Translation {
-                            text: "sub-",
-                            language: Language::Fra,
-                        },
-                        Translation {
-                            text: "sous-",
-                            language: Language::Fra,
-                        },
-                        Translation {
-                            text: "pref. para indicar",
-                            language: Language::Spa,
-                        },
-                        Translation {
-                            text: "venir después de",
-                            language: Language::Spa,
-                        },
-                        Translation {
-                            text: "Asia",
-                            language: Language::Spa,
-                        },
-                        Translation {
-                            text: "Ásia",
-                            language: Language::Por,
-                        },
-                        Translation {
-                            text: "próxima",
-                            language: Language::Por,
-                        },
-                        Translation {
-                            text: "o que vem depois",
-                            language: Language::Por,
-                        },
-                        Translation {
-                            text: "-ous",
-                            language: Language::Por,
-                        },
-                    ],
-                }
-            )
+            Ok(Meaning {
+                nanori: vec!["や", "つぎ", "つぐ",],
+                readings: vec![
+                    Reading::PinYin(PinYin {
+                        romanization: "ya",
+                        tone: crate::pin_yin::Tone::Falling,
+                    }),
+                    Reading::KoreanRomanized("a"),
+                    Reading::KoreanHangul("아"),
+                    Reading::Vietnam("A"),
+                    Reading::Vietnam("Á"),
+                    Reading::Onyomi("ア"),
+                    Reading::Kunyomi(Kunyomi {
+                        kind: KunyomiKind::Normal,
+                        okurigana: vec!["つ", "ぐ",]
+                    })
+                ],
+                translations: vec![
+                    Translation {
+                        text: "Asia",
+                        language: Language::Eng,
+                    },
+                    Translation {
+                        text: "rank next",
+                        language: Language::Eng,
+                    },
+                    Translation {
+                        text: "come after",
+                        language: Language::Eng,
+                    },
+                    Translation {
+                        text: "-ous",
+                        language: Language::Eng,
+                    },
+                    Translation {
+                        text: "Asie",
+                        language: Language::Fra,
+                    },
+                    Translation {
+                        text: "suivant",
+                        language: Language::Fra,
+                    },
+                    Translation {
+                        text: "sub-",
+                        language: Language::Fra,
+                    },
+                    Translation {
+                        text: "sous-",
+                        language: Language::Fra,
+                    },
+                    Translation {
+                        text: "pref. para indicar",
+                        language: Language::Spa,
+                    },
+                    Translation {
+                        text: "venir después de",
+                        language: Language::Spa,
+                    },
+                    Translation {
+                        text: "Asia",
+                        language: Language::Spa,
+                    },
+                    Translation {
+                        text: "Ásia",
+                        language: Language::Por,
+                    },
+                    Translation {
+                        text: "próxima",
+                        language: Language::Por,
+                    },
+                    Translation {
+                        text: "o que vem depois",
+                        language: Language::Por,
+                    },
+                    Translation {
+                        text: "-ous",
+                        language: Language::Por,
+                    },
+                ],
+            })
         )
     }
 }

@@ -3,9 +3,7 @@ use std::convert::TryFrom;
 use thiserror::Error;
 
 use crate::shared::{digit, IResult, NomErrorReason};
-use nom::{
-    character::complete::char, combinator::map_res, sequence::tuple,
-};
+use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 
 /// Error while parsing date of creation
 #[derive(Debug, Error, PartialEq, Eq)]

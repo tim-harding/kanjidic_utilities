@@ -1,7 +1,7 @@
+use isolang::Language;
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
-use isolang::Language;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum TranslationError {
@@ -40,8 +40,8 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Translation<'a> {
 #[cfg(test)]
 mod tests {
     use super::Translation;
-    use isolang::Language;
     use crate::test_shared::DOC;
+    use isolang::Language;
     use std::convert::TryFrom;
 
     #[test]
