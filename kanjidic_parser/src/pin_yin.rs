@@ -1,4 +1,7 @@
-use crate::shared::IResult;
+use crate::{
+    pos_error::PosError,
+    shared::{self, IResult, SharedError},
+};
 use nom::{bytes::complete::take_while1, sequence::tuple};
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
@@ -9,12 +12,12 @@ use crate::shared::take_uint;
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum PinYinError {
-    #[error("Node contains no text")]
-    NoText,
+    #[error("Error from shared utilities: {0}")]
+    Shared(#[from] SharedError),
     #[error("Pin yin tones not recognized")]
     InvalidTone(#[from] TryFromPrimitiveError<Tone>),
     #[error("Unrecognized pin yin format")]
-    Format,
+    Format(PosError),
 }
 
 // A modern PinYin romanization of the Chinese reading.
@@ -22,7 +25,6 @@ pub enum PinYinError {
 pub struct PinYin<'a> {
     /// The romanized reading.
     pub romanization: &'a str,
-
     /// The Mandarin tone of the reading.
     pub tone: Tone,
 }
@@ -34,16 +36,12 @@ pub struct PinYin<'a> {
 pub enum Tone {
     /// A steady high sound
     High = 1,
-
     /// A rising tone
     Rising,
-
     /// A low or dipping tone
     Low,
-
     /// A sharp falling tone
     Falling,
-
     /// A lack of tone
     Neutral,
 }
@@ -52,8 +50,9 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin<'a> {
     type Error = PinYinError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(PinYinError::NoText)?;
-        let (_i, (romanization, tone)) = parts(text).map_err(|_| PinYinError::Format)?;
+        let text = shared::text(node)?;
+        let (_i, (romanization, tone)) =
+            parts(text).map_err(|_| PinYinError::Format(PosError::from(node)))?;
         let tone = Tone::try_from(tone)?;
         Ok(Self { romanization, tone })
     }
