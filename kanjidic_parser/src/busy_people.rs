@@ -11,7 +11,7 @@ use thiserror::Error;
 
 use crate::shared::IResult;
 
-#[derive(Debug, Error, PartialEq, Eq)]
+#[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum BusyPeopleError {
     #[error("Node contains no text")]
     NoText,
