@@ -102,6 +102,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
             .find(|child| child.has_tag_name("codepoint"))
             .ok_or(CharacterError::MissingCodepoint)?
             .children()
+            .filter(|child| child.has_tag_name("cp_value"))
             .map(|node| Codepoint::try_from(node))
             .collect();
         let codepoints = codepoints?;
@@ -110,6 +111,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
             .find(|child| child.has_tag_name("radical"))
             .ok_or(CharacterError::MissingRadical)?
             .children()
+            .filter(|child| child.has_tag_name("rad_value"))
             .map(|node| Radical::try_from(node))
             .collect();
         let radicals = radicals?;
@@ -174,6 +176,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
             .find(|child| child.has_tag_name("dic_number"))
             .ok_or(CharacterError::MissingDictionaryReferences)?
             .children()
+            .filter(|child| child.has_tag_name("dic_ref"))
             .map(|node| DictionaryReference::try_from(node))
             .collect();
         let references = references?;
@@ -182,6 +185,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
             .find(|child| child.has_tag_name("query_code"))
             .ok_or(CharacterError::MissingQueryCodes)?
             .children()
+            .filter(|child| child.has_tag_name("q_code"))
             .map(|node| QueryCode::try_from(node))
             .collect();
         let query_codes = query_codes?;
@@ -282,10 +286,10 @@ mod tests {
                         solid_subpattern: SolidSubpattern::TopLine,
                     })),
                     QueryCode::SpahnHadamitzky(SpahnHadamitzkyDescriptor {
-                        radical_strokes: 2,
-                        radical: 'k',
-                        other_strokes: 4,
-                        sequence: 6,
+                        radical_strokes: 0,
+                        radical: 'a',
+                        other_strokes: 7,
+                        sequence: 14,
                     }),
                     QueryCode::FourCorner(FourCorner {
                         top_left: Stroke::LineHorizontal,
