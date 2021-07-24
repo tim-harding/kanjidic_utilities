@@ -3,18 +3,20 @@ use std::convert::TryFrom;
 use crate::{
     de_roo::{DeRoo, DeRooError},
     four_corner::{FourCorner, FourCornerError},
+    pos_error::PosError,
+    shared::{attr, SharedError},
     skip::{Skip, SkipError},
-    spahn_hadamitzky::{ShError, ShDesc},
+    spahn_hadamitzky::{ShDesc, ShError},
 };
 use roxmltree::Node;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum QueryCodeError {
-    #[error("Missing qc_type attribute")]
-    MissingType,
+    #[error("Error from shared utilities: {0}")]
+    Shared(#[from] SharedError),
     #[error("Unknown qc_type attribute")]
-    UnknownType,
+    UnknownType(PosError),
     #[error("Error while parsing skip code")]
     Skip(#[from] SkipError),
     #[error("Error while parsing Spahn Hadamitzky descriptor")]
@@ -24,7 +26,7 @@ pub enum QueryCodeError {
     #[error("Error while parsing de roo code")]
     DeRoo(#[from] DeRooError),
     #[error("Unrecognized skip_misclass value")]
-    UnknownMisclassification,
+    UnknownMisclassification(PosError),
 }
 
 /// Information relating to a kanji that can be
@@ -33,16 +35,12 @@ pub enum QueryCodeError {
 pub enum QueryCode {
     /// The Halpern SKIP code
     Skip(Skip),
-
     /// Desrcriptor codes from The Kanji Dictionary
     SpahnHadamitzky(ShDesc),
-
     /// The Four Corner code
     FourCorner(FourCorner),
-
     /// Father Joseph De Roo's code system
     DeRoo(DeRoo),
-
     /// A possible misclassification of the kanji
     Misclassification(Misclassification),
 }
@@ -52,13 +50,10 @@ pub enum QueryCode {
 pub enum Misclassification {
     /// A mistake in the division of the kanji
     Position(Skip),
-
     /// A mistake in the number of strokes
     StrokeCount(Skip),
-
     /// Mistakes in both the division and the number of strokes
     StrokeAndPosition(Skip),
-
     /// Ambiguous stroke counts
     Ambiguous(Skip),
 }
@@ -67,9 +62,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for QueryCode {
     type Error = QueryCodeError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let qc_type = node
-            .attribute("qc_type")
-            .ok_or(QueryCodeError::MissingType)?;
+        let qc_type = attr(node, "qc_type")?;
         match qc_type {
             "skip" => {
                 if let Some(misclass_kind) = node.attribute("skip_misclass") {
@@ -80,18 +73,18 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for QueryCode {
                             Ok(Misclassification::StrokeAndPosition(Skip::try_from(node)?))
                         }
                         "stroke_diff" => Ok(Misclassification::Ambiguous(Skip::try_from(node)?)),
-                        _ => Err(QueryCodeError::UnknownMisclassification),
+                        _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(
+                            node,
+                        ))),
                     }?))
                 } else {
                     Ok(QueryCode::Skip(Skip::try_from(node)?))
                 }
             }
-            "sh_desc" => Ok(QueryCode::SpahnHadamitzky(
-                ShDesc::try_from(node)?,
-            )),
+            "sh_desc" => Ok(QueryCode::SpahnHadamitzky(ShDesc::try_from(node)?)),
             "four_corner" => Ok(QueryCode::FourCorner(FourCorner::try_from(node)?)),
             "deroo" => Ok(QueryCode::DeRoo(DeRoo::try_from(node)?)),
-            _ => Err(QueryCodeError::UnknownType),
+            _ => Err(QueryCodeError::UnknownType(PosError::from(node))),
         }
     }
 }
