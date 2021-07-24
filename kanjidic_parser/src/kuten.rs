@@ -4,14 +4,19 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{take_uint, IResult};
+use crate::{
+    pos_error::PosError,
+    shared::{take_uint, text, IResult, SharedError},
+};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KutenError {
     #[error("Failed to parse kuten")]
-    Parse,
-    #[error("Node contained no text")]
-    NoText,
+    ParseSimple,
+    #[error("Failed to parse kuten: {0}")]
+    Parse(PosError),
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
 }
 
 /// A kuten representation of a JIS X 0213 character.
@@ -20,10 +25,8 @@ pub enum KutenError {
 pub struct Kuten {
     /// The plane on which a kuten representation is found.
     pub plane: u8,
-
     /// The Ku part of the matrix position.
     pub ku: u8,
-
     /// The Ten part of the matrix position.
     pub ten: u8,
 }
@@ -32,7 +35,7 @@ impl<'a> TryFrom<&'a str> for Kuten {
     type Error = KutenError;
 
     fn try_from(text: &'a str) -> Result<Self, Self::Error> {
-        let (_i, o) = kuten_parts(text).map_err(|_| KutenError::Parse)?;
+        let (_i, o) = kuten_parts(text).map_err(|_| KutenError::ParseSimple)?;
         let (plane, _, ku, _, ten) = o;
         Ok(Self { plane, ku, ten })
     }
@@ -42,8 +45,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kuten {
     type Error = KutenError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(KutenError::NoText)?;
-        Self::try_from(text)
+        Self::try_from(text(node)?).map_err(|_| KutenError::Parse(PosError::from(node)))
     }
 }
 
