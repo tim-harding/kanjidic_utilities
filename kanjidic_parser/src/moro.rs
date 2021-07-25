@@ -10,7 +10,7 @@ use thiserror::Error;
 
 use crate::{
     pos_error::PosError,
-    shared::{attr_uint, take_uint, text, IResult, NomErr, NomErrorReason, SharedError},
+    shared::{attr_uint, take_uint, text, IResult, NomErrorReason, SharedError},
 };
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
@@ -52,6 +52,8 @@ pub enum MoroSuffix {
     P,
     /// X suffix
     X,
+    /// PX suffix
+    PX,
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Moro {
@@ -87,6 +89,7 @@ fn index_suffix(s: &str) -> IResult<MoroSuffix> {
         |text| match text {
             "X" => Ok(MoroSuffix::X),
             "P" => Ok(MoroSuffix::P),
+            "PX" => Ok(MoroSuffix::PX),
             "" => Ok(MoroSuffix::None),
             _ => Err(MoroError::IndexSuffix),
         },
