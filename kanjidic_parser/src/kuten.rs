@@ -6,7 +6,7 @@ use thiserror::Error;
 
 use crate::{
     pos_error::PosError,
-    shared::{take_uint, text, IResult, SharedError},
+    shared::{take_uint, text, IResult, NomErr, NomErrorReason, SharedError},
 };
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
@@ -20,7 +20,13 @@ pub enum KutenError {
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KutenStrError {
     #[error("Failed to parse kuten")]
-    Parse,
+    Format(NomErrorReason),
+}
+
+impl<'a> From<NomErr<'a>> for KutenStrError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
 }
 
 /// A kuten representation of a JIS X 0213 character.
@@ -39,7 +45,7 @@ impl TryFrom<&str> for Kuten {
     type Error = KutenStrError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let (_i, o) = kuten_parts(text).map_err(|_| KutenStrError::Parse)?;
+        let (_i, o) = kuten_parts(text)?;
         let (plane, _, ku, _, ten) = o;
         Ok(Self { plane, ku, ten })
     }

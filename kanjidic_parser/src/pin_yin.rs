@@ -1,6 +1,6 @@
 use crate::{
     pos_error::PosError,
-    shared::{self, IResult, SharedError},
+    shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
 use nom::{bytes::complete::take_while1, sequence::tuple};
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
@@ -23,7 +23,13 @@ pub enum PinYinStrError {
     #[error("Pin yin tones not recognized")]
     InvalidTone(#[from] TryFromPrimitiveError<Tone>),
     #[error("Unrecognized pin yin format")]
-    Format,
+    Format(NomErrorReason),
+}
+
+impl<'a> From<NomErr<'a>> for PinYinStrError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
 }
 
 // A modern PinYin romanization of the Chinese reading.
@@ -56,7 +62,7 @@ impl<'a, 'b: 'a> TryFrom<&'b str> for PinYin<'a> {
     type Error = PinYinStrError;
 
     fn try_from(text: &'b str) -> Result<Self, Self::Error> {
-        let (_i, (romanization, tone)) = parts(text).map_err(|_| PinYinStrError::Format)?;
+        let (_i, (romanization, tone)) = parts(text)?;
         let tone = Tone::try_from(tone)?;
         Ok(Self { romanization, tone })
     }

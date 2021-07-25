@@ -11,12 +11,24 @@ pub type IResult<'a, T> = nom::IResult<&'a str, T>;
 pub type NomErr<'a> = nom::Err<nom::error::Error<&'a str>>;
 
 // Todo: Make sure all error display strings are good
-// Todo: Improve Nom error handling
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum NomErrorReason {
+    #[error("Incomplete parse")]
     Incomplete,
+    #[error("Parse error: {0:?}")]
     Error(nom::error::ErrorKind),
+}
+
+impl<'a> From<NomErr<'a>> for NomErrorReason {
+    fn from(err: NomErr) -> Self {
+        use nom::Err::*;
+
+        match err {
+            Incomplete(_) => NomErrorReason::Incomplete,
+            Error(e) | Failure(e) => NomErrorReason::Error(e.code),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
@@ -31,17 +43,6 @@ pub enum SharedError {
     AttrUint(PosError),
     #[error("Missing node attribute: {0}, attribute '{1}'")]
     MissingAttribute(PosError, &'static str),
-}
-
-impl<'a> From<NomErr<'a>> for NomErrorReason {
-    fn from(err: NomErr) -> Self {
-        use nom::Err::*;
-
-        match err {
-            Incomplete(_) => NomErrorReason::Incomplete,
-            Error(e) | Failure(e) => NomErrorReason::Error(e.code),
-        }
-    }
 }
 
 pub fn child<'a, 'input>(

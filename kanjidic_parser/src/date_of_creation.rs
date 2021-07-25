@@ -2,7 +2,7 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{self, take_uint, IResult, NomErrorReason, SharedError};
+use crate::shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 
 /// Error while parsing date of creation
@@ -12,6 +12,12 @@ pub enum DateOfCreationError {
     Shared(#[from] SharedError),
     #[error("Database version was not in a recognized format")]
     Format(NomErrorReason),
+}
+
+impl<'a> From<NomErr<'a>> for DateOfCreationError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
 }
 
 /// The date the file was created
@@ -30,9 +36,7 @@ impl<'a, 'b> TryFrom<Node<'a, 'b>> for DateOfCreation {
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         let text = shared::text(node)?;
-        map_res(take_db_version, map_db_version)(text)
-            .map(|(_, s)| s)
-            .map_err(|e| DateOfCreationError::Format(e.into()))
+        Ok(map_res(take_db_version, map_db_version)(text).map(|(_, s)| s)?)
     }
 }
 

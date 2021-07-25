@@ -1,6 +1,6 @@
 use crate::{
     pos_error::PosError,
-    shared::{self, IResult, SharedError},
+    shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
 use nom::{
     bytes::complete::is_not,
@@ -24,7 +24,13 @@ pub enum KunyomiError {
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KunyomiStrError {
     #[error("Kunyomi format not recognized")]
-    Format,
+    Format(NomErrorReason),
+}
+
+impl<'a> From<NomErr<'a>> for KunyomiStrError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
 }
 
 /// A kunyomi kanji reading.
@@ -51,7 +57,7 @@ impl<'a, 'b: 'a> TryFrom<&'b str> for Kunyomi<'a> {
     type Error = KunyomiStrError;
 
     fn try_from(text: &'b str) -> Result<Self, Self::Error> {
-        let (_i, (pre, okurigana, post)) = parts(text).map_err(|_| KunyomiStrError::Format)?;
+        let (_i, (pre, okurigana, post)) = parts(text)?;
         let kind = if pre {
             KunyomiKind::Prefix
         } else if post {

@@ -1,6 +1,6 @@
 use crate::{
     pos_error::PosError,
-    shared::{self, take_uint, IResult, SharedError},
+    shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError},
 };
 use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
 use roxmltree::Node;
@@ -18,7 +18,13 @@ pub enum ShError {
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum ShStrError {
     #[error("Invalid Spahn Hadamitzky descriptor")]
-    InvalidFormat,
+    Format(NomErrorReason),
+}
+
+impl<'a> From<NomErr<'a>> for ShStrError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
 }
 
 // They are in the form nxnn.n,
@@ -45,8 +51,7 @@ impl TryFrom<&str> for ShDesc {
     type Error = ShStrError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let (_i, (radical_strokes, radical, other_strokes, _, sequence)) =
-            parts(text).map_err(|_| ShStrError::InvalidFormat)?;
+        let (_i, (radical_strokes, radical, other_strokes, _, sequence)) = parts(text)?;
         let radical = radical.chars().next().unwrap();
         Ok(Self {
             radical_strokes,

@@ -4,18 +4,33 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::{pos_error::PosError, shared::{self, IResult, SharedError, take_uint}};
+use crate::{
+    pos_error::PosError,
+    shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError},
+};
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum SkipError {
-    #[error("Invalid solid pattern: {0}")]
-    InvalidSolidPattern(#[from] TryFromPrimitiveError<SolidSubpattern>),
     #[error("Shared utility error: {0}")]
     Shared(#[from] SharedError),
-    #[error("Did not fit the format for a skip code")]
-    Format(PosError),
+    #[error("Error parsing skip code: {0}, {1}")]
+    Str(PosError, SkipStrError),
+}
+
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum SkipStrError {
+    #[error("Invalid solid pattern: {0}")]
+    InvalidSolidPattern(#[from] TryFromPrimitiveError<SolidSubpattern>),
+    #[error("Did not fit the format for a skip code: {0}")]
+    Format(NomErrorReason),
     #[error("The digit indicating the pattern was not valid")]
-    SkipKind(PosError),
+    SkipKind,
+}
+
+impl<'a> From<NomErr<'a>> for SkipStrError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
 }
 
 /// Kanji code from the SKIP system of indexing.
@@ -32,13 +47,11 @@ pub enum Skip {
     Solid(SkipSolid),
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
-    type Error = SkipError;
+impl TryFrom<&str> for Skip {
+    type Error = SkipStrError;
 
-    fn try_from(node: Node) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
-        let (_i, (pattern_kind, _, first, _, second)) =
-            parts(text).map_err(|_| SkipError::Format(PosError::from(node)))?;
+    fn try_from(text: &str) -> Result<Self, Self::Error> {
+        let (_i, (pattern_kind, _, first, _, second)) = parts(text)?;
         match pattern_kind {
             1 => Ok(Skip::Horizontal(SkipHorizontal {
                 left: first,
@@ -53,15 +66,23 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
                 interior: second,
             })),
             4 => {
-                let solid_subpattern =
-                    SolidSubpattern::try_from(second)?;
+                let solid_subpattern = SolidSubpattern::try_from(second)?;
                 Ok(Skip::Solid(SkipSolid {
                     total_stroke_count: first,
                     solid_subpattern,
                 }))
             }
-            _ => Err(SkipError::SkipKind(PosError::from(node))),
+            _ => Err(SkipStrError::SkipKind),
         }
+    }
+}
+
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
+    type Error = SkipError;
+
+    fn try_from(node: Node) -> Result<Self, Self::Error> {
+        let text = shared::text(node)?;
+        Self::try_from(text).map_err(|err| SkipError::Str(PosError::from(node), err))
     }
 }
 

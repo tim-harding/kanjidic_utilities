@@ -1,4 +1,4 @@
-use crate::shared::{self, IResult, NomErrorReason, SharedError, take_uint};
+use crate::shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -13,6 +13,12 @@ pub enum DatabaseVersionError {
     Format(NomErrorReason),
     #[error("Could not parse an integer")]
     Integer,
+}
+
+impl<'a> From<NomErr<'a>> for DatabaseVersionError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
 }
 
 /// The version of the file.
@@ -30,9 +36,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for DatabaseVersion {
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         let text = shared::text(node)?;
-        map_res(take_db_version, map_db_version)(text)
-            .map(|(_, s)| s)
-            .map_err(|e| DatabaseVersionError::Format(e.into()))
+        Ok(map_res(take_db_version, map_db_version)(text).map(|(_, s)| s)?)
     }
 }
 
