@@ -80,7 +80,11 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
         let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
         let radical_names = children(misc, "rad_name", text)?;
         let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
-        let references = children(child(node, "dic_number")?, "dic_ref", Reference::try_from)?;
+        let references = match child(node, "dic_number") {
+            Ok(dic_number) => Ok(children(dic_number, "dic_ref", Reference::try_from)?),
+            Err(SharedError::MissingChild(_, _)) => Ok(vec![]),
+            Err(other) => Err(other),
+        }?;
         let query_codes = children(child(node, "query_code")?, "q_code", QueryCode::try_from)?;
         let meanings = children(node, "reading_meaning", Meaning::try_from)?;
         Ok(Character {
