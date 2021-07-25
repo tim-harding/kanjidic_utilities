@@ -1,11 +1,4 @@
-use crate::{
-    de_roo::{DeRoo, DeRooError},
-    kuten::{Kuten, KutenError},
-    oneill::{Oneill, OneillError},
-    pos_error::PosError,
-    shared::{attr, text_uint, SharedError},
-    spahn_hadamitzky::{ShDesc, ShError},
-};
+use crate::{de_roo::{DeRoo, DeRooError}, kuten::{Kuten, KutenError}, oneill::{Oneill, OneillError}, pos_error::PosError, shared::{SharedError, attr, text_hex, text_uint}, spahn_hadamitzky::{ShDesc, ShError}};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -65,7 +58,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Variant {
             "s_h" => Ok(Variant::Sh(ShDesc::try_from(node)?)),
             "nelson_c" => Ok(Variant::Nelson(text_uint::<u16>(node)?)),
             "oneill" => Ok(Variant::ONeill(Oneill::try_from(node)?)),
-            "ucs" => Ok(Variant::Unicode(text_uint::<u32>(node)?)),
+            "ucs" => Ok(Variant::Unicode(text_hex(node)?)),
             _ => Err(VariantError::UnknownVariant(PosError::from(node))),
         }
     }

@@ -43,6 +43,8 @@ pub enum SharedError {
     AttrUint(PosError),
     #[error("(Shared) Node missing attribute: {0}, attribute '{1}'")]
     MissingAttribute(PosError, &'static str),
+    #[error("(Shared) Could not parse hexadecimal")]
+    Hex(PosError),
 }
 
 pub fn child<'a, 'input>(
@@ -84,6 +86,11 @@ pub fn text_uint<T: FromStr>(node: Node) -> Result<T, SharedError> {
     text(node)?
         .parse::<T>()
         .map_err(|_| SharedError::TextUint(PosError::from(node)))
+}
+
+pub fn text_hex(node: Node) -> Result<u32, SharedError> {
+    let text = text(node)?;
+    u32::from_str_radix(&text, 16).map_err(|_| SharedError::Hex(PosError::from(node)))
 }
 
 pub fn text<'a, 'input>(node: Node<'a, 'input>) -> Result<&'a str, SharedError> {

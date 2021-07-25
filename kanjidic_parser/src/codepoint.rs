@@ -1,6 +1,6 @@
 use crate::{
     kuten::{Kuten, KutenStrError},
-    shared::{self, attr, SharedError},
+    shared::{self, attr, text_hex, SharedError},
 };
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -12,8 +12,6 @@ pub enum CodepointError {
     Shared(#[from] SharedError),
     #[error("(Codepoint) Unrecognized encoding")]
     Encoding,
-    #[error("(Codepoint) Could not parse hexadecimal")]
-    Hex,
     #[error("(Codepoint) Kuten: {0}")]
     Kuten(#[from] KutenStrError),
 }
@@ -41,10 +39,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Codepoint {
             "jis208" => Ok(Codepoint::Jis208(Kuten::try_from(text)?)),
             "jis212" => Ok(Codepoint::Jis212(Kuten::try_from(text)?)),
             "jis213" => Ok(Codepoint::Jis213(Kuten::try_from(text)?)),
-            "ucs" => {
-                let code = u32::from_str_radix(&text, 16).map_err(|_| CodepointError::Hex)?;
-                Ok(Codepoint::Unicode(code))
-            }
+            "ucs" => Ok(Codepoint::Unicode(text_hex(node)?)),
             _ => Err(CodepointError::Encoding),
         }
     }
