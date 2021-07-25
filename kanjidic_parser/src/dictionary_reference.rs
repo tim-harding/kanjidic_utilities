@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use crate::{
     busy_people::{BusyPeople, BusyPeopleError},
     moro::{Moro, MoroError},
+    oneill::{Oneill, OneillError},
     pos_error::PosError,
     shared::{attr, text_uint, SharedError},
 };
@@ -19,6 +20,8 @@ pub enum ReferenceError {
     Moro(#[from] MoroError),
     #[error("(Reference) Busy People: {0}")]
     BusyPeople(#[from] BusyPeopleError),
+    #[error("(Reference) Oneill: {0}")]
+    Oneill(#[from] OneillError),
 }
 
 /// An index number into a particular kanji dictionary or reference book.
@@ -43,7 +46,7 @@ pub enum Reference {
     /// A New Dictionary of Kanji Usage
     Gakken(u16),
     /// Japanese Names by P.G. O'Neill
-    OneillNames(u16),
+    OneillNames(Oneill),
     /// Essential Kanji by P.G. O'Neill
     OneillKk(u16),
     /// Daikanwajiten by Morohashi
@@ -88,7 +91,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reference {
             "heisig" => Ok(Reference::Heisig(text_uint(node)?)),
             "heisig6" => Ok(Reference::Heisig6(text_uint(node)?)),
             "gakken" => Ok(Reference::Gakken(text_uint(node)?)),
-            "oneill_names" => Ok(Reference::OneillNames(text_uint(node)?)),
+            "oneill_names" => Ok(Reference::OneillNames(Oneill::try_from(node)?)),
             "oneill_kk" => Ok(Reference::OneillKk(text_uint(node)?)),
             "moro" => Ok(Reference::Moro(Moro::try_from(node)?)),
             "henshall" => Ok(Reference::Henshall(text_uint(node)?)),

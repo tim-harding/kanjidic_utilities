@@ -13,6 +13,7 @@ mod kunyomi;
 mod kuten;
 mod meaning;
 mod moro;
+mod oneill;
 mod pin_yin;
 mod pos_error;
 mod query_code;

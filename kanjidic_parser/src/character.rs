@@ -112,7 +112,21 @@ mod tests {
     use isolang::Language;
 
     use super::*;
-    use crate::{de_roo::{DeRoo, ExtremeBottom, ExtremeTop}, four_corner::{FourCorner, Stroke}, kangxi::KangXi, kunyomi::{Kunyomi, KunyomiKind}, kuten::Kuten, moro::{Moro, MoroIndex, MoroSuffix}, pin_yin::PinYin, reading::Reading, skip::{Skip, SkipSolid, SolidSubpattern}, spahn_hadamitzky::ShDesc, test_shared::DOC, translation::Translation};
+    use crate::{
+        de_roo::{DeRoo, ExtremeBottom, ExtremeTop},
+        four_corner::{FourCorner, Stroke},
+        kangxi::KangXi,
+        kunyomi::{Kunyomi, KunyomiKind},
+        kuten::Kuten,
+        moro::{Moro, MoroIndex, MoroSuffix},
+        oneill::{Oneill, OneillSuffix},
+        pin_yin::PinYin,
+        reading::Reading,
+        skip::{Skip, SkipSolid, SolidSubpattern},
+        spahn_hadamitzky::ShDesc,
+        test_shared::DOC,
+        translation::Translation,
+    };
 
     #[test]
     fn character() {
@@ -159,7 +173,10 @@ mod tests {
                     Reference::Heisig(1809),
                     Reference::Heisig6(1950),
                     Reference::Gakken(1331),
-                    Reference::OneillNames(525),
+                    Reference::OneillNames(Oneill {
+                        number: 525,
+                        suffix: OneillSuffix::None,
+                    }),
                     Reference::OneillKk(1788),
                     Reference::Moro(Moro {
                         volume: Some(1),

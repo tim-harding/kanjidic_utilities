@@ -16,13 +16,13 @@ pub enum MoroError {
     Shared(#[from] SharedError),
     #[error("(Moro) Unknown index suffix")]
     IndexSuffix,
-    #[error("(Moro) Parse: {0}")]
-    Parse(NomErrorReason),
+    #[error("(Moro) Format: {0}")]
+    Format(NomErrorReason),
 }
 
 impl<'a> From<NomErr<'a>> for MoroError {
     fn from(err: NomErr<'a>) -> Self {
-        MoroError::Parse(err.into())
+        MoroError::Format(err.into())
     }
 }
 

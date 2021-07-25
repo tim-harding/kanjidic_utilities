@@ -31,9 +31,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for StrokeCount {
         let mut children = node
             .children()
             .filter(|child| child.has_tag_name("stroke_count"))
-            .map(|child| {
-                Ok(text_uint(child)?)
-            });
+            .map(|child| Ok(text_uint(child)?));
         let accepted = children
             .next()
             .ok_or(StrokeCountError::Accepted(PosError::from(node)))??;
