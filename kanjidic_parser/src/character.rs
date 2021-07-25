@@ -48,7 +48,7 @@ pub struct Character<'a> {
     /// The kanji grade level.
     pub grade: Option<Grade>,
     /// The stroke count of the character.
-    pub stroke_counts: Vec<StrokeCount>,
+    pub stroke_counts: StrokeCount,
     /// Cross-references to other characters or alternative indexings.
     pub variants: Vec<Variant>,
     /// A ranking of how often the character appears in newspapers.
@@ -75,7 +75,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
         let radicals = children(child(node, "radical")?, "rad_value", Radical::try_from)?;
         let misc = child(node, "misc")?;
         let grade = coalesce(child(misc, "grade").ok().map(Grade::try_from))?;
-        let stroke_counts = children(misc, "stroke_count", StrokeCount::try_from)?;
+        let stroke_counts = StrokeCount::try_from(misc)?;
         let variants = children(misc, "variant", Variant::try_from)?;
         let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
         let radical_names = children(misc, "rad_name", text)?;
@@ -151,10 +151,10 @@ mod tests {
                     Radical::Nelson(KangXi::One),
                 ],
                 grade: Some(Grade::Jouyou),
-                stroke_counts: vec![StrokeCount {
+                stroke_counts: StrokeCount {
                     accepted: 7,
                     miscounts: vec![]
-                }],
+                },
                 variants: vec![Variant::Jis208(Kuten {
                     plane: 1,
                     ku: 48,

@@ -96,7 +96,7 @@ mod tests {
     use crate::test_shared::DOC;
 
     #[test]
-    fn meaning() {
+    fn kanjidic() {
         let kanjidic = Kanjidic::new(&DOC).unwrap();
         println!("{:?}", kanjidic);
     }

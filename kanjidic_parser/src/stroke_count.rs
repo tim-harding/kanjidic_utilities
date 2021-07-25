@@ -32,8 +32,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for StrokeCount {
             .children()
             .filter(|child| child.has_tag_name("stroke_count"))
             .map(|child| {
-                let strokes = text_uint(child)?;
-                Ok(strokes)
+                Ok(text_uint(child)?)
             });
         let accepted = children
             .next()
@@ -53,10 +52,10 @@ mod tests {
     use std::convert::TryFrom;
 
     #[test]
-    fn parses_stroke_count() {
+    fn stroke_count() {
         let character = DOC
             .descendants()
-            .find(|node| node.has_tag_name("character"))
+            .find(|node| node.has_tag_name("misc"))
             .unwrap();
         let count = StrokeCount::try_from(character);
         assert_eq!(

@@ -8,7 +8,9 @@ pub struct PosError {
 
 impl fmt::Display for PosError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Location {}:{}", self.position.row, self.position.col)
+        // Todo: 331 is currently where the kanjidic contents start,
+        // should make this dynamic
+        write!(f, "Location {}:{}", self.position.row + 331, self.position.col)
     }
 }
 
