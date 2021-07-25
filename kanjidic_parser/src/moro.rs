@@ -8,7 +8,10 @@ use nom::{
 use roxmltree::Node;
 use thiserror::Error;
 
-use crate::shared::{attr_uint, take_uint, text, IResult, NomErr, NomErrorReason, SharedError};
+use crate::{
+    pos_error::PosError,
+    shared::{attr_uint, take_uint, text, IResult, NomErr, NomErrorReason, SharedError},
+};
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum MoroError {
@@ -16,14 +19,8 @@ pub enum MoroError {
     Shared(#[from] SharedError),
     #[error("(Moro) Unknown index suffix")]
     IndexSuffix,
-    #[error("(Moro) Format: {0}")]
-    Format(NomErrorReason),
-}
-
-impl<'a> From<NomErr<'a>> for MoroError {
-    fn from(err: NomErr<'a>) -> Self {
-        MoroError::Format(err.into())
-    }
+    #[error("(Moro) Format: {0}, {1}")]
+    Format(PosError, NomErrorReason),
 }
 
 /// An entry in the dictionary Daikanwajiten.
@@ -61,7 +58,8 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Moro {
     type Error = MoroError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let (_i, index) = parse_index(text(node)?)?;
+        let (_i, index) = parse_index(text(node)?)
+            .map_err(|err| MoroError::Format(PosError::from(node), err.into()))?;
         let volume = attr_uint::<u8>(node, "m_vol")?;
         let page = attr_uint::<u16>(node, "m_page")?;
         Ok(Moro {
