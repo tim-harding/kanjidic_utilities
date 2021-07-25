@@ -9,6 +9,7 @@ roxmltree = "0.14"
 nom = "6"
 num_enum = "0.5"
 isolang = { git = "https://github.com/humenda/isolang-rs", branch = "master" }
+rayon = "1.5"
 
 
 [dev-dependencies]

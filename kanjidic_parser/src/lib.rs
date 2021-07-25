@@ -37,7 +37,8 @@ use std::convert::TryFrom;
 
 use character::{Character, CharacterError};
 use header::{Header, HeaderError};
-use roxmltree::Document;
+use rayon::prelude::*;
+use roxmltree::{Document, Node};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -84,8 +85,10 @@ impl<'a, 'b: 'a> Kanjidic<'a> {
         let characters: Result<Vec<Character>, CharacterError> = root
             .children()
             .filter(|child| child.has_tag_name("character"))
-            .map(|node| Character::try_from(node))
-            .collect();
+            .collect::<Vec<Node>>()
+            .par_iter()
+            .map(|node| Character::try_from(node.clone()))
+            .collect::<Result<Vec<Character>, CharacterError>>();
         let characters = characters?;
         Ok(Kanjidic { header, characters })
     }
