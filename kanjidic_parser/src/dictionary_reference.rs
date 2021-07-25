@@ -120,9 +120,6 @@ mod tests {
             .find(|node| node.has_tag_name("dic_ref"))
             .unwrap();
         let dictionary_reference = Reference::try_from(node);
-        assert_eq!(
-            dictionary_reference,
-            Ok(Reference::NelsonClassic(43))
-        )
+        assert_eq!(dictionary_reference, Ok(Reference::NelsonClassic(43)))
     }
 }

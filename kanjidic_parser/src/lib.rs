@@ -14,6 +14,7 @@ mod kuten;
 mod meaning;
 mod moro;
 mod pin_yin;
+mod pos_error;
 mod query_code;
 mod radical;
 mod reading;
@@ -23,7 +24,6 @@ mod spahn_hadamitzky;
 mod stroke_count;
 mod translation;
 mod variant;
-mod pos_error;
 
 #[cfg(test)]
 mod test_shared;

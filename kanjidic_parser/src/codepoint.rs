@@ -1,4 +1,7 @@
-use crate::{kuten::{Kuten, KutenStrError}, shared::{self, SharedError, attr}};
+use crate::{
+    kuten::{Kuten, KutenStrError},
+    shared::{self, attr, SharedError},
+};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;

@@ -8,11 +8,7 @@ pub struct PosError {
 
 impl fmt::Display for PosError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Location {}:{}",
-            self.position.row, self.position.col
-        )
+        write!(f, "Location {}:{}", self.position.row, self.position.col)
     }
 }
 
