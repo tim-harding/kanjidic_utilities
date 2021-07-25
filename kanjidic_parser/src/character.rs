@@ -88,7 +88,12 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
         let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
         let radical_names = children(misc, "rad_name", text)?;
         let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
-        let references = children(child(node, "dic_number")?, "dic_ref", Reference::try_from)?;
+        let references = child(node, "dic_number")?.children()
+            // Ignore erroneous entry on line 258272
+            // Maybe two numbers means something, but what it means is not clear
+            .filter(|child| child.has_tag_name("dic_ref") && child.text() != Some("1664 3689"))
+            .map(Reference::try_from)
+            .collect::<Result<Vec<Reference>, ReferenceError>>()?;
         let query_codes = children(child(node, "query_code")?, "q_code", QueryCode::try_from)?;
         let meanings = children(node, "reading_meaning", Meaning::try_from)?;
         Ok(Character {
