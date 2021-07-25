@@ -2,7 +2,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
-use nom::{bytes::complete::take_while1, sequence::tuple};
+use nom::{branch::alt, bytes::complete::{tag, take_while1}, combinator::value, sequence::tuple};
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -78,7 +78,22 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin<'a> {
 }
 
 fn parts(s: &str) -> IResult<(&str, u8)> {
-    tuple((take_while1(|c: char| c.is_ascii_alphabetic()), take_uint))(s)
+    tuple((pronunciation, take_uint))(s)
+}
+
+fn pronunciation(s: &str) -> IResult<&str> {
+    alt((umlauted, plain_roman))(s)
+}
+
+// If the romanization takes the form 'lu:' or 'nu:',
+// I am pretty sure that is meant to be interpreted as
+// the pronunciations lü and nü
+fn umlauted(s: &str) -> IResult<&str> {
+    alt((value("lü", tag("lu:")), value("nü", tag("nu:"))))(s)
+}
+
+fn plain_roman(s: &str) -> IResult<&str> {
+    take_while1(|c: char| c.is_ascii_alphabetic())(s)
 }
 
 #[cfg(test)]
