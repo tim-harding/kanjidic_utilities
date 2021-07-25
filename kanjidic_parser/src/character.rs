@@ -2,11 +2,12 @@ use std::convert::TryFrom;
 
 use crate::{
     codepoint::{Codepoint, CodepointError},
-    dictionary_reference::{DictionaryReference, DictionaryReferenceError},
+    dictionary_reference::{DictionaryReferenceError, Reference},
     grade::{Grade, GradeError},
     meaning::{Meaning, MeaningError},
     query_code::{QueryCode, QueryCodeError},
     radical::{Radical, RadicalError},
+    shared::{child, children, text, text_uint, SharedError},
     stroke_count::{StrokeCount, StrokeCountError},
     variant::{Variant, VariantError},
 };
@@ -15,30 +16,8 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum CharacterError {
-    #[error("Could not find kanji literal node")]
-    MissingLiteral,
-    #[error("Literal node was empty")]
-    EmptyLiteral,
-    #[error("Could not find codepoint node")]
-    MissingCodepoint,
-    #[error("Could not find radical node")]
-    MissingRadical,
-    #[error("Could not find misc node")]
-    MissingMisc,
-    #[error("Freqency node contains no text")]
-    FrequencyText,
-    #[error("Could not parse the kanji frequency")]
-    FrequencyParse,
-    #[error("JLPT node contains no text")]
-    JlptText,
-    #[error("Could not parse the JLPT level")]
-    JlptParse,
-    #[error("Radical name node did not contain text")]
-    RadicalNameText,
-    #[error("Could not find the dic_number node")]
-    MissingDictionaryReferences,
-    #[error("Could not find the query_code node")]
-    MissingQueryCodes,
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
     #[error("Error parsing a codepoint")]
     Codepoint(#[from] CodepointError),
     #[error("Error parsing a radical")]
@@ -80,7 +59,7 @@ pub struct Character<'a> {
     /// that go up to four, not five.
     pub jlpt: Option<u8>,
     /// Indexes into dictionaries and other instructional books
-    pub references: Vec<DictionaryReference>,
+    pub references: Vec<Reference>,
     /// Codes used to identify the kanji
     pub query_codes: Vec<QueryCode>,
     /// Different meanings of the kanji.
@@ -91,110 +70,19 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
     type Error = CharacterError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let literal = node
-            .children()
-            .find(|child| child.has_tag_name("literal"))
-            .ok_or(CharacterError::MissingLiteral)?
-            .text()
-            .ok_or(CharacterError::EmptyLiteral)?;
-        let codepoints: Result<Vec<Codepoint>, CodepointError> = node
-            .children()
-            .find(|child| child.has_tag_name("codepoint"))
-            .ok_or(CharacterError::MissingCodepoint)?
-            .children()
-            .filter(|child| child.has_tag_name("cp_value"))
-            .map(|node| Codepoint::try_from(node))
-            .collect();
-        let codepoints = codepoints?;
-        let radicals: Result<Vec<Radical>, RadicalError> = node
-            .children()
-            .find(|child| child.has_tag_name("radical"))
-            .ok_or(CharacterError::MissingRadical)?
-            .children()
-            .filter(|child| child.has_tag_name("rad_value"))
-            .map(|node| Radical::try_from(node))
-            .collect();
-        let radicals = radicals?;
-        let misc = node
-            .children()
-            .find(|child| child.has_tag_name("misc"))
-            .ok_or(CharacterError::MissingMisc)?;
-        let grade = misc
-            .children()
-            .find(|child| child.has_tag_name("grade"))
-            .map(|node| Grade::try_from(node));
-        let grade = match grade {
-            Some(grade) => Some(grade?),
-            None => None,
-        };
-        let stroke_counts: Result<Vec<StrokeCount>, StrokeCountError> = misc
-            .children()
-            .filter(|child| child.has_tag_name("stroke_count"))
-            .map(|node| StrokeCount::try_from(node))
-            .collect();
-        let stroke_counts = stroke_counts?;
-        let variants: Result<Vec<Variant>, VariantError> = misc
-            .children()
-            .filter(|child| child.has_tag_name("variant"))
-            .map(|node| Variant::try_from(node))
-            .collect();
-        let variants = variants?;
-        let frequency = misc
-            .children()
-            .find(|child| child.has_tag_name("freq"))
-            .map(|node| {
-                node.text()
-                    .ok_or(CharacterError::FrequencyText)?
-                    .parse::<u16>()
-                    .map_err(|_| CharacterError::FrequencyParse)
-            });
-        let frequency = match frequency {
-            Some(frequency) => Some(frequency?),
-            None => None,
-        };
-        let radical_names: Result<Vec<&str>, CharacterError> = misc
-            .children()
-            .filter(|child| child.has_tag_name("rad_name"))
-            .map(|node| node.text().ok_or(CharacterError::RadicalNameText))
-            .collect();
-        let radical_names = radical_names?;
-        let jlpt = misc
-            .children()
-            .find(|child| child.has_tag_name("jlpt"))
-            .map(|node| {
-                node.text()
-                    .ok_or(CharacterError::JlptText)?
-                    .parse::<u8>()
-                    .map_err(|_| CharacterError::JlptParse)
-            });
-        let jlpt = match jlpt {
-            Some(jlpt) => Some(jlpt?),
-            None => None,
-        };
-        let references: Result<Vec<DictionaryReference>, DictionaryReferenceError> = node
-            .children()
-            .find(|child| child.has_tag_name("dic_number"))
-            .ok_or(CharacterError::MissingDictionaryReferences)?
-            .children()
-            .filter(|child| child.has_tag_name("dic_ref"))
-            .map(|node| DictionaryReference::try_from(node))
-            .collect();
-        let references = references?;
-        let query_codes: Result<Vec<QueryCode>, QueryCodeError> = node
-            .children()
-            .find(|child| child.has_tag_name("query_code"))
-            .ok_or(CharacterError::MissingQueryCodes)?
-            .children()
-            .filter(|child| child.has_tag_name("q_code"))
-            .map(|node| QueryCode::try_from(node))
-            .collect();
-        let query_codes = query_codes?;
-        let meanings: Result<Vec<Meaning>, MeaningError> = node
-            .children()
-            .filter(|child| child.has_tag_name("reading_meaning"))
-            .map(|node| Meaning::try_from(node))
-            .collect();
-        let meanings = meanings?;
+        let literal = text(child(node, "literal")?)?;
+        let codepoints = children(child(node, "codepoint")?, "cp_value", Codepoint::try_from)?;
+        let radicals = children(child(node, "radical")?, "rad_value", Radical::try_from)?;
+        let misc = child(node, "misc")?;
+        let grade = coalesce(child(misc, "grade").ok().map(Grade::try_from))?;
+        let stroke_counts = children(misc, "stroke_count", StrokeCount::try_from)?;
+        let variants = children(misc, "variant", Variant::try_from)?;
+        let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
+        let radical_names = children(misc, "rad_name", text)?;
+        let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
+        let references = children(child(node, "dic_number")?, "dic_ref", Reference::try_from)?;
+        let query_codes = children(child(node, "query_code")?, "q_code", QueryCode::try_from)?;
+        let meanings = children(node, "reading_meaning", Meaning::try_from)?;
         Ok(Character {
             literal,
             codepoints,
@@ -210,6 +98,13 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
             meanings,
         })
     }
+}
+
+fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option<T>, E> {
+    Ok(match opt {
+        Some(v) => Some(v?),
+        None => None,
+    })
 }
 
 #[cfg(test)]
@@ -268,30 +163,30 @@ mod tests {
                 frequency: Some(1509),
                 jlpt: Some(1),
                 references: vec![
-                    DictionaryReference::NelsonClassic(43),
-                    DictionaryReference::NelsonNew(81),
-                    DictionaryReference::Njecd(3540),
-                    DictionaryReference::Kkd(4354),
-                    DictionaryReference::Kkld(2204),
-                    DictionaryReference::Kkld2ed(2966),
-                    DictionaryReference::Heisig(1809),
-                    DictionaryReference::Heisig6(1950),
-                    DictionaryReference::Gakken(1331),
-                    DictionaryReference::OneillNames(525),
-                    DictionaryReference::OneillKk(1788),
-                    DictionaryReference::Moro(Moro {
+                    Reference::NelsonClassic(43),
+                    Reference::NelsonNew(81),
+                    Reference::Njecd(3540),
+                    Reference::Kkd(4354),
+                    Reference::Kkld(2204),
+                    Reference::Kkld2ed(2966),
+                    Reference::Heisig(1809),
+                    Reference::Heisig6(1950),
+                    Reference::Gakken(1331),
+                    Reference::OneillNames(525),
+                    Reference::OneillKk(1788),
+                    Reference::Moro(Moro {
                         volume: Some(1),
                         page: Some(525),
                         item: 272,
                     }),
-                    DictionaryReference::Henshall(997),
-                    DictionaryReference::ShKk(1616),
-                    DictionaryReference::ShKk2(1724),
-                    DictionaryReference::Jfcards(1032),
-                    DictionaryReference::TuttleCards(1092),
-                    DictionaryReference::KanjiInContext(1818),
-                    DictionaryReference::KodanshaCompact(35),
-                    DictionaryReference::Maniette(1827),
+                    Reference::Henshall(997),
+                    Reference::ShKk(1616),
+                    Reference::ShKk2(1724),
+                    Reference::Jfcards(1032),
+                    Reference::TuttleCards(1092),
+                    Reference::KanjiInContext(1818),
+                    Reference::KodanshaCompact(35),
+                    Reference::Maniette(1827),
                 ],
                 query_codes: vec![
                     QueryCode::Skip(Skip::Solid(SkipSolid {

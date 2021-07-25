@@ -23,7 +23,7 @@ pub enum DictionaryReferenceError {
 
 /// An index number into a particular kanji dictionary or reference book.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum DictionaryReference {
+pub enum Reference {
     /// Modern Reader's Japanese-English Dictionary by Andrew Nelson
     NelsonClassic(u16),
     /// The New Nelson Japanese-English Dictionary by John Haig
@@ -74,35 +74,35 @@ pub enum DictionaryReference {
     Maniette(u16),
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for DictionaryReference {
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reference {
     type Error = DictionaryReferenceError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         match attr(node, "dr_type")? {
-            "nelson_c" => Ok(DictionaryReference::NelsonClassic(text_uint(node)?)),
-            "nelson_n" => Ok(DictionaryReference::NelsonNew(text_uint(node)?)),
-            "halpern_njecd" => Ok(DictionaryReference::Njecd(text_uint(node)?)),
-            "halpern_kkd" => Ok(DictionaryReference::Kkd(text_uint(node)?)),
-            "halpern_kkld" => Ok(DictionaryReference::Kkld(text_uint(node)?)),
-            "halpern_kkld_2ed" => Ok(DictionaryReference::Kkld2ed(text_uint(node)?)),
-            "heisig" => Ok(DictionaryReference::Heisig(text_uint(node)?)),
-            "heisig6" => Ok(DictionaryReference::Heisig6(text_uint(node)?)),
-            "gakken" => Ok(DictionaryReference::Gakken(text_uint(node)?)),
-            "oneill_names" => Ok(DictionaryReference::OneillNames(text_uint(node)?)),
-            "oneill_kk" => Ok(DictionaryReference::OneillKk(text_uint(node)?)),
-            "moro" => Ok(DictionaryReference::Moro(Moro::try_from(node)?)),
-            "henshall" => Ok(DictionaryReference::Henshall(text_uint(node)?)),
-            "sh_kk" => Ok(DictionaryReference::ShKk(text_uint(node)?)),
-            "sh_kk2" => Ok(DictionaryReference::ShKk2(text_uint(node)?)),
-            "sakade" => Ok(DictionaryReference::Sakade(text_uint(node)?)),
-            "jf_cards" => Ok(DictionaryReference::Jfcards(text_uint(node)?)),
-            "henshall3" => Ok(DictionaryReference::Henshall3(text_uint(node)?)),
-            "tutt_cards" => Ok(DictionaryReference::TuttleCards(text_uint(node)?)),
-            "crowley" => Ok(DictionaryReference::Crowley(text_uint(node)?)),
-            "kanji_in_context" => Ok(DictionaryReference::KanjiInContext(text_uint(node)?)),
-            "busy_people" => Ok(DictionaryReference::BusyPeople(BusyPeople::try_from(node)?)),
-            "kodansha_compact" => Ok(DictionaryReference::KodanshaCompact(text_uint(node)?)),
-            "maniette" => Ok(DictionaryReference::Maniette(text_uint(node)?)),
+            "nelson_c" => Ok(Reference::NelsonClassic(text_uint(node)?)),
+            "nelson_n" => Ok(Reference::NelsonNew(text_uint(node)?)),
+            "halpern_njecd" => Ok(Reference::Njecd(text_uint(node)?)),
+            "halpern_kkd" => Ok(Reference::Kkd(text_uint(node)?)),
+            "halpern_kkld" => Ok(Reference::Kkld(text_uint(node)?)),
+            "halpern_kkld_2ed" => Ok(Reference::Kkld2ed(text_uint(node)?)),
+            "heisig" => Ok(Reference::Heisig(text_uint(node)?)),
+            "heisig6" => Ok(Reference::Heisig6(text_uint(node)?)),
+            "gakken" => Ok(Reference::Gakken(text_uint(node)?)),
+            "oneill_names" => Ok(Reference::OneillNames(text_uint(node)?)),
+            "oneill_kk" => Ok(Reference::OneillKk(text_uint(node)?)),
+            "moro" => Ok(Reference::Moro(Moro::try_from(node)?)),
+            "henshall" => Ok(Reference::Henshall(text_uint(node)?)),
+            "sh_kk" => Ok(Reference::ShKk(text_uint(node)?)),
+            "sh_kk2" => Ok(Reference::ShKk2(text_uint(node)?)),
+            "sakade" => Ok(Reference::Sakade(text_uint(node)?)),
+            "jf_cards" => Ok(Reference::Jfcards(text_uint(node)?)),
+            "henshall3" => Ok(Reference::Henshall3(text_uint(node)?)),
+            "tutt_cards" => Ok(Reference::TuttleCards(text_uint(node)?)),
+            "crowley" => Ok(Reference::Crowley(text_uint(node)?)),
+            "kanji_in_context" => Ok(Reference::KanjiInContext(text_uint(node)?)),
+            "busy_people" => Ok(Reference::BusyPeople(BusyPeople::try_from(node)?)),
+            "kodansha_compact" => Ok(Reference::KodanshaCompact(text_uint(node)?)),
+            "maniette" => Ok(Reference::Maniette(text_uint(node)?)),
             _ => Err(DictionaryReferenceError::UnknownType(PosError::from(node))),
         }
     }
@@ -119,10 +119,10 @@ mod tests {
             .descendants()
             .find(|node| node.has_tag_name("dic_ref"))
             .unwrap();
-        let dictionary_reference = DictionaryReference::try_from(node);
+        let dictionary_reference = Reference::try_from(node);
         assert_eq!(
             dictionary_reference,
-            Ok(DictionaryReference::NelsonClassic(43))
+            Ok(Reference::NelsonClassic(43))
         )
     }
 }
