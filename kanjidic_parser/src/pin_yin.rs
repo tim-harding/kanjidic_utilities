@@ -2,7 +2,12 @@ use crate::{
     pos_error::PosError,
     shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
-use nom::{branch::alt, bytes::complete::{tag, take_while1}, combinator::value, sequence::tuple};
+use nom::{
+    branch::alt,
+    bytes::complete::{tag, take_while1},
+    combinator::{map, recognize, value},
+    multi::many_till,
+};
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -33,10 +38,10 @@ impl<'a> From<NomErr<'a>> for PinYinStrError {
 }
 
 // A modern PinYin romanization of the Chinese reading.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-pub struct PinYin<'a> {
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+pub struct PinYin {
     /// The romanized reading.
-    pub romanization: &'a str,
+    pub romanization: String,
     /// The Mandarin tone of the reading.
     pub tone: Tone,
 }
@@ -58,17 +63,17 @@ pub enum Tone {
     Neutral,
 }
 
-impl<'a, 'b: 'a> TryFrom<&'b str> for PinYin<'a> {
+impl TryFrom<&str> for PinYin {
     type Error = PinYinStrError;
 
-    fn try_from(text: &'b str) -> Result<Self, Self::Error> {
+    fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, (romanization, tone)) = parts(text)?;
         let tone = Tone::try_from(tone)?;
         Ok(Self { romanization, tone })
     }
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin<'a> {
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin {
     type Error = PinYinError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
@@ -77,23 +82,26 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin<'a> {
     }
 }
 
-fn parts(s: &str) -> IResult<(&str, u8)> {
-    tuple((pronunciation, take_uint))(s)
+fn parts(s: &str) -> IResult<(String, u8)> {
+    map(pronunciation_parts, |(parts, tone)| (parts.join(""), tone))(s)
 }
 
-fn pronunciation(s: &str) -> IResult<&str> {
-    alt((umlauted, plain_roman))(s)
+fn pronunciation_parts(s: &str) -> IResult<(Vec<&str>, u8)> {
+    many_till(alt((umlaut, u, letters)), take_uint)(s)
 }
 
-// If the romanization takes the form 'lu:' or 'nu:',
-// I am pretty sure that is meant to be interpreted as
-// the pronunciations lü and nü
-fn umlauted(s: &str) -> IResult<&str> {
-    alt((value("lü", tag("lu:")), value("nü", tag("nu:"))))(s)
+// Todo: Check that this is working correctly.
+// Tests do not currently cover this.
+fn umlaut(s: &str) -> IResult<&str> {
+    value("ü", tag("u:"))(s)
 }
 
-fn plain_roman(s: &str) -> IResult<&str> {
-    take_while1(|c: char| c.is_ascii_alphabetic())(s)
+fn u(s: &str) -> IResult<&str> {
+    recognize(tag("u"))(s)
+}
+
+fn letters(s: &str) -> IResult<&str> {
+    take_while1(|c: char| c != 'u' && c.is_ascii_alphabetic())(s)
 }
 
 #[cfg(test)]
@@ -117,7 +125,7 @@ mod tests {
         assert_eq!(
             pin_yin,
             Ok(PinYin {
-                romanization: "ya",
+                romanization: "ya".to_string(),
                 tone: Tone::Falling,
             })
         )

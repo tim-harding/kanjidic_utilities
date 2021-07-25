@@ -74,7 +74,7 @@ mod tests {
                 nanori: vec!["や", "つぎ", "つぐ",],
                 readings: vec![
                     Reading::PinYin(PinYin {
-                        romanization: "ya",
+                        romanization: "ya".to_string(),
                         tone: crate::pin_yin::Tone::Falling,
                     }),
                     Reading::KoreanRomanized("a"),

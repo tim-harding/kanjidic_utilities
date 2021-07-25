@@ -25,7 +25,7 @@ pub enum ReadingError {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Reading<'a> {
     /// The modern romanization of the Chinese reading.
-    PinYin(PinYin<'a>),
+    PinYin(PinYin),
     /// The romanized form of the Korean reading.
     KoreanRomanized(&'a str),
     /// The Korean reading of the kanji in Hangul.
@@ -74,7 +74,7 @@ mod tests {
         assert_eq!(
             reading,
             Ok(Reading::PinYin(PinYin {
-                romanization: "ya",
+                romanization: "ya".to_string(),
                 tone: Tone::Falling,
             }))
         )
