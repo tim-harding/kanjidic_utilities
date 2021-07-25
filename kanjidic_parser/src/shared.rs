@@ -14,9 +14,9 @@ pub type NomErr<'a> = nom::Err<nom::error::Error<&'a str>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum NomErrorReason {
-    #[error("Incomplete parse")]
+    #[error("(Nom) incomplete")]
     Incomplete,
-    #[error("Parse error: {0:?}")]
+    #[error("(Nom) error kind: {0:?}")]
     Error(nom::error::ErrorKind),
 }
 
@@ -33,15 +33,15 @@ impl<'a> From<NomErr<'a>> for NomErrorReason {
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum SharedError {
-    #[error("Could not find a node with the given tag: {0}, attribute '{1}'")]
+    #[error("(Shared) No node with the given tag: {0}, attribute '{1}'")]
     MissingChild(PosError, &'static str),
-    #[error("Node contains no text")]
+    #[error("(Shared) Node contains no text")]
     NoText(PosError),
-    #[error("Could not parse text as a uint")]
+    #[error("(Shared) Could not parse text as a uint")]
     TextUint(PosError),
-    #[error("Could not parse attribute as a uint")]
+    #[error("(Shared) Could not parse attribute as a uint")]
     AttrUint(PosError),
-    #[error("Missing node attribute: {0}, attribute '{1}'")]
+    #[error("(Shared) Node missing attribute: {0}, attribute '{1}'")]
     MissingAttribute(PosError, &'static str),
 }
 

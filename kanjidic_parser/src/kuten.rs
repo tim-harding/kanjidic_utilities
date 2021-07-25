@@ -11,15 +11,15 @@ use crate::{
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KutenError {
-    #[error("Shared: {0}")]
+    #[error("(Kuten) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error parsing kuten: {0}, {1}")]
-    Str(PosError, KutenStrError),
+    #[error("(Kuten) Parsing: {0}, {1}")]
+    Parse(PosError, KutenStrError),
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KutenStrError {
-    #[error("Failed to parse kuten")]
+    #[error("(Kuten) Format: {0}")]
     Format(NomErrorReason),
 }
 
@@ -55,7 +55,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kuten {
     type Error = KutenError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
-        Self::try_from(text(node)?).map_err(|err| KutenError::Str(PosError::from(node), err))
+        Self::try_from(text(node)?).map_err(|err| KutenError::Parse(PosError::from(node), err))
     }
 }
 

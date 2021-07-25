@@ -7,11 +7,11 @@ use thiserror::Error;
 /// Error while parsing the database version
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum DatabaseVersionError {
-    #[error("Shared: {0}")]
+    #[error("(Database version) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Database version was not in a recognized format")]
+    #[error("(Database version) Format: {0}")]
     Format(NomErrorReason),
-    #[error("Could not parse an integer")]
+    #[error("(Database version) Could not parse an integer")]
     Integer,
 }
 

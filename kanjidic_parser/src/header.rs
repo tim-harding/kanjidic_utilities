@@ -10,11 +10,11 @@ use thiserror::Error;
 /// Error while parsing the header.
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum HeaderError {
-    #[error("Error parsing database version")]
+    #[error("(Header) Database version: {0}")]
     DatabaseVersion(#[from] DatabaseVersionError),
-    #[error("Error parsing file version")]
+    #[error("(Header) Date of creation: {0}")]
     DateOfCreation(#[from] DateOfCreationError),
-    #[error("Error from shared utilities: {0}")]
+    #[error("(Header) Shared: {0}")]
     Shared(#[from] SharedError),
 }
 

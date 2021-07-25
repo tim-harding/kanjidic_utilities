@@ -7,7 +7,7 @@ use crate::shared::{attr_uint, text_uint, SharedError};
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum MoroError {
-    #[error("Shared utility: {0}")]
+    #[error("(Moro) Shared: {0}")]
     Shared(#[from] SharedError),
 }
 

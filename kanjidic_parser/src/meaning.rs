@@ -11,13 +11,13 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum MeaningError {
-    #[error("Shared: {0}")]
+    #[error("(Meaning) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Nanori node is missing text content")]
+    #[error("(Meaning) Nanori node missing text: {0}")]
     NanoriText(PosError),
-    #[error("Error while parsing reading")]
+    #[error("(Meaning) Reading: {0}")]
     Reading(#[from] ReadingError),
-    #[error("Error while parsing translation")]
+    #[error("(Meaning) Translation: {0}")]
     Translation(#[from] TranslationError),
 }
 

@@ -13,19 +13,19 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum QueryCodeError {
-    #[error("Error from shared utilities: {0}")]
+    #[error("(Query code) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Unknown qc_type attribute")]
+    #[error("(Query code) Unknown qc_type attribute: {0}")]
     UnknownType(PosError),
-    #[error("Error while parsing skip code")]
+    #[error("(Query code) Skip code: {0}")]
     Skip(#[from] SkipError),
-    #[error("Error while parsing Spahn Hadamitzky descriptor")]
+    #[error("(Query code) Spahn Hadamitzky descriptor: {0}")]
     SpahnHadamitzky(#[from] ShError),
-    #[error("Error while parsing four corner code")]
+    #[error("(Query code) Four corner code: {0}")]
     FourCorner(#[from] FourCornerError),
-    #[error("Error while parsing de roo code")]
+    #[error("(Query code) De Roo code: {0}")]
     DeRoo(#[from] DeRooError),
-    #[error("Unrecognized skip_misclass value")]
+    #[error("(Query code) Unrecognized skip_misclass value: {0}")]
     UnknownMisclassification(PosError),
 }
 

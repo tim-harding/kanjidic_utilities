@@ -9,21 +9,21 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum FourCornerError {
-    #[error("Shared: {0}")]
+    #[error("(Four corner) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error while parsing four corner code: {0}, {1}")]
+    #[error("(Four corner) Parsing: {0}, {1}")]
     Str(PosError, FourCornerStrError),
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum FourCornerStrError {
-    #[error("Failed attempt to extract a stroke")]
+    #[error("(Four corner) Failed to extract a stroke: {0}")]
     Stroke(#[from] TryFromPrimitiveError<Stroke>),
-    #[error("Not enough characters for four corners")]
+    #[error("(Four corner) Too few characters for four corners code")]
     ToFewCharacters,
-    #[error("Expected a digit")]
+    #[error("(Four corner) Expected a digit")]
     Digit,
-    #[error("Expected a period to delimit the fifth corner")]
+    #[error("(Four corner) Expected a period delimiting the fifth corner")]
     Pattern,
 }
 

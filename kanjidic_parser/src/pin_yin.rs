@@ -12,17 +12,17 @@ use crate::shared::take_uint;
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum PinYinError {
-    #[error("Error from shared utilities: {0}")]
+    #[error("(Pin Yin) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error parsing pinyin string: {0}, {1}")]
-    Str(PosError, PinYinStrError),
+    #[error("(Pin Yin) Parsing: {0}, {1}")]
+    Parse(PosError, PinYinStrError),
 }
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum PinYinStrError {
-    #[error("Pin yin tones not recognized")]
+    #[error("(Pin yin) Tone not recognized: {0}")]
     InvalidTone(#[from] TryFromPrimitiveError<Tone>),
-    #[error("Unrecognized pin yin format")]
+    #[error("(Pin yin) Format: {0}")]
     Format(NomErrorReason),
 }
 
@@ -73,7 +73,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin<'a> {
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let text = shared::text(node)?;
-        Self::try_from(text).map_err(|err| PinYinError::Str(PosError::from(node), err))
+        Self::try_from(text).map_err(|err| PinYinError::Parse(PosError::from(node), err))
     }
 }
 

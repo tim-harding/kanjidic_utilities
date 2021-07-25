@@ -10,11 +10,11 @@ use thiserror::Error;
 
 #[derive(Debug, PartialEq, Eq, Clone, Error)]
 pub enum RadicalError {
-    #[error("Error from shared utilities: {0}")]
+    #[error("(Radical) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("The radical is not in a valid range")]
+    #[error("(Radical) Radical is not in a valid range: {0}")]
     OutOfRange(#[from] TryFromPrimitiveError<KangXi>),
-    #[error("Not a recognized radical kind")]
+    #[error("(Radical) Not a recognized radical kind: {0}")]
     Kind(PosError),
 }
 

@@ -15,15 +15,15 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KunyomiError {
-    #[error("Shared: {0}")]
+    #[error("(Kunyomi) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error parsing kunyomi format: {0}, {1}")]
-    Str(PosError, KunyomiStrError),
+    #[error("(Kunyomi) Parsing: {0}, {1}")]
+    Parse(PosError, KunyomiStrError),
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KunyomiStrError {
-    #[error("Kunyomi format not recognized")]
+    #[error("(Kunyomi) Format: {0}")]
     Format(NomErrorReason),
 }
 
@@ -74,7 +74,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi<'a> {
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let text = shared::text(node)?;
-        Self::try_from(text).map_err(|err| KunyomiError::Str(PosError::from(node), err))
+        Self::try_from(text).map_err(|err| KunyomiError::Parse(PosError::from(node), err))
     }
 }
 

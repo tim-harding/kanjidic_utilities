@@ -10,23 +10,23 @@ use crate::{
 
 #[derive(Debug, Error, Eq, PartialEq, Clone)]
 pub enum DeRooError {
-    #[error("Shared: {0}")]
+    #[error("(De Roo) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error parsing Deroo: {0}, {1}")]
+    #[error("(De Roo) Parsing: {0}, {1}")]
     Str(PosError, DeRooStrError),
 }
 
 #[derive(Debug, Error, Eq, PartialEq, Clone)]
 pub enum DeRooStrError {
-    #[error("A De Roo code should be three or four digits, not {0}")]
+    #[error("(De Roo) Should be three or four digits, not {0}")]
     InvalidLength(usize),
-    #[error("Could not parse part of the code as a number")]
+    #[error("(De Roo) Could not parse part of the code as a number")]
     Number,
-    #[error("Subslice could not be treated as UTF-8")]
+    #[error("(De Roo) Subslice could not be treated as UTF-8: {0}")]
     Utf8(#[from] std::str::Utf8Error),
-    #[error("The extreme top code was not valid")]
+    #[error("(De Roo) Extreme top: {0}")]
     ExtremeTop(#[from] TryFromPrimitiveError<ExtremeTop>),
-    #[error("The extreme bottom code was not valid")]
+    #[error("(De Roo) Extreme bottom: {0}")]
     ExtremeBottom(#[from] TryFromPrimitiveError<ExtremeBottom>),
 }
 

@@ -9,9 +9,9 @@ use crate::{
 
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum StrokeCountError {
-    #[error("Error from shared utilities: {0}")]
+    #[error("(Stroke count) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Expected at least one entry for stroke count: {0}")]
+    #[error("(Stroke count) Expected at least one entry: {0}")]
     Accepted(PosError),
 }
 

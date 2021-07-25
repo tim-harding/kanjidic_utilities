@@ -11,13 +11,13 @@ use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum ReadingError {
-    #[error("Error from shared utilities")]
+    #[error("(Reading) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("qc_type not recognized")]
+    #[error("(Reading) qc_type not recognized: {0}")]
     UnrecognizedType(PosError),
-    #[error("Error while parsing pin yin reading")]
+    #[error("(Reading) Pin yin: {0}")]
     PinYin(#[from] PinYinError),
-    #[error("Error while parsing kunyomi reading")]
+    #[error("(Reading) Kunyomi: {0}")]
     Kunyomi(#[from] KunyomiError),
 }
 

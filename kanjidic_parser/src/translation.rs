@@ -10,9 +10,9 @@ use crate::{
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum TranslationError {
-    #[error("Error from shared utilities: {0}")]
+    #[error("Translation shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Unrecognized language code: {0}")]
+    #[error("Translation unknown language code: {0}")]
     UnknownLanguage(PosError),
 }
 

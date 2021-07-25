@@ -8,9 +8,9 @@ use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 /// Error while parsing date of creation
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum DateOfCreationError {
-    #[error("Shared: {0}")]
+    #[error("(Date of creation) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Database version was not in a recognized format")]
+    #[error("(Date of creation) Format: {0}")]
     Format(NomErrorReason),
 }
 

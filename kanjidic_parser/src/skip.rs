@@ -11,19 +11,19 @@ use crate::{
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum SkipError {
-    #[error("Shared utility error: {0}")]
+    #[error("(Skip) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error parsing skip code: {0}, {1}")]
-    Str(PosError, SkipStrError),
+    #[error("(Skip) Parsing: {0}, {1}")]
+    Parse(PosError, SkipStrError),
 }
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum SkipStrError {
-    #[error("Invalid solid pattern: {0}")]
+    #[error("(Skip) Invalid solid pattern: {0}")]
     InvalidSolidPattern(#[from] TryFromPrimitiveError<SolidSubpattern>),
-    #[error("Did not fit the format for a skip code: {0}")]
+    #[error("(Skip) Format: {0}")]
     Format(NomErrorReason),
-    #[error("The digit indicating the pattern was not valid")]
+    #[error("(Skip) Digit indicating the pattern was not valid")]
     SkipKind,
 }
 
@@ -82,7 +82,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         let text = shared::text(node)?;
-        Self::try_from(text).map_err(|err| SkipError::Str(PosError::from(node), err))
+        Self::try_from(text).map_err(|err| SkipError::Parse(PosError::from(node), err))
     }
 }
 

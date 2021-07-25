@@ -10,14 +10,14 @@ use roxmltree::Node;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum DictionaryReferenceError {
-    #[error("Shared: {0}")]
+pub enum ReferenceError {
+    #[error("(Reference) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Unknown dr_type string")]
+    #[error("(Reference) Unknown dr_type string: {0}")]
     UnknownType(PosError),
-    #[error("Could not parse Moro reference")]
+    #[error("(Reference) Moro: {0}")]
     Moro(#[from] MoroError),
-    #[error("Could not parse Busy People reference")]
+    #[error("(Reference) Busy People: {0}")]
     BusyPeople(#[from] BusyPeopleError),
 }
 
@@ -75,7 +75,7 @@ pub enum Reference {
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reference {
-    type Error = DictionaryReferenceError;
+    type Error = ReferenceError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         match attr(node, "dr_type")? {
@@ -103,7 +103,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reference {
             "busy_people" => Ok(Reference::BusyPeople(BusyPeople::try_from(node)?)),
             "kodansha_compact" => Ok(Reference::KodanshaCompact(text_uint(node)?)),
             "maniette" => Ok(Reference::Maniette(text_uint(node)?)),
-            _ => Err(DictionaryReferenceError::UnknownType(PosError::from(node))),
+            _ => Err(ReferenceError::UnknownType(PosError::from(node))),
         }
     }
 }

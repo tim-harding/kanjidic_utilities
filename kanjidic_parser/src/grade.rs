@@ -10,15 +10,15 @@ use crate::{
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum GradeError {
-    #[error("Shared: {0}")]
+    #[error("(Grade) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error while parsing grade: {0}, {1}")]
-    Str(PosError, GradeStrError),
+    #[error("(Grade) Parsing: {0}, {1}")]
+    Parse(PosError, GradeStrError),
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum GradeStrError {
-    #[error("{0} does not fit one of the recognized grade levels")]
+    #[error("(Grade) {0} is not a recognized grade level")]
     Unrecognized(u8),
 }
 
@@ -55,7 +55,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Grade {
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let n: u8 = text_uint(node)?;
-        Self::try_from(n).map_err(|err| GradeError::Str(PosError::from(node), err))
+        Self::try_from(n).map_err(|err| GradeError::Parse(PosError::from(node), err))
     }
 }
 

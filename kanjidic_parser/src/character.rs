@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use crate::{
     codepoint::{Codepoint, CodepointError},
-    dictionary_reference::{DictionaryReferenceError, Reference},
+    dictionary_reference::{Reference, ReferenceError},
     grade::{Grade, GradeError},
     meaning::{Meaning, MeaningError},
     query_code::{QueryCode, QueryCodeError},
@@ -16,24 +16,24 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum CharacterError {
-    #[error("Shared: {0}")]
+    #[error("(Character) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error parsing a codepoint")]
+    #[error("(Character) Codepoint: {0}")]
     Codepoint(#[from] CodepointError),
-    #[error("Error parsing a radical")]
+    #[error("(Character) Radical: {0}")]
     Radical(#[from] RadicalError),
-    #[error("Error parsing a grade")]
+    #[error("(Character) Grade: {0}")]
     Grade(#[from] GradeError),
-    #[error("Error parsing a stroke count")]
+    #[error("(Character) Stroke count: {0}")]
     StrokeCount(#[from] StrokeCountError),
-    #[error("Error parsing a variant")]
+    #[error("(Character) Variant: {0}")]
     Variant(#[from] VariantError),
-    #[error("Error parsing a meaning")]
+    #[error("(Character) Meaning: {0}")]
     Meaning(#[from] MeaningError),
-    #[error("Error parsing a query code")]
+    #[error("(Character) Query code: {0}")]
     QueryCode(#[from] QueryCodeError),
-    #[error("Error parsing a dictionary reference")]
-    DictionaryReference(#[from] DictionaryReferenceError),
+    #[error("(Character) Dictionary reference: {0}")]
+    DictionaryReference(#[from] ReferenceError),
 }
 
 /// Information about a kanji.

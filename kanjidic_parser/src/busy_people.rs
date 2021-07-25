@@ -11,21 +11,27 @@ use thiserror::Error;
 
 use crate::{
     pos_error::PosError,
-    shared::{self, IResult, SharedError},
+    shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum BusyPeopleError {
-    #[error("Shared: {0}")]
+    #[error("(Busy people) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error parsing busy people: {0}, {1}")]
-    Str(PosError, BusyPeopleStrError),
+    #[error("(Busy people) Parsing: {0}, {1}")]
+    Parse(PosError, BusyPeopleStrError),
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum BusyPeopleStrError {
-    #[error("Unrecognized format")]
-    Parse,
+    #[error("(Busy people) Format: {0}")]
+    Format(NomErrorReason),
+}
+
+impl<'a> From<NomErr<'a>> for BusyPeopleStrError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
 }
 
 /// A location in Japanese for Busy People.
@@ -52,7 +58,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for BusyPeople {
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let text = shared::text(node)?;
-        BusyPeople::try_from(text).map_err(|err| BusyPeopleError::Str(PosError::from(node), err))
+        BusyPeople::try_from(text).map_err(|err| BusyPeopleError::Parse(PosError::from(node), err))
     }
 }
 
@@ -60,7 +66,7 @@ impl TryFrom<&str> for BusyPeople {
     type Error = BusyPeopleStrError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let (_i, o) = parts(text).map_err(|_| BusyPeopleStrError::Parse)?;
+        let (_i, o) = parts(text)?;
         let (volume, _, chapter) = o;
         Ok(BusyPeople { volume, chapter })
     }

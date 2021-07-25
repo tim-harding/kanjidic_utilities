@@ -9,15 +9,15 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum ShError {
-    #[error("Error from shared utilities: {0}")]
+    #[error("(Spahn Hadamitzky) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error while parsing Spahn Hadamitzky descriptor: {0}")]
-    Str(PosError, ShStrError),
+    #[error("(Spahn Hadamitzky) Parsing: {0}, {1}")]
+    Parse(PosError, ShStrError),
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum ShStrError {
-    #[error("Invalid Spahn Hadamitzky descriptor")]
+    #[error("(Spahn Hadamitzky) Format: {0}")]
     Format(NomErrorReason),
 }
 
@@ -67,7 +67,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for ShDesc {
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let text = shared::text(node)?;
-        Self::try_from(text).map_err(|err| ShError::Str(PosError::from(node), err))
+        Self::try_from(text).map_err(|err| ShError::Parse(PosError::from(node), err))
     }
 }
 

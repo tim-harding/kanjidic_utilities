@@ -8,13 +8,13 @@ use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum CodepointError {
-    #[error("Shared: {0}")]
+    #[error("(Codepoint) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Unrecognized encoding")]
+    #[error("(Codepoint) Unrecognized encoding")]
     Encoding,
-    #[error("Could not parse hexadecimal")]
+    #[error("(Codepoint) Could not parse hexadecimal")]
     Hex,
-    #[error("Could not parse kuten")]
+    #[error("(Codepoint) Kuten: {0}")]
     Kuten(#[from] KutenStrError),
 }
 

@@ -11,15 +11,15 @@ use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum VariantError {
-    #[error("var_type not recognized: {0}")]
+    #[error("Variant var_type not recognized: {0}")]
     UnknownVariant(PosError),
-    #[error("Error from shared utility: {0}")]
+    #[error("Variant shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Error while parsing kuten code: {0}")]
+    #[error("Variant kuten code: {0}")]
     Kuten(#[from] KutenError),
-    #[error("Error while parsing de roo code: {0}")]
+    #[error("Variant De Roo code: {0}")]
     DeRoo(#[from] DeRooError),
-    #[error("Error while parsing Spahn Hadamitzky descriptor: {0}")]
+    #[error("Variant Spahn Hadamitzky descriptor: {0}")]
     SpahnHadamitzky(#[from] ShError),
 }
 
