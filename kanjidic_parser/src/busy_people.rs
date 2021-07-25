@@ -9,16 +9,23 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::{shared::IResult, pos_error::PosError};
+use crate::{
+    pos_error::PosError,
+    shared::{self, IResult, SharedError},
+};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum BusyPeopleError {
-    #[error("Node contains no text: {0}")]
-    NoText(PosError),
-    #[error("Unrecognized format: {0}")]
-    Parse(PosError),
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
+    #[error("Error parsing busy people: {0}, {1}")]
+    Str(PosError, BusyPeopleStrError),
+}
+
+#[derive(Debug, Error, PartialEq, Eq, Clone)]
+pub enum BusyPeopleStrError {
     #[error("Unrecognized format")]
-    ParsePlain,
+    Parse,
 }
 
 /// A location in Japanese for Busy People.
@@ -44,18 +51,16 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for BusyPeople {
     type Error = BusyPeopleError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = node
-            .text()
-            .ok_or(BusyPeopleError::NoText(PosError::from(node)))?;
-        BusyPeople::try_from(text).map_err(|_| BusyPeopleError::Parse(PosError::from(node)))
+        let text = shared::text(node)?;
+        BusyPeople::try_from(text).map_err(|err| BusyPeopleError::Str(PosError::from(node), err))
     }
 }
 
-impl<'a> TryFrom<&'a str> for BusyPeople {
-    type Error = BusyPeopleError;
+impl TryFrom<&str> for BusyPeople {
+    type Error = BusyPeopleStrError;
 
-    fn try_from(text: &'a str) -> Result<Self, Self::Error> {
-        let (_i, o) = parts(text).map_err(|_| BusyPeopleError::ParsePlain)?;
+    fn try_from(text: &str) -> Result<Self, Self::Error> {
+        let (_i, o) = parts(text).map_err(|_| BusyPeopleStrError::Parse)?;
         let (volume, _, chapter) = o;
         Ok(BusyPeople { volume, chapter })
     }

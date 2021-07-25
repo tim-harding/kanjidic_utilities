@@ -3,14 +3,23 @@ use std::convert::TryFrom;
 use roxmltree::Node;
 use thiserror::Error;
 
-use crate::shared::{SharedError, text_uint};
+use crate::{
+    pos_error::PosError,
+    shared::{text_uint, SharedError},
+};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum GradeError {
     #[error("Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Does not fit one of the recognized grade levels")]
-    Unrecognized,
+    #[error("Error while parsing grade: {0}, {1}")]
+    Str(PosError, GradeStrError),
+}
+
+#[derive(Debug, Error, PartialEq, Eq, Clone)]
+pub enum GradeStrError {
+    #[error("{0} does not fit one of the recognized grade levels")]
+    Unrecognized(u8),
 }
 
 /// The grade level in which the kanji is learned.
@@ -27,18 +36,26 @@ pub enum Grade {
     JinmeiyouJouyouVariant,
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Grade {
-    type Error = GradeError;
+impl TryFrom<u8> for Grade {
+    type Error = GradeStrError;
 
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let n: u8 = text_uint(node)?;
+    fn try_from(n: u8) -> Result<Self, Self::Error> {
         match n {
             1..=6 => Ok(Grade::Kyouiku(n)),
             8 => Ok(Grade::Jouyou),
             9 => Ok(Grade::Jinmeiyou),
             10 => Ok(Grade::JinmeiyouJouyouVariant),
-            _ => Err(GradeError::Unrecognized),
+            n => Err(GradeStrError::Unrecognized(n)),
         }
+    }
+}
+
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Grade {
+    type Error = GradeError;
+
+    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
+        let n: u8 = text_uint(node)?;
+        Self::try_from(n).map_err(|err| GradeError::Str(PosError::from(node), err))
     }
 }
 

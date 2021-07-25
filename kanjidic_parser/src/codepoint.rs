@@ -1,4 +1,4 @@
-use crate::kuten::{Kuten, KutenError};
+use crate::kuten::{Kuten, KutenError, KutenStrError};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -12,7 +12,7 @@ pub enum CodepointError {
     #[error("Could not parse hexadecimal")]
     Hex,
     #[error("Could not parse kuten")]
-    Kuten(#[from] KutenError),
+    Kuten(#[from] KutenStrError),
 }
 
 /// The code of a kanji in a given character set standard.

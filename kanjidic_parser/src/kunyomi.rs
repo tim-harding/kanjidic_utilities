@@ -17,8 +17,14 @@ use thiserror::Error;
 pub enum KunyomiError {
     #[error("Shared: {0}")]
     Shared(#[from] SharedError),
+    #[error("Error parsing kunyomi format: {0}, {1}")]
+    Str(PosError, KunyomiStrError),
+}
+
+#[derive(Debug, Error, PartialEq, Eq, Clone)]
+pub enum KunyomiStrError {
     #[error("Kunyomi format not recognized")]
-    Format(PosError),
+    Format,
 }
 
 /// A kunyomi kanji reading.
@@ -41,13 +47,11 @@ pub enum KunyomiKind {
     Suffix,
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi<'a> {
-    type Error = KunyomiError;
+impl<'a, 'b: 'a> TryFrom<&'b str> for Kunyomi<'a> {
+    type Error = KunyomiStrError;
 
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
-        let (_i, (pre, okurigana, post)) =
-            parts(text).map_err(|_| KunyomiError::Format(PosError::from(node)))?;
+    fn try_from(text: &'b str) -> Result<Self, Self::Error> {
+        let (_i, (pre, okurigana, post)) = parts(text).map_err(|_| KunyomiStrError::Format)?;
         let kind = if pre {
             KunyomiKind::Prefix
         } else if post {
@@ -56,6 +60,15 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi<'a> {
             KunyomiKind::Normal
         };
         Ok(Self { okurigana, kind })
+    }
+}
+
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi<'a> {
+    type Error = KunyomiError;
+
+    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
+        let text = shared::text(node)?;
+        Self::try_from(text).map_err(|err| KunyomiError::Str(PosError::from(node), err))
     }
 }
 

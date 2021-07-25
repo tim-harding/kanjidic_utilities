@@ -14,10 +14,16 @@ use crate::shared::take_uint;
 pub enum PinYinError {
     #[error("Error from shared utilities: {0}")]
     Shared(#[from] SharedError),
+    #[error("Error parsing pinyin string: {0}, {1}")]
+    Str(PosError, PinYinStrError),
+}
+
+#[derive(Error, Debug, PartialEq, Eq, Clone)]
+pub enum PinYinStrError {
     #[error("Pin yin tones not recognized")]
     InvalidTone(#[from] TryFromPrimitiveError<Tone>),
     #[error("Unrecognized pin yin format")]
-    Format(PosError),
+    Format,
 }
 
 // A modern PinYin romanization of the Chinese reading.
@@ -46,15 +52,22 @@ pub enum Tone {
     Neutral,
 }
 
+impl<'a, 'b: 'a> TryFrom<&'b str> for PinYin<'a> {
+    type Error = PinYinStrError;
+
+    fn try_from(text: &'b str) -> Result<Self, Self::Error> {
+        let (_i, (romanization, tone)) = parts(text).map_err(|_| PinYinStrError::Format)?;
+        let tone = Tone::try_from(tone)?;
+        Ok(Self { romanization, tone })
+    }
+}
+
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin<'a> {
     type Error = PinYinError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let text = shared::text(node)?;
-        let (_i, (romanization, tone)) =
-            parts(text).map_err(|_| PinYinError::Format(PosError::from(node)))?;
-        let tone = Tone::try_from(tone)?;
-        Ok(Self { romanization, tone })
+        Self::try_from(text).map_err(|err| PinYinError::Str(PosError::from(node), err))
     }
 }
 

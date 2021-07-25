@@ -11,8 +11,14 @@ use thiserror::Error;
 pub enum ShError {
     #[error("Error from shared utilities: {0}")]
     Shared(#[from] SharedError),
-    #[error("Invalid Spahn Hadamitzky descriptor: {0}")]
-    InvalidFormat(PosError),
+    #[error("Error while parsing Spahn Hadamitzky descriptor: {0}")]
+    Str(PosError, ShStrError),
+}
+
+#[derive(Debug, Error, PartialEq, Eq, Clone)]
+pub enum ShStrError {
+    #[error("Invalid Spahn Hadamitzky descriptor")]
+    InvalidFormat,
 }
 
 // They are in the form nxnn.n,
@@ -35,13 +41,12 @@ pub struct ShDesc {
     pub sequence: u8,
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for ShDesc {
-    type Error = ShError;
+impl TryFrom<&str> for ShDesc {
+    type Error = ShStrError;
 
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
+    fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, (radical_strokes, radical, other_strokes, _, sequence)) =
-            parts(text).map_err(|_| ShError::InvalidFormat(PosError::from(node)))?;
+            parts(text).map_err(|_| ShStrError::InvalidFormat)?;
         let radical = radical.chars().next().unwrap();
         Ok(Self {
             radical_strokes,
@@ -49,6 +54,15 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for ShDesc {
             other_strokes,
             sequence,
         })
+    }
+}
+
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for ShDesc {
+    type Error = ShError;
+
+    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
+        let text = shared::text(node)?;
+        Self::try_from(text).map_err(|err| ShError::Str(PosError::from(node), err))
     }
 }
 
