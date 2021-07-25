@@ -76,24 +76,11 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
         let misc = child(node, "misc")?;
         let grade = coalesce(child(misc, "grade").ok().map(Grade::try_from))?;
         let stroke_counts = StrokeCount::try_from(misc)?;
-        let variants = misc
-            .children()
-            .filter(|child| {
-                child.has_tag_name("variant")
-                    // Line 85398 has an erroneous entry. Just ignore it.
-                    && (child.attribute("var_type") != Some("deroo") || child.text() != Some("2700"))
-            })
-            .map(Variant::try_from)
-            .collect::<Result<Vec<Variant>, VariantError>>()?;
+        let variants = children(misc, "variant", Variant::try_from)?;
         let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
         let radical_names = children(misc, "rad_name", text)?;
         let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
-        let references = child(node, "dic_number")?.children()
-            // Ignore erroneous entry on line 258272
-            // Maybe two numbers means something, but what it means is not clear
-            .filter(|child| child.has_tag_name("dic_ref") && child.text() != Some("1664 3689"))
-            .map(Reference::try_from)
-            .collect::<Result<Vec<Reference>, ReferenceError>>()?;
+        let references = children(child(node, "dic_number")?, "dic_ref", Reference::try_from)?;
         let query_codes = children(child(node, "query_code")?, "q_code", QueryCode::try_from)?;
         let meanings = children(node, "reading_meaning", Meaning::try_from)?;
         Ok(Character {
