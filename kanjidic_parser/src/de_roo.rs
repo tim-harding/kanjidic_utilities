@@ -177,6 +177,7 @@ pub enum ExtremeBottom {
     HorizontalLine,
     StandingBottom,
     DishBottom,
+    BottomCorner,
     Mountain,
     Mouth,
     Sun,
