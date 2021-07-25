@@ -2,17 +2,14 @@ use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{take_uint, IResult, NomErrorReason};
+use crate::shared::{self, take_uint, IResult, NomErrorReason, SharedError};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 
 /// Error while parsing date of creation
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum DateOfCreationError {
-    /// No text in database version node
-    #[error("No text in database version node")]
-    NoText,
-
-    /// Database version was not in a recognized format
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
     #[error("Database version was not in a recognized format")]
     Format(NomErrorReason),
 }
@@ -22,10 +19,8 @@ pub enum DateOfCreationError {
 pub struct DateOfCreation {
     /// Year of creation
     pub year: u16,
-
     /// Month of creation
     pub month: u8,
-
     /// Day of creation
     pub day: u8,
 }
@@ -34,12 +29,10 @@ impl<'a, 'b> TryFrom<Node<'a, 'b>> for DateOfCreation {
     type Error = DateOfCreationError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
-        match node.text() {
-            Some(text) => map_res(take_db_version, map_db_version)(text)
-                .map(|(_, s)| s)
-                .map_err(|e| DateOfCreationError::Format(e.into())),
-            None => Err(DateOfCreationError::NoText),
-        }
+        let text = shared::text(node)?;
+        map_res(take_db_version, map_db_version)(text)
+            .map(|(_, s)| s)
+            .map_err(|e| DateOfCreationError::Format(e.into()))
     }
 }
 
