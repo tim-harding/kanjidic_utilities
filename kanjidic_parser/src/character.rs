@@ -76,7 +76,16 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
         let misc = child(node, "misc")?;
         let grade = coalesce(child(misc, "grade").ok().map(Grade::try_from))?;
         let stroke_counts = StrokeCount::try_from(misc)?;
-        let variants = children(misc, "variant", Variant::try_from)?;
+        let variants = node
+            .children()
+            .filter(|child| {
+                child.has_tag_name("variant")
+                    // Line 85398 has an erroneous entry. Just ignore it.
+                    && !(child.attribute("var_type") == Some("deroo")
+                        && child.text() == Some("2700"))
+            })
+            .map(Variant::try_from)
+            .collect::<Result<Vec<Variant>, VariantError>>()?;
         let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
         let radical_names = children(misc, "rad_name", text)?;
         let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
