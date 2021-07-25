@@ -1,6 +1,7 @@
 use crate::{
     de_roo::{DeRoo, DeRooError},
     kuten::{Kuten, KutenError},
+    oneill::{Oneill, OneillError},
     pos_error::PosError,
     shared::{attr, text_uint, SharedError},
     spahn_hadamitzky::{ShDesc, ShError},
@@ -11,16 +12,18 @@ use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum VariantError {
-    #[error("Variant var_type not recognized: {0}")]
+    #[error("(Variant) var_type not recognized: {0}")]
     UnknownVariant(PosError),
-    #[error("Variant shared: {0}")]
+    #[error("(Variant) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("Variant kuten code: {0}")]
+    #[error("(Variant) Kuten code: {0}")]
     Kuten(#[from] KutenError),
-    #[error("Variant De Roo code: {0}")]
+    #[error("(Variant) De Roo code: {0}")]
     DeRoo(#[from] DeRooError),
-    #[error("Variant Spahn Hadamitzky descriptor: {0}")]
+    #[error("(Variant) Spahn Hadamitzky descriptor: {0}")]
     SpahnHadamitzky(#[from] ShError),
+    #[error("(Variant) ONeill: {0}")]
+    ONeill(#[from] OneillError),
 }
 
 /// Represents either of the following:
@@ -45,7 +48,7 @@ pub enum Variant {
     /// Index in the Modern Reader's Japanese-English dictionary.
     Nelson(u16),
     /// Index in Japanese Names by P.G. O'Neill.
-    ONeill(u16),
+    ONeill(Oneill),
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Variant {
@@ -61,7 +64,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Variant {
             "njecd" => Ok(Variant::Halpern(text_uint::<u16>(node)?)),
             "s_h" => Ok(Variant::Sh(ShDesc::try_from(node)?)),
             "nelson_c" => Ok(Variant::Nelson(text_uint::<u16>(node)?)),
-            "oneill" => Ok(Variant::ONeill(text_uint::<u16>(node)?)),
+            "oneill" => Ok(Variant::ONeill(Oneill::try_from(node)?)),
             "ucs" => Ok(Variant::Unicode(text_uint::<u32>(node)?)),
             _ => Err(VariantError::UnknownVariant(PosError::from(node))),
         }
