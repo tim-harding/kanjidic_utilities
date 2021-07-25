@@ -112,20 +112,7 @@ mod tests {
     use isolang::Language;
 
     use super::*;
-    use crate::{
-        de_roo::{DeRoo, ExtremeBottom, ExtremeTop},
-        four_corner::{FourCorner, Stroke},
-        kangxi::KangXi,
-        kunyomi::{Kunyomi, KunyomiKind},
-        kuten::Kuten,
-        moro::Moro,
-        pin_yin::PinYin,
-        reading::Reading,
-        skip::{Skip, SkipSolid, SolidSubpattern},
-        spahn_hadamitzky::ShDesc,
-        test_shared::DOC,
-        translation::Translation,
-    };
+    use crate::{de_roo::{DeRoo, ExtremeBottom, ExtremeTop}, four_corner::{FourCorner, Stroke}, kangxi::KangXi, kunyomi::{Kunyomi, KunyomiKind}, kuten::Kuten, moro::{Moro, MoroIndex, MoroSuffix}, pin_yin::PinYin, reading::Reading, skip::{Skip, SkipSolid, SolidSubpattern}, spahn_hadamitzky::ShDesc, test_shared::DOC, translation::Translation};
 
     #[test]
     fn character() {
@@ -177,7 +164,10 @@ mod tests {
                     Reference::Moro(Moro {
                         volume: Some(1),
                         page: Some(525),
-                        item: 272,
+                        index: MoroIndex {
+                            number: 272,
+                            suffix: MoroSuffix::None,
+                        },
                     }),
                     Reference::Henshall(997),
                     Reference::ShKk(1616),
