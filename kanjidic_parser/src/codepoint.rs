@@ -1,12 +1,12 @@
-use crate::kuten::{Kuten, KutenError, KutenStrError};
+use crate::{kuten::{Kuten, KutenStrError}, shared::{self, SharedError, attr}};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum CodepointError {
-    #[error("Node contains no text")]
-    NoText,
+    #[error("Shared: {0}")]
+    Shared(#[from] SharedError),
     #[error("Unrecognized encoding")]
     Encoding,
     #[error("Could not parse hexadecimal")]
@@ -20,13 +20,10 @@ pub enum CodepointError {
 pub enum Codepoint {
     /// Encoding in JIS X 0208-1997
     Jis208(Kuten),
-
     /// Encoding in JIS X 0212-1990
     Jis212(Kuten),
-
     /// Encoding in JIS X 0213-2000
     Jis213(Kuten),
-
     /// Unicode character
     Unicode(u32),
 }
@@ -35,8 +32,8 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Codepoint {
     type Error = CodepointError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = node.text().ok_or(CodepointError::NoText)?;
-        let encoding = node.attribute("cp_type").ok_or(CodepointError::Encoding)?;
+        let text = shared::text(node)?;
+        let encoding = attr(node, "cp_type")?;
         match encoding {
             "jis208" => Ok(Codepoint::Jis208(Kuten::try_from(text)?)),
             "jis212" => Ok(Codepoint::Jis212(Kuten::try_from(text)?)),
