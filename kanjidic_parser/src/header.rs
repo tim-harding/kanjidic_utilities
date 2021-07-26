@@ -4,9 +4,9 @@ use crate::{
     shared::{child, text_uint, SharedError},
 };
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 /// Error while parsing the header.
 #[derive(Debug, Error, PartialEq, Eq)]

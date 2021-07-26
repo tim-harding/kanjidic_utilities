@@ -1,7 +1,7 @@
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 use crate::shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};

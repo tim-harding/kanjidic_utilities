@@ -8,7 +8,7 @@ use crate::{
     shared::{attr, text_uint, SharedError},
 };
 use roxmltree::Node;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]

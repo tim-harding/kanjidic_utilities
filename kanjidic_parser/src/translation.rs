@@ -1,8 +1,8 @@
 use isolang::Language;
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 use crate::{
     pos_error::PosError,
@@ -45,8 +45,8 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Translation {
 mod tests {
     use super::Translation;
     use crate::test_shared::DOC;
-    use std::convert::TryFrom;
     use isolang::Language;
+    use std::convert::TryFrom;
 
     #[test]
     fn translation() {

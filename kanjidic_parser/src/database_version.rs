@@ -1,8 +1,8 @@
 use crate::shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
-use serde::{Serialize, Deserialize};
 use thiserror::Error;
 
 /// Error while parsing the database version

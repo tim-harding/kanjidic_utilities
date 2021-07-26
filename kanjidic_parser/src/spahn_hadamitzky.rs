@@ -4,9 +4,9 @@ use crate::{
 };
 use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum ShError {

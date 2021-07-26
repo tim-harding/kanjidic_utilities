@@ -2,12 +2,18 @@ use crate::{
     pos_error::PosError,
     shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
-use nom::{branch::alt, bytes::complete::{tag, take_while1}, character::streaming::one_of, combinator::{map, recognize, value}, multi::many_till};
+use nom::{
+    branch::alt,
+    bytes::complete::{tag, take_while1},
+    character::streaming::one_of,
+    combinator::{map, recognize, value},
+    multi::many_till,
+};
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 use crate::shared::take_uint;
 
@@ -44,7 +50,19 @@ pub struct PinYin {
 
 /// One of the four tones of Mandarin.
 /// https://en.wikipedia.org/wiki/Standard_Chinese_phonology#Tones
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy, TryFromPrimitive, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Clone,
+    Copy,
+    TryFromPrimitive,
+    Serialize,
+    Deserialize,
+)]
 #[repr(u8)]
 pub enum Tone {
     /// A steady high sound

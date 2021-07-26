@@ -11,8 +11,8 @@ use crate::{
     stroke_count::{StrokeCount, StrokeCountError},
     variant::{Variant, VariantError},
 };
-use serde::{Serialize, Deserialize};
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -79,7 +79,8 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character {
         let stroke_counts = StrokeCount::try_from(misc)?;
         let variants = children(misc, "variant", Variant::try_from)?;
         let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
-        let radical_names = children::<_, SharedError, _>(misc, "rad_name", |child| Ok(text(child)?.to_string()))?;
+        let radical_names =
+            children::<_, SharedError, _>(misc, "rad_name", |child| Ok(text(child)?.to_string()))?;
         let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
         let references = match child(node, "dic_number") {
             Ok(dic_number) => Ok(children(dic_number, "dic_ref", Reference::try_from)?),

@@ -7,8 +7,8 @@ use crate::{
     translation::{Translation, TranslationError},
 };
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum MeaningError {
@@ -38,7 +38,9 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning {
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         let nanori = children(node, "nanori", |child| {
-            text(child).map(|s: &str| s.to_string()).map_err(|_| MeaningError::NanoriText(PosError::from(node)))
+            text(child)
+                .map(|s: &str| s.to_string())
+                .map_err(|_| MeaningError::NanoriText(PosError::from(node)))
         })?;
         let rmgroup = child(node, "rmgroup")?;
         let readings = children(rmgroup, "reading", Reading::try_from)?;

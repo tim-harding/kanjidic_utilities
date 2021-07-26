@@ -1,8 +1,15 @@
-use crate::{de_roo::{DeRoo, DeRooError}, kuten::{Kuten, KutenError}, oneill::{Oneill, OneillError}, pos_error::PosError, shared::{SharedError, attr, text_hex, text_uint}, spahn_hadamitzky::{ShDesc, ShError}};
+use crate::{
+    de_roo::{DeRoo, DeRooError},
+    kuten::{Kuten, KutenError},
+    oneill::{Oneill, OneillError},
+    pos_error::PosError,
+    shared::{attr, text_hex, text_uint, SharedError},
+    spahn_hadamitzky::{ShDesc, ShError},
+};
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum VariantError {

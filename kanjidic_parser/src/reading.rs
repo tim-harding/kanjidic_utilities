@@ -7,8 +7,8 @@ use crate::{
     shared::{attr, text, SharedError},
 };
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum ReadingError {

@@ -54,7 +54,6 @@ mod kanjidic;
 pub use kanjidic::*;
 mod shared;
 
-
 #[cfg(test)]
 mod test_shared;
 

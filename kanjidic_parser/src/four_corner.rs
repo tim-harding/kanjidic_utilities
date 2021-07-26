@@ -4,9 +4,9 @@ use crate::{
 };
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, str::Chars};
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum FourCornerError {
@@ -51,7 +51,19 @@ pub struct FourCorner {
 }
 
 /// A stroke shape in the Four Corner system.
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, TryFromPrimitive, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Hash,
+    Clone,
+    Copy,
+    TryFromPrimitive,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+)]
 #[repr(u8)]
 pub enum Stroke {
     /// 亠

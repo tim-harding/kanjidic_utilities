@@ -1,7 +1,7 @@
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 use crate::{
     pos_error::PosError,

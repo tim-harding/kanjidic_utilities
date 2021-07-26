@@ -7,7 +7,7 @@ use crate::{
     pos_error::PosError,
     shared::{text_uint, SharedError},
 };
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum GradeError {

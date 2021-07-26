@@ -2,10 +2,13 @@ use std::convert::TryFrom;
 
 use rayon::prelude::*;
 use roxmltree::{Document, Node};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
-use crate::{character::{Character, CharacterError}, header::{Header, HeaderError}};
+use crate::{
+    character::{Character, CharacterError},
+    header::{Header, HeaderError},
+};
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum KanjidicError {
@@ -58,7 +61,7 @@ impl TryFrom<&str> for Kanjidic {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Kanjidic, test_shared::DOC};
+    use crate::{test_shared::DOC, Kanjidic};
     use std::convert::TryFrom;
 
     #[test]

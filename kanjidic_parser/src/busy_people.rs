@@ -1,3 +1,7 @@
+use crate::{
+    pos_error::PosError,
+    shared::{self, IResult, NomErr, NomErrorReason, SharedError},
+};
 use nom::{
     branch::alt,
     bytes::complete::take_while1,
@@ -6,13 +10,9 @@ use nom::{
     sequence::tuple,
 };
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
-use crate::{
-    pos_error::PosError,
-    shared::{self, IResult, NomErr, NomErrorReason, SharedError},
-};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum BusyPeopleError {
@@ -77,10 +77,7 @@ fn parts(s: &str) -> IResult<(u8, char, Chapter)> {
 }
 
 fn chapter(s: &str) -> IResult<Chapter> {
-    alt((
-        value(Chapter::A, char('A')),
-        map(number, Chapter::Chapter),
-    ))(s)
+    alt((value(Chapter::A, char('A')), map(number, Chapter::Chapter)))(s)
 }
 
 fn number(s: &str) -> IResult<u8> {

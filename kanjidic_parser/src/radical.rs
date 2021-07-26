@@ -5,9 +5,9 @@ use crate::{
 };
 use num_enum::TryFromPrimitiveError;
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, PartialEq, Eq, Clone, Error)]
 pub enum RadicalError {

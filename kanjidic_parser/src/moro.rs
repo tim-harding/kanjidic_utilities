@@ -8,11 +8,11 @@ use nom::{
 use roxmltree::Node;
 use thiserror::Error;
 
-use serde::{Serialize, Deserialize};
 use crate::{
     pos_error::PosError,
     shared::{attr_uint, take_uint, text, IResult, NomErrorReason, SharedError},
 };
+use serde::{Deserialize, Serialize};
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum MoroError {

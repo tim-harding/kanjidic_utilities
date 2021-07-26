@@ -7,7 +7,7 @@ use crate::{
     pos_error::PosError,
     shared::{text, SharedError},
 };
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Error, Eq, PartialEq, Clone)]
 pub enum DeRooError {
@@ -41,7 +41,19 @@ pub struct DeRoo {
     pub bottom: ExtremeBottom,
 }
 
-#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    TryFromPrimitive,
+    Eq,
+    PartialEq,
+    Debug,
+    Clone,
+    Copy,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+)]
 #[repr(u8)]
 pub enum ExtremeTop {
     // Dot
@@ -90,7 +102,19 @@ pub enum ExtremeTop {
     EyeTop,
 }
 
-#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    TryFromPrimitive,
+    Eq,
+    PartialEq,
+    Debug,
+    Clone,
+    Copy,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+)]
 #[repr(u8)]
 pub enum ExtremeBottom {
     // Dot

@@ -1,9 +1,9 @@
 use nom::{character::complete::char, sequence::tuple};
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 use crate::{
     pos_error::PosError,
@@ -85,7 +85,19 @@ pub struct SkipSolid {
 }
 
 /// An identifying characteristic of the kanji.
-#[derive(TryFromPrimitive, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    TryFromPrimitive,
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+)]
 #[repr(u8)]
 pub enum SolidSubpattern {
     /// Contains a top line.

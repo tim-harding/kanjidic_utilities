@@ -9,8 +9,8 @@ use crate::{
     spahn_hadamitzky::{ShDesc, ShError},
 };
 use roxmltree::Node;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum QueryCodeError {
