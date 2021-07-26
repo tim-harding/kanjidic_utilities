@@ -100,7 +100,6 @@ pub struct SkipSolid {
     Deserialize,
 )]
 #[repr(u8)]
-#[serde(tag = "tag", content = "content")]
 pub enum SolidSubpattern {
     /// Contains a top line.
     TopLine = 1,

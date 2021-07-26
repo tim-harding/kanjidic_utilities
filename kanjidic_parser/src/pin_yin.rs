@@ -64,7 +64,6 @@ pub struct PinYin {
     Deserialize,
 )]
 #[repr(u8)]
-#[serde(tag = "tag", content = "content")]
 pub enum Tone {
     /// A steady high sound
     High = 1,

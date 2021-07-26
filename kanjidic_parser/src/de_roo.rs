@@ -55,7 +55,6 @@ pub struct DeRoo {
     Deserialize,
 )]
 #[repr(u8)]
-#[serde(tag = "tag", content = "content")]
 pub enum ExtremeTop {
     // Dot
     Dot = 3,
@@ -117,7 +116,6 @@ pub enum ExtremeTop {
     Deserialize,
 )]
 #[repr(u8)]
-#[serde(tag = "tag", content = "content")]
 pub enum ExtremeBottom {
     // Dot
     FourDots = 40,

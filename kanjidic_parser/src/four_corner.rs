@@ -65,7 +65,6 @@ pub struct FourCorner {
     Deserialize,
 )]
 #[repr(u8)]
-#[serde(tag = "tag", content = "content")]
 pub enum Stroke {
     /// 亠
     Lid,

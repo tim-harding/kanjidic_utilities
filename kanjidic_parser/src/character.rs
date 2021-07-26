@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use crate::{
     codepoint::{Codepoint, CodepointError},
-    dictionary_reference::{Reference, ReferenceError},
+    reference::{Reference, ReferenceError},
     grade::{Grade, GradeError},
     meaning::{Meaning, MeaningError},
     query_code::{QueryCode, QueryCodeError},

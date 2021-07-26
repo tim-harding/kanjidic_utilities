@@ -45,7 +45,6 @@ pub struct Kunyomi {
 
 /// The kind of kunyomi reading.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(tag = "tag", content = "content")]
 pub enum KunyomiKind {
     /// A normal reading
     Normal,
