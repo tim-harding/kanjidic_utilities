@@ -7,7 +7,6 @@ use nom::{
 };
 use roxmltree::Node;
 use thiserror::Error;
-use kanjidic_types::Moro;
 
 use crate::{
     pos_error::PosError,
@@ -22,6 +21,39 @@ pub enum MoroError {
     IndexSuffix,
     #[error("(Moro) Format: {0}, {1}")]
     Format(PosError, NomErrorReason),
+}
+
+/// An entry in the dictionary Daikanwajiten.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Moro {
+    /// The volume
+    pub volume: Option<u8>,
+    /// The page
+    pub page: Option<u16>,
+    /// The reference index
+    pub index: MoroIndex,
+}
+
+/// The reference index
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct MoroIndex {
+    /// The item number
+    pub number: u16,
+    /// A letter that appears after the index
+    pub suffix: MoroSuffix,
+}
+
+/// A letter that appears at the end of the index
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum MoroSuffix {
+    /// No suffix
+    None,
+    /// P suffix
+    P,
+    /// X suffix
+    X,
+    /// PX suffix
+    PX,
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Moro {

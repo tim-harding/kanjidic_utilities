@@ -3,7 +3,7 @@ use crate::{
     shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
 use nom::{branch::alt, bytes::complete::{tag, take_while1}, character::streaming::one_of, combinator::{map, recognize, value}, multi::many_till};
-use kanjidic_types::{TryFromPrimitive, TryFromPrimitiveError, PinYin};
+use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -30,6 +30,32 @@ impl<'a> From<NomErr<'a>> for PinYinStrError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
+}
+
+// A modern PinYin romanization of the Chinese reading.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+pub struct PinYin {
+    /// The romanized reading.
+    pub romanization: String,
+    /// The Mandarin tone of the reading.
+    pub tone: Tone,
+}
+
+/// One of the four tones of Mandarin.
+/// https://en.wikipedia.org/wiki/Standard_Chinese_phonology#Tones
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy, TryFromPrimitive)]
+#[repr(u8)]
+pub enum Tone {
+    /// A steady high sound
+    High = 1,
+    /// A rising tone
+    Rising,
+    /// A low or dipping tone
+    Low,
+    /// A sharp falling tone
+    Falling,
+    /// A lack of tone
+    Neutral,
 }
 
 impl TryFrom<&str> for PinYin {

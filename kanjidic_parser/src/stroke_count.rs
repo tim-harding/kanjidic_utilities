@@ -1,4 +1,3 @@
-use kanjidic_types::StrokeCount;
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -16,20 +15,33 @@ pub enum StrokeCountError {
     Accepted(PosError),
 }
 
-fn parse_stroke_count(node: Node) -> Result<StrokeCount, StrokeCountError> {
-    let mut children = node
-        .children()
-        .filter(|child| child.has_tag_name("stroke_count"))
-        .map(|child| Ok(text_uint(child)?));
-    let accepted = children
-        .next()
-        .ok_or(StrokeCountError::Accepted(PosError::from(node)))??;
-    let miscounts: Result<Vec<u8>, StrokeCountError> = children.collect();
-    let miscounts = miscounts?;
-    Ok(StrokeCount {
-        accepted,
-        miscounts,
-    })
+/// The number of strokes in a kanji.
+#[derive(Debug, PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
+pub struct StrokeCount {
+    /// The accepted number of strokes.
+    pub accepted: u8,
+    /// Possible miscounts of the stroke count.
+    pub miscounts: Vec<u8>,
+}
+
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for StrokeCount {
+    type Error = StrokeCountError;
+
+    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
+        let mut children = node
+            .children()
+            .filter(|child| child.has_tag_name("stroke_count"))
+            .map(|child| Ok(text_uint(child)?));
+        let accepted = children
+            .next()
+            .ok_or(StrokeCountError::Accepted(PosError::from(node)))??;
+        let miscounts: Result<Vec<u8>, StrokeCountError> = children.collect();
+        let miscounts = miscounts?;
+        Ok(Self {
+            accepted,
+            miscounts,
+        })
+    }
 }
 
 #[cfg(test)]

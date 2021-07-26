@@ -2,7 +2,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{TryFromPrimitive, TryFromPrimitiveError, FourCorner};
+use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::{convert::TryFrom, str::Chars};
 use thiserror::Error;
@@ -25,6 +25,28 @@ pub enum FourCornerStrError {
     Digit,
     #[error("(Four corner) Expected a period delimiting the fifth corner")]
     Pattern,
+}
+
+/// A kanji classification using the Four Corner system.
+/// http://www.edrdg.org/wwwjdic/FOURCORNER.html
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
+pub struct FourCorner {
+    /// The stroke at the top left corner.
+    pub top_left: Stroke,
+    /// The stroke at the top right corner.
+    pub top_right: Stroke,
+    /// The stroke at the bottom left corner.
+    pub bottom_left: Stroke,
+    /// The stroke at the bottom right corner.
+    pub bottom_right: Stroke,
+    /// Where necessary to differentiate between other
+    /// characters with the same strokes, this extra stroke
+    /// is found above the bottom right stroke.
+    ///
+    /// In the database, we only ever see this with the fifth
+    /// corner. Still, not including it is technically
+    /// allowed, so I include it here for generality.
+    pub fifth_corner: Option<Stroke>,
 }
 
 impl TryFrom<&str> for FourCorner {
@@ -79,6 +101,32 @@ fn char_to_u8(c: char) -> Result<u8, FourCornerStrError> {
         '9' => Ok(9),
         _ => Err(FourCornerStrError::Digit),
     }
+}
+
+/// A stroke shape in the Four Corner system.
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, TryFromPrimitive, PartialOrd, Ord)]
+#[repr(u8)]
+pub enum Stroke {
+    /// 亠
+    Lid,
+    /// 一
+    LineHorizontal,
+    /// ｜
+    LineVertical,
+    /// 丶
+    Dot,
+    /// 十
+    Cross,
+    /// キ
+    Skewer,
+    /// 口
+    Box,
+    /// 厂
+    Angle,
+    /// 八
+    Hachi,
+    /// 小
+    Chiisai,
 }
 
 #[cfg(test)]

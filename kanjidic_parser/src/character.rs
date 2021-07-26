@@ -1,5 +1,16 @@
 use std::convert::TryFrom;
-use kanjidic_types::Character;
+
+use crate::{
+    codepoint::{Codepoint, CodepointError},
+    dictionary_reference::{Reference, ReferenceError},
+    grade::{Grade, GradeError},
+    meaning::{Meaning, MeaningError},
+    query_code::{QueryCode, QueryCodeError},
+    radical::{Radical, RadicalError},
+    shared::{child, children, text, text_uint, SharedError},
+    stroke_count::{StrokeCount, StrokeCountError},
+    variant::{Variant, VariantError},
+};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -23,6 +34,36 @@ pub enum CharacterError {
     QueryCode(#[from] QueryCodeError),
     #[error("(Character) Dictionary reference: {0}")]
     DictionaryReference(#[from] ReferenceError),
+}
+
+/// Information about a kanji.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Character<'a> {
+    /// The character itself.
+    pub literal: &'a str,
+    /// Alternate encodings for the character.
+    pub codepoints: Vec<Codepoint>,
+    /// Alternate classifications for the character by radical.
+    pub radicals: Vec<Radical>,
+    /// The kanji grade level.
+    pub grade: Option<Grade>,
+    /// The stroke count of the character.
+    pub stroke_counts: StrokeCount,
+    /// Cross-references to other characters or alternative indexings.
+    pub variants: Vec<Variant>,
+    /// A ranking of how often the character appears in newspapers.
+    pub frequency: Option<u16>,
+    /// The kanji's name as a radical if it is one.
+    pub radical_names: Vec<&'a str>,
+    /// Old JLPT level of the kanji. Based on pre-2010 test levels
+    /// that go up to four, not five.
+    pub jlpt: Option<u8>,
+    /// Indexes into dictionaries and other instructional books
+    pub references: Vec<Reference>,
+    /// Codes used to identify the kanji
+    pub query_codes: Vec<QueryCode>,
+    /// Different meanings of the kanji.
+    pub meanings: Vec<Meaning<'a>>,
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character<'a> {
@@ -72,6 +113,25 @@ fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option
 
 #[cfg(test)]
 mod tests {
+    use isolang::Language;
+
+    use super::*;
+    use crate::{
+        de_roo::{DeRoo, ExtremeBottom, ExtremeTop},
+        four_corner::{FourCorner, Stroke},
+        kangxi::KangXi,
+        kunyomi::{Kunyomi, KunyomiKind},
+        kuten::Kuten,
+        moro::{Moro, MoroIndex, MoroSuffix},
+        oneill::{Oneill, OneillSuffix},
+        pin_yin::PinYin,
+        reading::Reading,
+        skip::{Skip, SkipSolid, SolidSubpattern},
+        spahn_hadamitzky::ShDesc,
+        test_shared::DOC,
+        translation::Translation,
+    };
+
     #[test]
     fn character() {
         let node = DOC

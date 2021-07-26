@@ -12,7 +12,6 @@ use nom::{
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
-use kanjidic_types::{Kunyomi, KunyomiKind};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KunyomiError {
@@ -35,6 +34,25 @@ impl<'a> From<NomErr<'a>> for KunyomiStrError {
 }
 
 /// A kunyomi kanji reading.
+#[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord, Hash)]
+pub struct Kunyomi<'a> {
+    /// The okurigana
+    pub okurigana: Vec<&'a str>,
+    /// Whether the reading is as a prefix or suffix.
+    pub kind: KunyomiKind,
+}
+
+/// The kind of kunyomi reading.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
+pub enum KunyomiKind {
+    /// A normal reading
+    Normal,
+    /// A prefix
+    Prefix,
+    /// A suffix
+    Suffix,
+}
+
 impl<'a, 'b: 'a> TryFrom<&'b str> for Kunyomi<'a> {
     type Error = KunyomiStrError;
 

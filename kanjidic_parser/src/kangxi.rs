@@ -1,19 +1,7 @@
 use num_enum::{IntoPrimitive, TryFromPrimitive};
-use serde::{Deserialize, Serialize};
 
 #[derive(
-    Debug,
-    Eq,
-    PartialEq,
-    Copy,
-    Clone,
-    Hash,
-    TryFromPrimitive,
-    IntoPrimitive,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
+    Debug, Eq, PartialEq, Copy, Clone, Hash, TryFromPrimitive, IntoPrimitive, PartialOrd, Ord,
 )]
 #[repr(u8)]
 pub enum KangXi {
