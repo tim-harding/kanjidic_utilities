@@ -40,7 +40,7 @@ impl<'a> TryFrom<&'a Document<'a>> for Kanjidic {
             .filter(|child| child.has_tag_name("character"))
             .collect::<Vec<Node>>()
             .par_iter()
-            .map(|node| Character::try_from(node.clone()))
+            .map(|node| Character::try_from(*node))
             .collect::<Result<Vec<Character>, CharacterError>>();
         let characters = characters?;
         Ok(Self { header, characters })

@@ -79,7 +79,7 @@ fn parts(s: &str) -> IResult<(u8, char, Chapter)> {
 fn chapter(s: &str) -> IResult<Chapter> {
     alt((
         value(Chapter::A, char('A')),
-        map(number, |n| Chapter::Chapter(n)),
+        map(number, Chapter::Chapter),
     ))(s)
 }
 

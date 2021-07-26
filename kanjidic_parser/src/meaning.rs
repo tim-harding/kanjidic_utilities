@@ -41,8 +41,8 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning {
             text(child).map(|s: &str| s.to_string()).map_err(|_| MeaningError::NanoriText(PosError::from(node)))
         })?;
         let rmgroup = child(node, "rmgroup")?;
-        let readings = children(rmgroup, "reading", |child| Reading::try_from(child))?;
-        let translations = children(rmgroup, "meaning", |child| Translation::try_from(child))?;
+        let readings = children(rmgroup, "reading", Reading::try_from)?;
+        let translations = children(rmgroup, "meaning", Translation::try_from)?;
         Ok(Meaning {
             readings,
             translations,

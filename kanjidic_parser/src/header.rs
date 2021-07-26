@@ -38,9 +38,9 @@ impl<'a, 'b> TryFrom<Node<'a, 'b>> for Header {
         let date_of_creation = DateOfCreation::try_from(child(node, "date_of_creation")?)?;
         let file_version = text_uint(child(node, "file_version")?)?;
         Ok(Header {
+            file_version,
             database_version,
             date_of_creation,
-            file_version,
         })
     }
 }

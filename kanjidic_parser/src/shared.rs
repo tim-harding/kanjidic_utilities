@@ -53,7 +53,7 @@ pub fn child<'a, 'input>(
 ) -> Result<Node<'a, 'input>, SharedError> {
     node.children()
         .find(|child| child.has_tag_name(tag))
-        .ok_or(SharedError::MissingChild(PosError::from(node), tag))
+        .ok_or_else(|| SharedError::MissingChild(PosError::from(node), tag))
 }
 
 pub fn children<'a, 'input, T, E, F>(
@@ -94,7 +94,7 @@ pub fn text_hex(node: Node) -> Result<u32, SharedError> {
 }
 
 pub fn text<'a, 'input>(node: Node<'a, 'input>) -> Result<&'a str, SharedError> {
-    node.text().ok_or(SharedError::NoText(PosError::from(node)))
+    node.text().ok_or_else(|| SharedError::NoText(PosError::from(node)))
 }
 
 pub fn attr<'a, 'input>(
@@ -102,7 +102,7 @@ pub fn attr<'a, 'input>(
     attribute: &'static str,
 ) -> Result<&'a str, SharedError> {
     node.attribute(attribute)
-        .ok_or(SharedError::MissingAttribute(
+        .ok_or_else(|| SharedError::MissingAttribute(
             PosError::from(node),
             attribute,
         ))

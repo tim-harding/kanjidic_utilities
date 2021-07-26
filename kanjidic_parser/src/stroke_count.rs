@@ -35,7 +35,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for StrokeCount {
             .map(|child| Ok(text_uint(child)?));
         let accepted = children
             .next()
-            .ok_or(StrokeCountError::Accepted(PosError::from(node)))??;
+            .ok_or_else(|| StrokeCountError::Accepted(PosError::from(node)))??;
         let miscounts: Result<Vec<u8>, StrokeCountError> = children.collect();
         let miscounts = miscounts?;
         Ok(Self {

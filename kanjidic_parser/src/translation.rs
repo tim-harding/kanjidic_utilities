@@ -34,7 +34,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Translation {
         let text = shared::text(node)?.into();
         let language = match node.attribute("m_lang") {
             Some(lang_text) => Language::from_639_1(lang_text)
-                .ok_or(TranslationError::UnknownLanguage(PosError::from(node)))?,
+                .ok_or_else(|| TranslationError::UnknownLanguage(PosError::from(node)))?,
             None => Language::Eng,
         };
         Ok(Translation { text, language })
