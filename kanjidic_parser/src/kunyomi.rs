@@ -12,6 +12,7 @@ use nom::{
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KunyomiError {
@@ -34,16 +35,16 @@ impl<'a> From<NomErr<'a>> for KunyomiStrError {
 }
 
 /// A kunyomi kanji reading.
-#[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord, Hash)]
-pub struct Kunyomi<'a> {
+#[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct Kunyomi {
     /// The okurigana
-    pub okurigana: Vec<&'a str>,
+    pub okurigana: Vec<String>,
     /// Whether the reading is as a prefix or suffix.
     pub kind: KunyomiKind,
 }
 
 /// The kind of kunyomi reading.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum KunyomiKind {
     /// A normal reading
     Normal,
@@ -53,7 +54,7 @@ pub enum KunyomiKind {
     Suffix,
 }
 
-impl<'a, 'b: 'a> TryFrom<&'b str> for Kunyomi<'a> {
+impl<'a, 'b: 'a> TryFrom<&'b str> for Kunyomi {
     type Error = KunyomiStrError;
 
     fn try_from(text: &'b str) -> Result<Self, Self::Error> {
@@ -69,7 +70,7 @@ impl<'a, 'b: 'a> TryFrom<&'b str> for Kunyomi<'a> {
     }
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi<'a> {
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi {
     type Error = KunyomiError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
@@ -78,12 +79,12 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi<'a> {
     }
 }
 
-fn parts(s: &str) -> IResult<(bool, Vec<&str>, bool)> {
+fn parts(s: &str) -> IResult<(bool, Vec<String>, bool)> {
     tuple((fix, okurigana, fix))(s)
 }
 
-fn okurigana(s: &str) -> IResult<Vec<&str>> {
-    separated_list1(char('.'), is_not("-."))(s)
+fn okurigana(s: &str) -> IResult<Vec<String>> {
+    separated_list1(char('.'), map(is_not("-."), |s: &str| s.into()))(s)
 }
 
 fn fix(s: &str) -> IResult<bool> {
@@ -111,7 +112,7 @@ mod tests {
         assert_eq!(
             kunyomi,
             Ok(Kunyomi {
-                okurigana: vec!["つ", "ぐ",],
+                okurigana: vec!["つ".into(), "ぐ".into(),],
                 kind: KunyomiKind::Normal,
             })
         )

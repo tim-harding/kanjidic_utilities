@@ -6,6 +6,7 @@ use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum ShError {
@@ -34,7 +35,7 @@ impl<'a> From<NomErr<'a>> for ShStrError {
 // the 2nd kanji in the 3k11 sequence.
 
 /// Descriptor code for The Kanji Dictionary.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct ShDesc {
     /// Number of strokes in the identifying radical.
     pub radical_strokes: u8,

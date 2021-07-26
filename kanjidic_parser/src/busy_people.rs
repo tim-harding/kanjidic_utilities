@@ -8,7 +8,7 @@ use nom::{
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
-
+use serde::{Serialize, Deserialize};
 use crate::{
     pos_error::PosError,
     shared::{self, IResult, NomErr, NomErrorReason, SharedError},
@@ -35,7 +35,7 @@ impl<'a> From<NomErr<'a>> for BusyPeopleStrError {
 }
 
 /// A location in Japanese for Busy People.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct BusyPeople {
     /// The volume
     volume: u8,
@@ -44,7 +44,7 @@ pub struct BusyPeople {
 }
 
 /// Either the chapter number or chapter A in Japanese for Busy People.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Chapter {
     /// A chapter number.
     Chapter(u8),

@@ -1,6 +1,7 @@
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 use crate::shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
@@ -21,7 +22,7 @@ impl<'a> From<NomErr<'a>> for DateOfCreationError {
 }
 
 /// The date the file was created
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct DateOfCreation {
     /// Year of creation
     pub year: u16,

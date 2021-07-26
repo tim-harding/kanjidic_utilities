@@ -7,6 +7,7 @@ use num_enum::TryFromPrimitiveError;
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, PartialEq, Eq, Clone, Error)]
 pub enum RadicalError {
@@ -19,7 +20,7 @@ pub enum RadicalError {
 }
 
 /// A kanji classification based on its radical.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Radical {
     /// Based on the KangXi Zidian system.
     /// Referenced from the Shibano JIS Kanwa Jiten.

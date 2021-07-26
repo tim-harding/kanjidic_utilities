@@ -2,6 +2,7 @@ use crate::{de_roo::{DeRoo, DeRooError}, kuten::{Kuten, KutenError}, oneill::{On
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum VariantError {
@@ -22,7 +23,7 @@ pub enum VariantError {
 /// Represents either of the following:
 /// - A cross-reference to another kanji usually regarded as a variant
 /// - An alternative indexing code for the current kanji
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Variant {
     /// A coding in JIS X 0208
     Jis208(Kuten),

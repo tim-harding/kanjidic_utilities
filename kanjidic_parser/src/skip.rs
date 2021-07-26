@@ -3,6 +3,7 @@ use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 use crate::{
     pos_error::PosError,
@@ -35,7 +36,7 @@ impl<'a> From<NomErr<'a>> for SkipStrError {
 
 /// Kanji code from the SKIP system of indexing.
 /// http://www.edrdg.org/wwwjdic/SKIP.html
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 pub enum Skip {
     /// Pattern 1, the kanji can be divided into left and right parts.
     Horizontal(SkipHorizontal),
@@ -45,6 +46,56 @@ pub enum Skip {
     Enclosure(SkipEnclosure),
     /// Pattern 4, the cannot be classified by any of the above patterns.
     Solid(SkipSolid),
+}
+
+/// Left and right parts of the kanji.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct SkipHorizontal {
+    /// Number of strokes in the left part.
+    pub left: u8,
+    /// Number of strokes in the right part.
+    pub right: u8,
+}
+
+/// Top and bottom parts of the kanji.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct SkipVertical {
+    /// Number of strokes in the top part.
+    pub top: u8,
+    /// Number of strokes in the bottom part.
+    pub bottom: u8,
+}
+
+/// Interior and exterior parts of the kanji.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct SkipEnclosure {
+    /// Number of strokes in the exterior part.
+    pub exterior: u8,
+    /// Number of strokes in the interior part.
+    pub interior: u8,
+}
+
+/// Classification for kanji that don't fit another pattern.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct SkipSolid {
+    /// The total number of strokes in the kanji.
+    pub total_stroke_count: u8,
+    /// The subpattern that defines the kanji.
+    pub solid_subpattern: SolidSubpattern,
+}
+
+/// An identifying characteristic of the kanji.
+#[derive(TryFromPrimitive, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[repr(u8)]
+pub enum SolidSubpattern {
+    /// Contains a top line.
+    TopLine = 1,
+    /// Contains a bottom line.
+    BottomLine,
+    /// Contains a through line.
+    ThroughLine,
+    /// Does not contain any of the above.
+    Other,
 }
 
 impl TryFrom<&str> for Skip {
@@ -88,56 +139,6 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Skip {
 
 fn parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
     tuple((take_uint, char('-'), take_uint, char('-'), take_uint))(s)
-}
-
-/// Left and right parts of the kanji.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SkipHorizontal {
-    /// Number of strokes in the left part.
-    pub left: u8,
-    /// Number of strokes in the right part.
-    pub right: u8,
-}
-
-/// Top and bottom parts of the kanji.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SkipVertical {
-    /// Number of strokes in the top part.
-    pub top: u8,
-    /// Number of strokes in the bottom part.
-    pub bottom: u8,
-}
-
-/// Interior and exterior parts of the kanji.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SkipEnclosure {
-    /// Number of strokes in the exterior part.
-    pub exterior: u8,
-    /// Number of strokes in the interior part.
-    pub interior: u8,
-}
-
-/// Classification for kanji that don't fit another pattern.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct SkipSolid {
-    /// The total number of strokes in the kanji.
-    pub total_stroke_count: u8,
-    /// The subpattern that defines the kanji.
-    pub solid_subpattern: SolidSubpattern,
-}
-
-/// An identifying characteristic of the kanji.
-#[derive(TryFromPrimitive, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[repr(u8)]
-pub enum SolidSubpattern {
-    /// Contains a top line.
-    TopLine = 1,
-    /// Contains a bottom line.
-    BottomLine,
-    /// Contains a through line.
-    ThroughLine,
-    /// Does not contain any of the above.
-    Other,
 }
 
 #[cfg(test)]

@@ -1,6 +1,7 @@
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 use crate::{
     pos_error::PosError,
@@ -16,7 +17,7 @@ pub enum StrokeCountError {
 }
 
 /// The number of strokes in a kanji.
-#[derive(Debug, PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct StrokeCount {
     /// The accepted number of strokes.
     pub accepted: u8,

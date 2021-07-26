@@ -2,6 +2,7 @@ use isolang::Language;
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 use crate::{
     pos_error::PosError,
@@ -18,19 +19,19 @@ pub enum TranslationError {
 
 // Todo: Identify suffixes and prefixes
 /// A translation of a kanji meaning into another language.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Translation<'a> {
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct Translation {
     /// The word in the target language.
-    pub text: &'a str,
+    pub text: String,
     /// The language being translated into.
     pub language: Language,
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Translation<'a> {
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Translation {
     type Error = TranslationError;
 
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
+    fn try_from(node: Node) -> Result<Self, Self::Error> {
+        let text = shared::text(node)?.into();
         let language = match node.attribute("m_lang") {
             Some(lang_text) => Language::from_639_1(lang_text)
                 .ok_or(TranslationError::UnknownLanguage(PosError::from(node)))?,
@@ -44,8 +45,8 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Translation<'a> {
 mod tests {
     use super::Translation;
     use crate::test_shared::DOC;
-    use isolang::Language;
     use std::convert::TryFrom;
+    use isolang::Language;
 
     #[test]
     fn translation() {
@@ -57,7 +58,7 @@ mod tests {
         assert_eq!(
             translation,
             Ok(Translation {
-                text: "Asia",
+                text: "Asia".into(),
                 language: Language::Eng,
             })
         )

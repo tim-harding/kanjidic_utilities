@@ -5,6 +5,7 @@ use crate::{
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum CodepointError {
@@ -17,7 +18,7 @@ pub enum CodepointError {
 }
 
 /// The code of a kanji in a given character set standard.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Codepoint {
     /// Encoding in JIS X 0208-1997
     Jis208(Kuten),

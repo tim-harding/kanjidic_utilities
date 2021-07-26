@@ -3,6 +3,7 @@ use nom::sequence::tuple;
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 use crate::{
     pos_error::PosError,
@@ -31,7 +32,7 @@ impl<'a> From<NomErr<'a>> for KutenStrError {
 
 /// A kuten representation of a JIS X 0213 character.
 /// http://unicode-iphone.blogspot.com/2010/05/kuten-code-to-unicode.html
-#[derive(Debug, PartialEq, Clone, Copy, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Clone, Copy, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Kuten {
     /// The plane on which a kuten representation is found.
     pub plane: u8,

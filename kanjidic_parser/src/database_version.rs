@@ -2,6 +2,7 @@ use crate::shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedErro
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
 use std::convert::TryFrom;
+use serde::{Serialize, Deserialize};
 use thiserror::Error;
 
 /// Error while parsing the database version
@@ -22,7 +23,7 @@ impl<'a> From<NomErr<'a>> for DatabaseVersionError {
 }
 
 /// The version of the file.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct DatabaseVersion {
     /// The year of release.
     pub year: u16,

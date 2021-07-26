@@ -7,6 +7,7 @@ use crate::{
     pos_error::PosError,
     shared::{text_uint, SharedError},
 };
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum GradeError {
@@ -23,7 +24,7 @@ pub enum GradeStrError {
 }
 
 /// The grade level in which the kanji is learned.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Grade {
     /// A Kyouiku kanji learned in grades 1-6.
     Kyouiku(u8),

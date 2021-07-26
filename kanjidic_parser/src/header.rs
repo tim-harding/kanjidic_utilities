@@ -6,6 +6,7 @@ use crate::{
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 /// Error while parsing the header.
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -19,7 +20,7 @@ pub enum HeaderError {
 }
 
 /// Contains identification information about the version of the file.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Header {
     /// Denotes the version of the database structure.
     pub file_version: u8,

@@ -6,6 +6,7 @@ use nom::{
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 use crate::{
     pos_error::PosError,
@@ -35,7 +36,7 @@ impl<'a> From<NomErr<'a>> for OneillStrError {
 }
 
 /// An index into the Japanese Names reference book
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash,Serialize, Deserialize)]
 pub struct Oneill {
     /// The reference number
     pub number: u16,
@@ -44,7 +45,7 @@ pub struct Oneill {
 }
 
 /// The suffix for a Japanese Names reference
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash , Serialize, Deserialize)]
 pub enum OneillSuffix {
     /// No suffix
     None,

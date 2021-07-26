@@ -6,6 +6,7 @@ use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::{convert::TryFrom, str::Chars};
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum FourCornerError {
@@ -29,7 +30,7 @@ pub enum FourCornerStrError {
 
 /// A kanji classification using the Four Corner system.
 /// http://www.edrdg.org/wwwjdic/FOURCORNER.html
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct FourCorner {
     /// The stroke at the top left corner.
     pub top_left: Stroke,
@@ -47,6 +48,32 @@ pub struct FourCorner {
     /// corner. Still, not including it is technically
     /// allowed, so I include it here for generality.
     pub fifth_corner: Option<Stroke>,
+}
+
+/// A stroke shape in the Four Corner system.
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, TryFromPrimitive, PartialOrd, Ord, Serialize, Deserialize)]
+#[repr(u8)]
+pub enum Stroke {
+    /// 亠
+    Lid,
+    /// 一
+    LineHorizontal,
+    /// ｜
+    LineVertical,
+    /// 丶
+    Dot,
+    /// 十
+    Cross,
+    /// キ
+    Skewer,
+    /// 口
+    Box,
+    /// 厂
+    Angle,
+    /// 八
+    Hachi,
+    /// 小
+    Chiisai,
 }
 
 impl TryFrom<&str> for FourCorner {
@@ -101,32 +128,6 @@ fn char_to_u8(c: char) -> Result<u8, FourCornerStrError> {
         '9' => Ok(9),
         _ => Err(FourCornerStrError::Digit),
     }
-}
-
-/// A stroke shape in the Four Corner system.
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, TryFromPrimitive, PartialOrd, Ord)]
-#[repr(u8)]
-pub enum Stroke {
-    /// 亠
-    Lid,
-    /// 一
-    LineHorizontal,
-    /// ｜
-    LineVertical,
-    /// 丶
-    Dot,
-    /// 十
-    Cross,
-    /// キ
-    Skewer,
-    /// 口
-    Box,
-    /// 厂
-    Angle,
-    /// 八
-    Hachi,
-    /// 小
-    Chiisai,
 }
 
 #[cfg(test)]

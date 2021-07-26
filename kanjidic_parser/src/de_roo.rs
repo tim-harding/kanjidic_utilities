@@ -7,6 +7,7 @@ use crate::{
     pos_error::PosError,
     shared::{text, SharedError},
 };
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, Eq, PartialEq, Clone)]
 pub enum DeRooError {
@@ -32,7 +33,7 @@ pub enum DeRooStrError {
 
 /// Identification of a kanji in the De Roo system.
 /// http://www.edrdg.org/wwwjdic/deroo.html
-#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct DeRoo {
     /// The graphic element that appears at the top of the kanji.
     pub top: ExtremeTop,
@@ -40,40 +41,7 @@ pub struct DeRoo {
     pub bottom: ExtremeBottom,
 }
 
-impl TryFrom<&str> for DeRoo {
-    type Error = DeRooStrError;
-
-    fn try_from(text: &str) -> Result<Self, Self::Error> {
-        match text.len() {
-            3 => from_slices(text, 1),
-            4 => from_slices(text, 2),
-            n => Err(DeRooStrError::InvalidLength(n)),
-        }
-    }
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for DeRoo {
-    type Error = DeRooError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        DeRoo::try_from(text(node)?).map_err(|err| DeRooError::Str(PosError::from(node), err))
-    }
-}
-
-fn from_slices(text: &str, first: usize) -> Result<DeRoo, DeRooStrError> {
-    let top = ExtremeTop::try_from(u8_from_slice(text, 0, first)?)?;
-    let bottom = ExtremeBottom::try_from(u8_from_slice(text, first, 2)?)?;
-    Ok(DeRoo { top, bottom })
-}
-
-fn u8_from_slice(text: &str, start: usize, count: usize) -> Result<u8, DeRooStrError> {
-    let top = &text.as_bytes()[start..start + count];
-    let top = std::str::from_utf8(top)?;
-    let top: u8 = top.parse().map_err(|_| DeRooStrError::Number)?;
-    Ok(top)
-}
-
-#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord, Hash)]
+#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum ExtremeTop {
     // Dot
@@ -122,7 +90,7 @@ pub enum ExtremeTop {
     EyeTop,
 }
 
-#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord, Hash)]
+#[derive(TryFromPrimitive, Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum ExtremeBottom {
     // Dot
@@ -210,4 +178,37 @@ mod tests {
             })
         )
     }
+}
+
+impl TryFrom<&str> for DeRoo {
+    type Error = DeRooStrError;
+
+    fn try_from(text: &str) -> Result<Self, Self::Error> {
+        match text.len() {
+            3 => from_slices(text, 1),
+            4 => from_slices(text, 2),
+            n => Err(DeRooStrError::InvalidLength(n)),
+        }
+    }
+}
+
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for DeRoo {
+    type Error = DeRooError;
+
+    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
+        DeRoo::try_from(text(node)?).map_err(|err| DeRooError::Str(PosError::from(node), err))
+    }
+}
+
+fn from_slices(text: &str, first: usize) -> Result<DeRoo, DeRooStrError> {
+    let top = ExtremeTop::try_from(u8_from_slice(text, 0, first)?)?;
+    let bottom = ExtremeBottom::try_from(u8_from_slice(text, first, 2)?)?;
+    Ok(DeRoo { top, bottom })
+}
+
+fn u8_from_slice(text: &str, start: usize, count: usize) -> Result<u8, DeRooStrError> {
+    let top = &text.as_bytes()[start..start + count];
+    let top = std::str::from_utf8(top)?;
+    let top: u8 = top.parse().map_err(|_| DeRooStrError::Number)?;
+    Ok(top)
 }

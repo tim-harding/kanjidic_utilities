@@ -8,6 +8,7 @@ use crate::{
     shared::{attr, text_uint, SharedError},
 };
 use roxmltree::Node;
+use serde::{Serialize, Deserialize};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
@@ -25,7 +26,7 @@ pub enum ReferenceError {
 }
 
 /// An index number into a particular kanji dictionary or reference book.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Reference {
     /// Modern Reader's Japanese-English Dictionary by Andrew Nelson
     NelsonClassic(u16),

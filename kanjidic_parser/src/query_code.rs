@@ -10,6 +10,7 @@ use crate::{
 };
 use roxmltree::Node;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum QueryCodeError {
@@ -31,7 +32,7 @@ pub enum QueryCodeError {
 
 /// Information relating to a kanji that can be
 /// used for identification and lookup.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum QueryCode {
     /// The Halpern SKIP code
     Skip(Skip),
@@ -46,7 +47,7 @@ pub enum QueryCode {
 }
 
 /// A possible misclassification of the kanji
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Misclassification {
     /// A mistake in the division of the kanji
     Position(Skip),

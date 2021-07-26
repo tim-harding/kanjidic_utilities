@@ -40,6 +40,7 @@ use header::{Header, HeaderError};
 use rayon::prelude::*;
 use roxmltree::{Document, Node};
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Error)]
 pub enum KanjidicError {
@@ -63,19 +64,19 @@ impl<'input> KanjidicDocument<'input> {
         Ok(Self { doc })
     }
 
-    pub fn kanjidic<'a, 'b: 'a>(&'b self) -> Result<Kanjidic<'a>, KanjidicError> {
+    pub fn kanjidic<'a, 'b: 'a>(&'b self) -> Result<Kanjidic, KanjidicError> {
         Kanjidic::new(&self.doc)
     }
 }
 
-#[derive(Debug)]
-pub struct Kanjidic<'a> {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Kanjidic {
     pub header: Header,
-    pub characters: Vec<Character<'a>>,
+    pub characters: Vec<Character>,
 }
 
-impl<'a, 'b: 'a> Kanjidic<'a> {
-    fn new(doc: &'b Document) -> Result<Kanjidic<'a>, KanjidicError> {
+impl<'a, 'b: 'a> Kanjidic {
+    fn new(doc: &'b Document) -> Result<Kanjidic, KanjidicError> {
         let root = doc.root_element();
         let header = Header::try_from(
             root.children()

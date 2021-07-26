@@ -8,6 +8,7 @@ use nom::{
 use roxmltree::Node;
 use thiserror::Error;
 
+use serde::{Serialize, Deserialize};
 use crate::{
     pos_error::PosError,
     shared::{attr_uint, take_uint, text, IResult, NomErrorReason, SharedError},
@@ -24,7 +25,7 @@ pub enum MoroError {
 }
 
 /// An entry in the dictionary Daikanwajiten.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Moro {
     /// The volume
     pub volume: Option<u8>,
@@ -35,7 +36,7 @@ pub struct Moro {
 }
 
 /// The reference index
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct MoroIndex {
     /// The item number
     pub number: u16,
@@ -44,7 +45,7 @@ pub struct MoroIndex {
 }
 
 /// A letter that appears at the end of the index
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum MoroSuffix {
     /// No suffix
     None,

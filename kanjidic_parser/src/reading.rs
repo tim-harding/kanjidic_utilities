@@ -8,6 +8,7 @@ use crate::{
 };
 use roxmltree::Node;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum ReadingError {
@@ -22,33 +23,33 @@ pub enum ReadingError {
 }
 
 /// A particular reading or pronunciation of a kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Reading<'a> {
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub enum Reading {
     /// The modern romanization of the Chinese reading.
     PinYin(PinYin),
     /// The romanized form of the Korean reading.
-    KoreanRomanized(&'a str),
+    KoreanRomanized(String),
     /// The Korean reading of the kanji in Hangul.
-    KoreanHangul(&'a str),
+    KoreanHangul(String),
     /// The Vietnamese reading supplied by Minh Chau Pham.
-    Vietnam(&'a str),
+    Vietnam(String),
     /// The onyomi reading of the kanji in katakana.
-    Onyomi(&'a str),
+    Onyomi(String),
     /// The kunyomi reading of the kanji in hiragana or katakana.
-    Kunyomi(Kunyomi<'a>),
+    Kunyomi(Kunyomi),
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reading<'a> {
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reading {
     type Error = ReadingError;
 
     fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
         let r_type = attr(node, "r_type")?;
         match r_type {
             "pinyin" => Ok(Reading::PinYin(PinYin::try_from(node)?)),
-            "korean_r" => Ok(Reading::KoreanRomanized(text(node)?)),
-            "korean_h" => Ok(Reading::KoreanHangul(text(node)?)),
-            "vietnam" => Ok(Reading::Vietnam(text(node)?)),
-            "ja_on" => Ok(Reading::Onyomi(text(node)?)),
+            "korean_r" => Ok(Reading::KoreanRomanized(text(node)?.into())),
+            "korean_h" => Ok(Reading::KoreanHangul(text(node)?.into())),
+            "vietnam" => Ok(Reading::Vietnam(text(node)?.into())),
+            "ja_on" => Ok(Reading::Onyomi(text(node)?.into())),
             "ja_kun" => Ok(Reading::Kunyomi(Kunyomi::try_from(node)?)),
             _ => Err(ReadingError::UnrecognizedType(PosError::from(node))),
         }
@@ -74,7 +75,7 @@ mod tests {
         assert_eq!(
             reading,
             Ok(Reading::PinYin(PinYin {
-                romanization: "ya".to_string(),
+                romanization: "ya".into(),
                 tone: Tone::Falling,
             }))
         )

@@ -7,6 +7,7 @@ use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use serde::{Serialize, Deserialize};
 
 use crate::shared::take_uint;
 
@@ -33,7 +34,7 @@ impl<'a> From<NomErr<'a>> for PinYinStrError {
 }
 
 // A modern PinYin romanization of the Chinese reading.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Serialize, Deserialize)]
 pub struct PinYin {
     /// The romanized reading.
     pub romanization: String,
@@ -43,7 +44,7 @@ pub struct PinYin {
 
 /// One of the four tones of Mandarin.
 /// https://en.wikipedia.org/wiki/Standard_Chinese_phonology#Tones
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy, TryFromPrimitive)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy, TryFromPrimitive, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum Tone {
     /// A steady high sound
@@ -124,7 +125,7 @@ mod tests {
         assert_eq!(
             pin_yin,
             Ok(PinYin {
-                romanization: "ya".to_string(),
+                romanization: "ya".into(),
                 tone: Tone::Falling,
             })
         )
