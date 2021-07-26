@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-
+use kanjidic_types::Meaning;
 use crate::{
     pos_error::PosError,
     reading::{Reading, ReadingError},
@@ -19,17 +19,6 @@ pub enum MeaningError {
     Reading(#[from] ReadingError),
     #[error("(Meaning) Translation: {0}")]
     Translation(#[from] TranslationError),
-}
-
-/// Information about a particular meaning of a kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Meaning<'a> {
-    /// Different ways the kanji can be read.
-    pub readings: Vec<Reading<'a>>,
-    /// Translations of the kanji into different languages.
-    pub translations: Vec<Translation<'a>>,
-    /// Japanese readings associated with names.
-    pub nanori: Vec<&'a str>,
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning<'a> {
@@ -52,8 +41,6 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning<'a> {
 
 #[cfg(test)]
 mod tests {
-    use isolang::Language;
-
     use super::*;
     use crate::{
         kunyomi::{Kunyomi, KunyomiKind},

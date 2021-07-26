@@ -34,25 +34,6 @@ impl<'a> From<NomErr<'a>> for BusyPeopleStrError {
     }
 }
 
-/// A location in Japanese for Busy People.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BusyPeople {
-    /// The volume
-    volume: u8,
-    /// The chapter
-    chapter: Chapter,
-}
-
-/// Either the chapter number or chapter A in Japanese for Busy People.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Chapter {
-    /// A chapter number.
-    Chapter(u8),
-    /// Some of the chapter are called "A",
-    /// but it isn't specified anywhere what that means.
-    A,
-}
-
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for BusyPeople {
     type Error = BusyPeopleError;
 

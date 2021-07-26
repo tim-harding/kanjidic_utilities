@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-
+use kanjidic_types::QueryCode;
 use crate::{
     de_roo::{DeRoo, DeRooError},
     four_corner::{FourCorner, FourCornerError},
@@ -27,35 +27,6 @@ pub enum QueryCodeError {
     DeRoo(#[from] DeRooError),
     #[error("(Query code) Unrecognized skip_misclass value: {0}")]
     UnknownMisclassification(PosError),
-}
-
-/// Information relating to a kanji that can be
-/// used for identification and lookup.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum QueryCode {
-    /// The Halpern SKIP code
-    Skip(Skip),
-    /// Desrcriptor codes from The Kanji Dictionary
-    SpahnHadamitzky(ShDesc),
-    /// The Four Corner code
-    FourCorner(FourCorner),
-    /// Father Joseph De Roo's code system
-    DeRoo(DeRoo),
-    /// A possible misclassification of the kanji
-    Misclassification(Misclassification),
-}
-
-/// A possible misclassification of the kanji
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Misclassification {
-    /// A mistake in the division of the kanji
-    Position(Skip),
-    /// A mistake in the number of strokes
-    StrokeCount(Skip),
-    /// Mistakes in both the division and the number of strokes
-    StrokeAndPosition(Skip),
-    /// Ambiguous stroke counts
-    Ambiguous(Skip),
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for QueryCode {
@@ -93,7 +64,6 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for QueryCode {
 mod tests {
     use super::*;
     use crate::{
-        skip::{SkipSolid, SolidSubpattern},
         test_shared::DOC,
     };
 

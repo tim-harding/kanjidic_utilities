@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-
+use kanjidic_types::Reading;
 use crate::{
     kunyomi::{Kunyomi, KunyomiError},
     pin_yin::{PinYin, PinYinError},
@@ -19,23 +19,6 @@ pub enum ReadingError {
     PinYin(#[from] PinYinError),
     #[error("(Reading) Kunyomi: {0}")]
     Kunyomi(#[from] KunyomiError),
-}
-
-/// A particular reading or pronunciation of a kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Reading<'a> {
-    /// The modern romanization of the Chinese reading.
-    PinYin(PinYin),
-    /// The romanized form of the Korean reading.
-    KoreanRomanized(&'a str),
-    /// The Korean reading of the kanji in Hangul.
-    KoreanHangul(&'a str),
-    /// The Vietnamese reading supplied by Minh Chau Pham.
-    Vietnam(&'a str),
-    /// The onyomi reading of the kanji in katakana.
-    Onyomi(&'a str),
-    /// The kunyomi reading of the kanji in hiragana or katakana.
-    Kunyomi(Kunyomi<'a>),
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reading<'a> {

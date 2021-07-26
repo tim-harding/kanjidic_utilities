@@ -5,6 +5,7 @@ use crate::{
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
+use kanjidic_types::Codepoint;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum CodepointError {
@@ -14,19 +15,6 @@ pub enum CodepointError {
     Encoding,
     #[error("(Codepoint) Kuten: {0}")]
     Kuten(#[from] KutenStrError),
-}
-
-/// The code of a kanji in a given character set standard.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Codepoint {
-    /// Encoding in JIS X 0208-1997
-    Jis208(Kuten),
-    /// Encoding in JIS X 0212-1990
-    Jis212(Kuten),
-    /// Encoding in JIS X 0213-2000
-    Jis213(Kuten),
-    /// Unicode character
-    Unicode(u32),
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Codepoint {
