@@ -12,8 +12,6 @@ pub enum DatabaseVersionError {
     Shared(#[from] SharedError),
     #[error("(Database version) Format: {0}")]
     Format(NomErrorReason),
-    #[error("(Database version) Could not parse an integer")]
-    Integer,
 }
 
 impl<'a> From<NomErr<'a>> for DatabaseVersionError {
