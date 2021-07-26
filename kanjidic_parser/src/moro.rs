@@ -46,6 +46,7 @@ pub struct MoroIndex {
 
 /// A letter that appears at the end of the index
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(tag = "tag", content = "content")]
 pub enum MoroSuffix {
     /// No suffix
     None,

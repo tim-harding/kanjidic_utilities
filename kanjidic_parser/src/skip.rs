@@ -37,6 +37,7 @@ impl<'a> From<NomErr<'a>> for SkipStrError {
 /// Kanji code from the SKIP system of indexing.
 /// http://www.edrdg.org/wwwjdic/SKIP.html
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
+#[serde(tag = "tag", content = "content")]
 pub enum Skip {
     /// Pattern 1, the kanji can be divided into left and right parts.
     Horizontal(SkipHorizontal),
@@ -99,6 +100,7 @@ pub struct SkipSolid {
     Deserialize,
 )]
 #[repr(u8)]
+#[serde(tag = "tag", content = "content")]
 pub enum SolidSubpattern {
     /// Contains a top line.
     TopLine = 1,

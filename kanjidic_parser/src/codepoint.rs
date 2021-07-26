@@ -19,6 +19,7 @@ pub enum CodepointError {
 
 /// The code of a kanji in a given character set standard.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(tag = "tag", content = "content")]
 pub enum Codepoint {
     /// Encoding in JIS X 0208-1997
     Jis208(Kuten),

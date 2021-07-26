@@ -46,6 +46,7 @@ pub struct Oneill {
 
 /// The suffix for a Japanese Names reference
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(tag = "tag", content = "content")]
 pub enum OneillSuffix {
     /// No suffix
     None,

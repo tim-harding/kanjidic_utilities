@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
     Deserialize,
 )]
 #[repr(u8)]
+#[serde(tag = "tag", content = "content")]
 pub enum KangXi {
     One = 1,
     Line,

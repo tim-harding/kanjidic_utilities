@@ -31,6 +31,7 @@ pub enum VariantError {
 /// - A cross-reference to another kanji usually regarded as a variant
 /// - An alternative indexing code for the current kanji
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(tag = "tag", content = "content")]
 pub enum Variant {
     /// A coding in JIS X 0208
     Jis208(Kuten),

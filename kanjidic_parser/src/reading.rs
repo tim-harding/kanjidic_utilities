@@ -24,6 +24,7 @@ pub enum ReadingError {
 
 /// A particular reading or pronunciation of a kanji.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(tag = "tag", content = "content")]
 pub enum Reading {
     /// The modern romanization of the Chinese reading.
     PinYin(PinYin),

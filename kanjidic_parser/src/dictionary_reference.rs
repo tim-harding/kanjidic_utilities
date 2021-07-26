@@ -27,6 +27,7 @@ pub enum ReferenceError {
 
 /// An index number into a particular kanji dictionary or reference book.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(tag = "tag", content = "content")]
 pub enum Reference {
     /// Modern Reader's Japanese-English Dictionary by Andrew Nelson
     NelsonClassic(u16),

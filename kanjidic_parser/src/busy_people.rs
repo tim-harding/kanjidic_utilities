@@ -45,6 +45,7 @@ pub struct BusyPeople {
 
 /// Either the chapter number or chapter A in Japanese for Busy People.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(tag = "tag", content = "content")]
 pub enum Chapter {
     /// A chapter number.
     Chapter(u8),
