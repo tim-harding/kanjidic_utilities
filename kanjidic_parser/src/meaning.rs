@@ -39,7 +39,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning {
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         let nanori = children(node, "nanori", |child| {
             text(child)
-                .map(|s: &str| s.to_string())
+                .map(|s: &str| s.to_owned())
                 .map_err(|_| MeaningError::NanoriText(PosError::from(node)))
         })?;
         let rmgroup = child(node, "rmgroup")?;
