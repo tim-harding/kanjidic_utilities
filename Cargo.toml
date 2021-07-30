@@ -2,4 +2,5 @@
 members = [
     "kanjidic_parser",
     "kanjidic_converter",
+    "kanjidic_server",
 ]
