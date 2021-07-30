@@ -61,11 +61,13 @@ impl TryFrom<&str> for Kanjidic {
 
 #[cfg(test)]
 mod tests {
+    use roxmltree::Document;
+
     use crate::{test_shared::DOC, Kanjidic};
     use std::convert::TryFrom;
 
     #[test]
     fn kanjidic() {
-        let kanjidic = Kanjidic::try_from(&DOC).unwrap();
+        let _kanjidic = Kanjidic::try_from(&DOC as &Document).unwrap();
     }
 }
