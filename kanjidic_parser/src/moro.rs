@@ -1,5 +1,8 @@
-use std::convert::TryFrom;
-
+use crate::{
+    pos_error::PosError,
+    shared::{attr_uint, take_uint, text, IResult, NomErrorReason, SharedError},
+};
+use kanjidic_types::{Moro, MoroIndex, MoroSuffix};
 use nom::{
     bytes::complete::take_while,
     combinator::{map, map_res},
@@ -7,12 +10,6 @@ use nom::{
 };
 use roxmltree::Node;
 use thiserror::Error;
-
-use crate::{
-    pos_error::PosError,
-    shared::{attr_uint, take_uint, text, IResult, NomErrorReason, SharedError},
-};
-use serde::{Deserialize, Serialize};
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum MoroError {
@@ -24,53 +21,16 @@ pub enum MoroError {
     Format(PosError, NomErrorReason),
 }
 
-/// An entry in the dictionary Daikanwajiten.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Moro {
-    /// The volume
-    pub volume: Option<u8>,
-    /// The page
-    pub page: Option<u16>,
-    /// The reference index
-    pub index: MoroIndex,
-}
-
-/// The reference index
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct MoroIndex {
-    /// The item number
-    pub number: u16,
-    /// A letter that appears after the index
-    pub suffix: MoroSuffix,
-}
-
-/// A letter that appears at the end of the index
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub enum MoroSuffix {
-    /// No suffix
-    None,
-    /// P suffix
-    P,
-    /// X suffix
-    X,
-    /// PX suffix
-    PX,
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Moro {
-    type Error = MoroError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let (_i, index) = parse_index(text(node)?)
-            .map_err(|err| MoroError::Format(PosError::from(node), err.into()))?;
-        let volume = attr_uint::<u8>(node, "m_vol")?;
-        let page = attr_uint::<u16>(node, "m_page")?;
-        Ok(Moro {
-            volume,
-            page,
-            index,
-        })
-    }
+pub fn from(node: Node) -> Result<Moro, MoroError> {
+    let (_i, index) = parse_index(text(node)?)
+        .map_err(|err| MoroError::Format(PosError::from(node), err.into()))?;
+    let volume = attr_uint::<u8>(node, "m_vol")?;
+    let page = attr_uint::<u16>(node, "m_page")?;
+    Ok(Moro {
+        volume,
+        page,
+        index,
+    })
 }
 
 fn parse_index(s: &str) -> IResult<MoroIndex> {
@@ -99,7 +59,9 @@ fn index_suffix(s: &str) -> IResult<MoroSuffix> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use kanjidic_types::{Moro, MoroIndex, MoroSuffix};
+
+    use super::from;
     use crate::test_shared::DOC;
 
     #[test]
@@ -114,7 +76,7 @@ mod tests {
                         .unwrap_or(false)
             })
             .unwrap();
-        let moro = Moro::try_from(node);
+        let moro = from(node);
         assert_eq!(
             moro,
             Ok(Moro {

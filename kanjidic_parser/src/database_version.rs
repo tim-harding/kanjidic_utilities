@@ -14,12 +14,6 @@ pub enum DatabaseVersionError {
     Format(NomErrorReason),
 }
 
-impl<'a> From<NomErr<'a>> for DatabaseVersionError {
-    fn from(err: NomErr<'a>) -> Self {
-        Self::Format(err.into())
-    }
-}
-
 /// The version of the file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct DatabaseVersion {
@@ -30,10 +24,16 @@ pub struct DatabaseVersion {
     pub version: u16,
 }
 
+impl<'a> From<NomErr<'a>> for DatabaseVersionError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
+}
+
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for DatabaseVersion {
     type Error = DatabaseVersionError;
 
-    fn try_from(node: Node) -> Result<Self, Self::Error> {
+    fn try_from(node: Node) -> Result<DatabaseVersion, DatabaseVersionError> {
         let text = shared::text(node)?;
         Ok(map_res(take_db_version, map_db_version)(text).map(|(_, s)| s)?)
     }
@@ -52,9 +52,8 @@ fn map_db_version(parts: DbVersionParts) -> Result<DatabaseVersion, DatabaseVers
 
 #[cfg(test)]
 mod tests {
+    use crate::{test_shared::DOC, DatabaseVersion};
     use std::convert::TryFrom;
-
-    use crate::{database_version::DatabaseVersion, test_shared::DOC};
 
     #[test]
     fn gets_db_version() {

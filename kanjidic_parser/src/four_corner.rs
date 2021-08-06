@@ -2,9 +2,8 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
+use kanjidic_types::{FourCorner, Stroke, TryFromPrimitiveError};
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, str::Chars};
 use thiserror::Error;
 
@@ -28,96 +27,28 @@ pub enum FourCornerStrError {
     Pattern,
 }
 
-/// A kanji classification using the Four Corner system.
-/// http://www.edrdg.org/wwwjdic/FOURCORNER.html
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct FourCorner {
-    /// The stroke at the top left corner.
-    pub top_left: Stroke,
-    /// The stroke at the top right corner.
-    pub top_right: Stroke,
-    /// The stroke at the bottom left corner.
-    pub bottom_left: Stroke,
-    /// The stroke at the bottom right corner.
-    pub bottom_right: Stroke,
-    /// Where necessary to differentiate between other
-    /// characters with the same strokes, this extra stroke
-    /// is found above the bottom right stroke.
-    ///
-    /// In the database, we only ever see this with the fifth
-    /// corner. Still, not including it is technically
-    /// allowed, so I include it here for generality.
-    pub fifth_corner: Option<Stroke>,
-}
-
-/// A stroke shape in the Four Corner system.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Hash,
-    Clone,
-    Copy,
-    TryFromPrimitive,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-)]
-#[repr(u8)]
-pub enum Stroke {
-    /// 亠
-    Lid,
-    /// 一
-    LineHorizontal,
-    /// ｜
-    LineVertical,
-    /// 丶
-    Dot,
-    /// 十
-    Cross,
-    /// キ
-    Skewer,
-    /// 口
-    Box,
-    /// 厂
-    Angle,
-    /// 八
-    Hachi,
-    /// 小
-    Chiisai,
-}
-
-impl TryFrom<&str> for FourCorner {
-    type Error = FourCornerStrError;
-
-    fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let mut iter = text.chars();
-        let top_left = take_stroke(&mut iter)?;
-        let top_right = take_stroke(&mut iter)?;
-        let bottom_left = take_stroke(&mut iter)?;
-        let bottom_right = take_stroke(&mut iter)?;
-        if iter.next() != Some('.') {
-            return Err(FourCornerStrError::Pattern);
-        }
-        let fifth_corner = take_stroke(&mut iter)?;
-        Ok(Self {
-            top_left,
-            top_right,
-            bottom_left,
-            bottom_right,
-            fifth_corner: Some(fifth_corner),
-        })
+fn from_str(text: &str) -> Result<FourCorner, FourCornerStrError> {
+    let mut iter = text.chars();
+    let top_left = take_stroke(&mut iter)?;
+    let top_right = take_stroke(&mut iter)?;
+    let bottom_left = take_stroke(&mut iter)?;
+    let bottom_right = take_stroke(&mut iter)?;
+    if iter.next() != Some('.') {
+        return Err(FourCornerStrError::Pattern);
     }
+    let fifth_corner = take_stroke(&mut iter)?;
+    Ok(FourCorner {
+        top_left,
+        top_right,
+        bottom_left,
+        bottom_right,
+        fifth_corner: Some(fifth_corner),
+    })
 }
 
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for FourCorner {
-    type Error = FourCornerError;
-
-    fn try_from(node: Node) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
-        Self::try_from(text).map_err(|err| FourCornerError::Str(PosError::from(node), err))
-    }
+pub fn from(node: Node) -> Result<FourCorner, FourCornerError> {
+    let text = shared::text(node)?;
+    from_str(text).map_err(|err| FourCornerError::Str(PosError::from(node), err))
 }
 
 fn take_stroke(chars: &mut Chars) -> Result<Stroke, FourCornerStrError> {
@@ -144,7 +75,9 @@ fn char_to_u8(c: char) -> Result<u8, FourCornerStrError> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use kanjidic_types::{FourCorner, Stroke};
+
+    use super::from;
     use crate::test_shared::DOC;
 
     #[test]
@@ -159,7 +92,7 @@ mod tests {
                         .unwrap_or(false)
             })
             .unwrap();
-        let four_corner = FourCorner::try_from(node);
+        let four_corner = from(node);
         assert_eq!(
             four_corner,
             Ok(FourCorner {

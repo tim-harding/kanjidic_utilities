@@ -2,10 +2,9 @@ use crate::{
     pos_error::PosError,
     shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError},
 };
+use kanjidic_types::ShDesc;
 use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
@@ -34,42 +33,20 @@ impl<'a> From<NomErr<'a>> for ShStrError {
 // classification system, there are 11 other strokes, and it is
 // the 2nd kanji in the 3k11 sequence.
 
-/// Descriptor code for The Kanji Dictionary.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct ShDesc {
-    /// Number of strokes in the identifying radical.
-    pub radical_strokes: u8,
-    /// The letter for the radical in the identification system.
-    pub radical: char,
-    /// The number of strokes not included in the radical.
-    pub other_strokes: u8,
-    /// The position of the kanji in the sequence described
-    /// by the other descriptor parts.
-    pub sequence: u8,
+fn from_str(text: &str) -> Result<ShDesc, ShStrError> {
+    let (_i, (radical_strokes, radical, other_strokes, _, sequence)) = parts(text)?;
+    let radical = radical.chars().next().unwrap();
+    Ok(ShDesc {
+        radical_strokes,
+        radical,
+        other_strokes,
+        sequence,
+    })
 }
 
-impl TryFrom<&str> for ShDesc {
-    type Error = ShStrError;
-
-    fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let (_i, (radical_strokes, radical, other_strokes, _, sequence)) = parts(text)?;
-        let radical = radical.chars().next().unwrap();
-        Ok(Self {
-            radical_strokes,
-            radical,
-            other_strokes,
-            sequence,
-        })
-    }
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for ShDesc {
-    type Error = ShError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
-        Self::try_from(text).map_err(|err| ShError::Parse(PosError::from(node), err))
-    }
+pub fn from(node: Node) -> Result<ShDesc, ShError> {
+    let text = shared::text(node)?;
+    from_str(text).map_err(|err| ShError::Parse(PosError::from(node), err))
 }
 
 fn parts(s: &str) -> IResult<(u8, &str, u8, char, u8)> {
@@ -78,8 +55,9 @@ fn parts(s: &str) -> IResult<(u8, &str, u8, char, u8)> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::from;
     use crate::test_shared::DOC;
+    use kanjidic_types::ShDesc;
 
     #[test]
     fn spahn_hadamitzky() {
@@ -93,7 +71,7 @@ mod tests {
                         .unwrap_or(false)
             })
             .unwrap();
-        let sh = ShDesc::try_from(node);
+        let sh = from(node);
         assert_eq!(
             sh,
             Ok(ShDesc {

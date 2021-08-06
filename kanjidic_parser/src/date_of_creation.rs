@@ -1,10 +1,20 @@
+use crate::shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError};
+use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
 
-use crate::shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError};
-use nom::{character::complete::char, combinator::map_res, sequence::tuple};
+/// The date the file was created
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct DateOfCreation {
+    /// Year of creation
+    pub year: u16,
+    /// Month of creation
+    pub month: u8,
+    /// Day of creation
+    pub day: u8,
+}
 
 /// Error while parsing date of creation
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -21,18 +31,7 @@ impl<'a> From<NomErr<'a>> for DateOfCreationError {
     }
 }
 
-/// The date the file was created
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct DateOfCreation {
-    /// Year of creation
-    pub year: u16,
-    /// Month of creation
-    pub month: u8,
-    /// Day of creation
-    pub day: u8,
-}
-
-impl<'a, 'b> TryFrom<Node<'a, 'b>> for DateOfCreation {
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for DateOfCreation {
     type Error = DateOfCreationError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {

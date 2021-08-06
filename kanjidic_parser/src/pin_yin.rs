@@ -2,6 +2,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
+use kanjidic_types::{PinYin, Tone, TryFromPrimitiveError};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while1},
@@ -9,9 +10,7 @@ use nom::{
     combinator::{map, recognize, value},
     multi::many_till,
 };
-use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
 
@@ -39,61 +38,15 @@ impl<'a> From<NomErr<'a>> for PinYinStrError {
     }
 }
 
-// A modern PinYin romanization of the Chinese reading.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Serialize, Deserialize)]
-pub struct PinYin {
-    /// The romanized reading.
-    pub romanization: String,
-    /// The Mandarin tone of the reading.
-    pub tone: Tone,
+fn from_str(text: &str) -> Result<PinYin, PinYinStrError> {
+    let (_i, (romanization, tone)) = parts(text)?;
+    let tone = Tone::try_from(tone)?;
+    Ok(PinYin { romanization, tone })
 }
 
-/// One of the four tones of Mandarin.
-/// https://en.wikipedia.org/wiki/Standard_Chinese_phonology#Tones
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Clone,
-    Copy,
-    TryFromPrimitive,
-    Serialize,
-    Deserialize,
-)]
-#[repr(u8)]
-pub enum Tone {
-    /// A steady high sound
-    High = 1,
-    /// A rising tone
-    Rising,
-    /// A low or dipping tone
-    Low,
-    /// A sharp falling tone
-    Falling,
-    /// A lack of tone
-    Neutral,
-}
-
-impl TryFrom<&str> for PinYin {
-    type Error = PinYinStrError;
-
-    fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let (_i, (romanization, tone)) = parts(text)?;
-        let tone = Tone::try_from(tone)?;
-        Ok(Self { romanization, tone })
-    }
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for PinYin {
-    type Error = PinYinError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
-        Self::try_from(text).map_err(|err| PinYinError::Parse(PosError::from(node), err))
-    }
+pub fn from(node: Node) -> Result<PinYin, PinYinError> {
+    let text = shared::text(node)?;
+    from_str(text).map_err(|err| PinYinError::Parse(PosError::from(node), err))
 }
 
 fn parts(s: &str) -> IResult<(String, u8)> {
@@ -124,8 +77,9 @@ fn letters(s: &str) -> IResult<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::from;
     use crate::test_shared::DOC;
+    use kanjidic_types::{PinYin, Tone};
 
     #[test]
     fn pin_yin() {
@@ -139,7 +93,7 @@ mod tests {
                         .unwrap_or(false)
             })
             .unwrap();
-        let pin_yin = PinYin::try_from(node);
+        let pin_yin = from(node);
         assert_eq!(
             pin_yin,
             Ok(PinYin {

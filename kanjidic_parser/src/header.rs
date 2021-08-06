@@ -1,6 +1,6 @@
 use crate::{
     database_version::{DatabaseVersion, DatabaseVersionError},
-    date_of_creation::{DateOfCreation, DateOfCreationError},
+    date_of_creation::{self, DateOfCreation, DateOfCreationError},
     shared::{child, text_uint, SharedError},
 };
 use roxmltree::Node;
@@ -30,7 +30,7 @@ pub struct Header {
     pub date_of_creation: DateOfCreation,
 }
 
-impl<'a, 'b> TryFrom<Node<'a, 'b>> for Header {
+impl<'a, 'input> TryFrom<Node<'a, 'input>> for Header {
     type Error = HeaderError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {

@@ -1,4 +1,4 @@
-use num_enum::{TryFromPrimitive};
+use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 
 /// A kanji classification using the Four Corner system.

@@ -1,13 +1,11 @@
-use std::convert::TryFrom;
-
 use crate::{
-    kunyomi::{Kunyomi, KunyomiError},
-    pin_yin::{PinYin, PinYinError},
+    kunyomi, pin_yin,
     pos_error::PosError,
     shared::{attr, text, SharedError},
+    KunyomiError, PinYinError,
 };
+use kanjidic_types::Reading;
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
@@ -22,48 +20,24 @@ pub enum ReadingError {
     Kunyomi(#[from] KunyomiError),
 }
 
-/// A particular reading or pronunciation of a kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(tag = "tag", content = "content")]
-pub enum Reading {
-    /// The modern romanization of the Chinese reading.
-    PinYin(PinYin),
-    /// The romanized form of the Korean reading.
-    KoreanRomanized(String),
-    /// The Korean reading of the kanji in Hangul.
-    KoreanHangul(String),
-    /// The Vietnamese reading supplied by Minh Chau Pham.
-    Vietnam(String),
-    /// The onyomi reading of the kanji in katakana.
-    Onyomi(String),
-    /// The kunyomi reading of the kanji in hiragana or katakana.
-    Kunyomi(Kunyomi),
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Reading {
-    type Error = ReadingError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let r_type = attr(node, "r_type")?;
-        match r_type {
-            "pinyin" => Ok(Reading::PinYin(PinYin::try_from(node)?)),
-            "korean_r" => Ok(Reading::KoreanRomanized(text(node)?.into())),
-            "korean_h" => Ok(Reading::KoreanHangul(text(node)?.into())),
-            "vietnam" => Ok(Reading::Vietnam(text(node)?.into())),
-            "ja_on" => Ok(Reading::Onyomi(text(node)?.into())),
-            "ja_kun" => Ok(Reading::Kunyomi(Kunyomi::try_from(node)?)),
-            _ => Err(ReadingError::UnrecognizedType(PosError::from(node))),
-        }
+pub fn from(node: Node) -> Result<Reading, ReadingError> {
+    let r_type = attr(node, "r_type")?;
+    match r_type {
+        "pinyin" => Ok(Reading::PinYin(pin_yin::from(node)?)),
+        "korean_r" => Ok(Reading::KoreanRomanized(text(node)?.into())),
+        "korean_h" => Ok(Reading::KoreanHangul(text(node)?.into())),
+        "vietnam" => Ok(Reading::Vietnam(text(node)?.into())),
+        "ja_on" => Ok(Reading::Onyomi(text(node)?.into())),
+        "ja_kun" => Ok(Reading::Kunyomi(kunyomi::from(node)?)),
+        _ => Err(ReadingError::UnrecognizedType(PosError::from(node))),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Reading;
-    use crate::{
-        pin_yin::{PinYin, Tone},
-        test_shared::DOC,
-    };
+    use super::from;
+    use crate::test_shared::DOC;
+    use kanjidic_types::{PinYin, Reading, Tone};
     use std::convert::TryFrom;
 
     #[test]
@@ -72,7 +46,7 @@ mod tests {
             .descendants()
             .find(|node| node.has_tag_name("reading"))
             .unwrap();
-        let reading = Reading::try_from(node);
+        let reading = from(node);
         assert_eq!(
             reading,
             Ok(Reading::PinYin(PinYin {

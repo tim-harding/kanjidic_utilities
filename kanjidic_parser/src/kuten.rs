@@ -1,8 +1,7 @@
+use kanjidic_types::Kuten;
 use nom::character::complete::char;
 use nom::sequence::tuple;
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
 use thiserror::Error;
 
 use crate::{
@@ -30,34 +29,14 @@ impl<'a> From<NomErr<'a>> for KutenStrError {
     }
 }
 
-/// A kuten representation of a JIS X 0213 character.
-/// http://unicode-iphone.blogspot.com/2010/05/kuten-code-to-unicode.html
-#[derive(Debug, PartialEq, Clone, Copy, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Kuten {
-    /// The plane on which a kuten representation is found.
-    pub plane: u8,
-    /// The Ku part of the matrix position.
-    pub ku: u8,
-    /// The Ten part of the matrix position.
-    pub ten: u8,
+pub fn from(node: Node) -> Result<Kuten, KutenError> {
+    from_str(text(node)?).map_err(|err| KutenError::Parse(PosError::from(node), err))
 }
 
-impl TryFrom<&str> for Kuten {
-    type Error = KutenStrError;
-
-    fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let (_i, o) = kuten_parts(text)?;
-        let (plane, _, ku, _, ten) = o;
-        Ok(Self { plane, ku, ten })
-    }
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kuten {
-    type Error = KutenError;
-
-    fn try_from(node: Node) -> Result<Self, Self::Error> {
-        Self::try_from(text(node)?).map_err(|err| KutenError::Parse(PosError::from(node), err))
-    }
+pub fn from_str(text: &str) -> Result<Kuten, KutenStrError> {
+    let (_i, o) = kuten_parts(text)?;
+    let (plane, _, ku, _, ten) = o;
+    Ok(Kuten { plane, ku, ten })
 }
 
 fn kuten_parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
@@ -66,8 +45,9 @@ fn kuten_parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{kuten::Kuten, test_shared::DOC};
-    use std::convert::TryFrom;
+    use super::from;
+    use crate::test_shared::DOC;
+    use kanjidic_types::Kuten;
 
     #[test]
     fn parse_kuten() {
@@ -81,7 +61,7 @@ mod tests {
                         .unwrap_or(false)
             })
             .unwrap();
-        let kuten = Kuten::try_from(node);
+        let kuten = from(node);
         assert_eq!(
             kuten,
             Ok(Kuten {

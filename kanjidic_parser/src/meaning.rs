@@ -1,13 +1,13 @@
-use std::convert::TryFrom;
-
 use crate::{
     pos_error::PosError,
-    reading::{Reading, ReadingError},
+    reading,
     shared::{child, children, text, SharedError},
-    translation::{Translation, TranslationError},
+    translation::{self, TranslationError},
+    ReadingError,
 };
+use kanjidic_types::Meaning;
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -22,45 +22,28 @@ pub enum MeaningError {
     Translation(#[from] TranslationError),
 }
 
-/// Information about a particular meaning of a kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Meaning {
-    /// Different ways the kanji can be read.
-    pub readings: Vec<Reading>,
-    /// Translations of the kanji into different languages.
-    pub translations: Vec<Translation>,
-    /// Japanese readings associated with names.
-    pub nanori: Vec<String>,
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning {
-    type Error = MeaningError;
-
-    fn try_from(node: Node) -> Result<Self, Self::Error> {
-        let nanori = children(node, "nanori", |child| {
-            text(child)
-                .map(|s: &str| s.to_owned())
-                .map_err(|_| MeaningError::NanoriText(PosError::from(node)))
-        })?;
-        let rmgroup = child(node, "rmgroup")?;
-        let readings = children(rmgroup, "reading", Reading::try_from)?;
-        let translations = children(rmgroup, "meaning", Translation::try_from)?;
-        Ok(Meaning {
-            readings,
-            translations,
-            nanori,
-        })
-    }
+pub fn from(node: Node) -> Result<Meaning, MeaningError> {
+    let nanori = children(node, "nanori", |child| {
+        text(child)
+            .map(|s: &str| s.to_owned())
+            .map_err(|_| MeaningError::NanoriText(PosError::from(node)))
+    })?;
+    let rmgroup = child(node, "rmgroup")?;
+    let readings = children(rmgroup, "reading", reading::from)?;
+    let translations = children(rmgroup, "meaning", translation::from)?;
+    Ok(Meaning {
+        readings,
+        translations,
+        nanori,
+    })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{
-        kunyomi::{Kunyomi, KunyomiKind},
-        pin_yin::PinYin,
-        test_shared::DOC,
-        LanguageCode,
+    use super::from;
+    use crate::test_shared::DOC;
+    use kanjidic_types::{
+        Kunyomi, KunyomiKind, LanguageCode, Meaning, PinYin, Reading, Tone, Translation,
     };
 
     #[test]
@@ -69,7 +52,7 @@ mod tests {
             .descendants()
             .find(|node| node.has_tag_name("reading_meaning"))
             .unwrap();
-        let meaning = Meaning::try_from(node);
+        let meaning = from(node);
         assert_eq!(
             meaning,
             Ok(Meaning {
@@ -77,7 +60,7 @@ mod tests {
                 readings: vec![
                     Reading::PinYin(PinYin {
                         romanization: "ya".into(),
-                        tone: crate::pin_yin::Tone::Falling,
+                        tone: Tone::Falling,
                     }),
                     Reading::KoreanRomanized("a".into()),
                     Reading::KoreanHangul("아".into()),

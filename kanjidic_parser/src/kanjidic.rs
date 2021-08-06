@@ -1,13 +1,14 @@
-use std::convert::TryFrom;
-
+use kanjidic_types::Character;
 use rayon::prelude::*;
 use roxmltree::{Document, Node};
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 use thiserror::Error;
 
 use crate::{
-    character::{Character, CharacterError},
+    character,
     header::{Header, HeaderError},
+    CharacterError,
 };
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -22,7 +23,7 @@ pub enum KanjidicError {
     Character(#[from] CharacterError),
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash, Serialize, Deserialize)]
 pub struct Kanjidic {
     pub header: Header,
     pub characters: Vec<Character>,
@@ -43,7 +44,7 @@ impl<'a> TryFrom<&'a Document<'a>> for Kanjidic {
             .filter(|child| child.has_tag_name("character"))
             .collect::<Vec<Node>>()
             .par_iter()
-            .map(|node| Character::try_from(*node))
+            .map(|node| character::from(*node))
             .collect::<Result<Vec<Character>, CharacterError>>();
         let characters = characters?;
         Ok(Self { header, characters })
@@ -61,9 +62,8 @@ impl TryFrom<&str> for Kanjidic {
 
 #[cfg(test)]
 mod tests {
-    use roxmltree::Document;
-
     use crate::{test_shared::DOC, Kanjidic};
+    use roxmltree::Document;
     use std::convert::TryFrom;
 
     #[test]

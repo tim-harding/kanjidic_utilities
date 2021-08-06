@@ -2,6 +2,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, IResult, NomErr, NomErrorReason, SharedError},
 };
+use kanjidic_types::{Kunyomi, KunyomiKind};
 use nom::{
     bytes::complete::is_not,
     character::complete::char,
@@ -10,8 +11,6 @@ use nom::{
     sequence::tuple,
 };
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
@@ -34,49 +33,21 @@ impl<'a> From<NomErr<'a>> for KunyomiStrError {
     }
 }
 
-/// A kunyomi kanji reading.
-#[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Kunyomi {
-    /// The okurigana
-    pub okurigana: Vec<String>,
-    /// Whether the reading is as a prefix or suffix.
-    pub kind: KunyomiKind,
+pub fn from(node: Node) -> Result<Kunyomi, KunyomiError> {
+    let text = shared::text(node)?;
+    from_str(text).map_err(|err| KunyomiError::Parse(PosError::from(node), err))
 }
 
-/// The kind of kunyomi reading.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub enum KunyomiKind {
-    /// A normal reading
-    Normal,
-    /// A prefix
-    Prefix,
-    /// A suffix
-    Suffix,
-}
-
-impl<'a, 'b: 'a> TryFrom<&'b str> for Kunyomi {
-    type Error = KunyomiStrError;
-
-    fn try_from(text: &'b str) -> Result<Self, Self::Error> {
-        let (_i, (pre, okurigana, post)) = parts(text)?;
-        let kind = if pre {
-            KunyomiKind::Prefix
-        } else if post {
-            KunyomiKind::Suffix
-        } else {
-            KunyomiKind::Normal
-        };
-        Ok(Self { okurigana, kind })
-    }
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Kunyomi {
-    type Error = KunyomiError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
-        Self::try_from(text).map_err(|err| KunyomiError::Parse(PosError::from(node), err))
-    }
+fn from_str(text: &str) -> Result<Kunyomi, KunyomiStrError> {
+    let (_i, (pre, okurigana, post)) = parts(text)?;
+    let kind = if pre {
+        KunyomiKind::Prefix
+    } else if post {
+        KunyomiKind::Suffix
+    } else {
+        KunyomiKind::Normal
+    };
+    Ok(Kunyomi { okurigana, kind })
 }
 
 fn parts(s: &str) -> IResult<(bool, Vec<String>, bool)> {
@@ -93,8 +64,9 @@ fn fix(s: &str) -> IResult<bool> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::from;
     use crate::test_shared::DOC;
+    use kanjidic_types::{Kunyomi, KunyomiKind};
 
     #[test]
     fn kunyomi() {
@@ -108,7 +80,7 @@ mod tests {
                         .unwrap_or(false)
             })
             .unwrap();
-        let kunyomi = Kunyomi::try_from(node);
+        let kunyomi = from(node);
         assert_eq!(
             kunyomi,
             Ok(Kunyomi {

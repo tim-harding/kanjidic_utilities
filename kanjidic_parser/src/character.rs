@@ -1,18 +1,11 @@
-use std::convert::TryFrom;
-
 use crate::{
-    codepoint::{Codepoint, CodepointError},
-    grade::{Grade, GradeError},
-    meaning::{Meaning, MeaningError},
-    query_code::{QueryCode, QueryCodeError},
-    radical::{Radical, RadicalError},
-    reference::{Reference, ReferenceError},
+    codepoint, grade, meaning, query_code, radical, reference,
     shared::{child, children, text, text_uint, SharedError},
-    stroke_count::{StrokeCount, StrokeCountError},
-    variant::{Variant, VariantError},
+    stroke_count, variant, CodepointError, GradeError, MeaningError, QueryCodeError, RadicalError,
+    ReferenceError, StrokeCountError, VariantError,
 };
+use kanjidic_types::Character;
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -37,73 +30,39 @@ pub enum CharacterError {
     DictionaryReference(#[from] ReferenceError),
 }
 
-/// Information about a kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Character {
-    /// The character itself.
-    pub literal: String,
-    /// Alternate encodings for the character.
-    pub codepoints: Vec<Codepoint>,
-    /// Alternate classifications for the character by radical.
-    pub radicals: Vec<Radical>,
-    /// The kanji grade level.
-    pub grade: Option<Grade>,
-    /// The stroke count of the character.
-    pub stroke_counts: StrokeCount,
-    /// Cross-references to other characters or alternative indexings.
-    pub variants: Vec<Variant>,
-    /// A ranking of how often the character appears in newspapers.
-    pub frequency: Option<u16>,
-    /// The kanji's name as a radical if it is one.
-    pub radical_names: Vec<String>,
-    /// Old JLPT level of the kanji. Based on pre-2010 test levels
-    /// that go up to four, not five.
-    pub jlpt: Option<u8>,
-    /// Indexes into dictionaries and other instructional books
-    pub references: Vec<Reference>,
-    /// Codes used to identify the kanji
-    pub query_codes: Vec<QueryCode>,
-    /// Different meanings of the kanji.
-    pub meanings: Vec<Meaning>,
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Character {
-    type Error = CharacterError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let literal = text(child(node, "literal")?)?.into();
-        let codepoints = children(child(node, "codepoint")?, "cp_value", Codepoint::try_from)?;
-        let radicals = children(child(node, "radical")?, "rad_value", Radical::try_from)?;
-        let misc = child(node, "misc")?;
-        let grade = coalesce(child(misc, "grade").ok().map(Grade::try_from))?;
-        let stroke_counts = StrokeCount::try_from(misc)?;
-        let variants = children(misc, "variant", Variant::try_from)?;
-        let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
-        let radical_names =
-            children::<_, SharedError, _>(misc, "rad_name", |child| Ok(text(child)?.to_owned()))?;
-        let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
-        let references = match child(node, "dic_number") {
-            Ok(dic_number) => Ok(children(dic_number, "dic_ref", Reference::try_from)?),
-            Err(SharedError::MissingChild(_, _)) => Ok(vec![]),
-            Err(other) => Err(other),
-        }?;
-        let query_codes = children(child(node, "query_code")?, "q_code", QueryCode::try_from)?;
-        let meanings = children(node, "reading_meaning", Meaning::try_from)?;
-        Ok(Character {
-            literal,
-            codepoints,
-            radicals,
-            grade,
-            stroke_counts,
-            variants,
-            frequency,
-            radical_names,
-            jlpt,
-            references,
-            query_codes,
-            meanings,
-        })
-    }
+pub fn from(node: Node) -> Result<Character, CharacterError> {
+    let literal = text(child(node, "literal")?)?.into();
+    let codepoints = children(child(node, "codepoint")?, "cp_value", codepoint::from)?;
+    let radicals = children(child(node, "radical")?, "rad_value", radical::from)?;
+    let misc = child(node, "misc")?;
+    let grade = coalesce(child(misc, "grade").ok().map(grade::from))?;
+    let stroke_counts = stroke_count::from(misc)?;
+    let variants = children(misc, "variant", variant::from)?;
+    let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
+    let radical_names =
+        children::<_, SharedError, _>(misc, "rad_name", |child| Ok(text(child)?.to_owned()))?;
+    let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
+    let references = match child(node, "dic_number") {
+        Ok(dic_number) => Ok(children(dic_number, "dic_ref", reference::from)?),
+        Err(SharedError::MissingChild(_, _)) => Ok(vec![]),
+        Err(other) => Err(other),
+    }?;
+    let query_codes = children(child(node, "query_code")?, "q_code", query_code::from)?;
+    let meanings = children(node, "reading_meaning", meaning::from)?;
+    Ok(Character {
+        literal,
+        codepoints,
+        radicals,
+        grade,
+        stroke_counts,
+        variants,
+        frequency,
+        radical_names,
+        jlpt,
+        references,
+        query_codes,
+        meanings,
+    })
 }
 
 fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option<T>, E> {
@@ -115,23 +74,15 @@ fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{
-        de_roo::{DeRoo, ExtremeBottom, ExtremeTop},
-        four_corner::{FourCorner, Stroke},
-        kangxi::KangXi,
-        kunyomi::{Kunyomi, KunyomiKind},
-        kuten::Kuten,
-        moro::{Moro, MoroIndex, MoroSuffix},
-        oneill::{Oneill, OneillSuffix},
-        pin_yin::PinYin,
-        reading::Reading,
-        skip::{Skip, SkipSolid, SolidSubpattern},
-        spahn_hadamitzky::ShDesc,
-        test_shared::DOC,
-        translation::Translation,
-        LanguageCode,
+    use kanjidic_types::{
+        Character, Codepoint, DeRoo, ExtremeBottom, ExtremeTop, FourCorner, Grade, KangXi, Kunyomi,
+        KunyomiKind, Kuten, LanguageCode, Meaning, Moro, MoroIndex, MoroSuffix, Oneill,
+        OneillSuffix, PinYin, QueryCode, Radical, Reading, Reference, ShDesc, Skip, SkipSolid,
+        SolidSubpattern, Stroke, StrokeCount, Tone, Translation, Variant,
     };
+
+    use super::from;
+    use crate::test_shared::DOC;
 
     #[test]
     fn character() {
@@ -139,7 +90,7 @@ mod tests {
             .descendants()
             .find(|node| node.has_tag_name("character"))
             .unwrap();
-        let character = Character::try_from(node);
+        let character = from(node);
         assert_eq!(
             character,
             Ok(Character {
@@ -229,7 +180,7 @@ mod tests {
                     readings: vec![
                         Reading::PinYin(PinYin {
                             romanization: "ya".into(),
-                            tone: crate::pin_yin::Tone::Falling,
+                            tone: Tone::Falling,
                         }),
                         Reading::KoreanRomanized("a".into()),
                         Reading::KoreanHangul("아".into()),

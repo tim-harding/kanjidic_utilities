@@ -1,5 +1,4 @@
-use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
+use kanjidic_types::LanguageCode;
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
@@ -8,28 +7,16 @@ pub enum LanguageCodeError {
     Unknown,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub enum LanguageCode {
-    Eng,
-    Fra,
-    Por,
-    Spa,
-}
-
-impl TryFrom<&str> for LanguageCode {
-    type Error = LanguageCodeError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match value {
-            "eng" => Ok(Self::Eng),
-            "fra" => Ok(Self::Fra),
-            "por" => Ok(Self::Por),
-            "spa" => Ok(Self::Spa),
-            "en" => Ok(Self::Eng),
-            "fr" => Ok(Self::Fra),
-            "pt" => Ok(Self::Por),
-            "es" => Ok(Self::Spa),
-            _ => Err(LanguageCodeError::Unknown),
-        }
+pub fn from(value: &str) -> Result<LanguageCode, LanguageCodeError> {
+    match value {
+        "eng" => Ok(LanguageCode::Eng),
+        "fra" => Ok(LanguageCode::Fra),
+        "por" => Ok(LanguageCode::Por),
+        "spa" => Ok(LanguageCode::Spa),
+        "en" => Ok(LanguageCode::Eng),
+        "fr" => Ok(LanguageCode::Fra),
+        "pt" => Ok(LanguageCode::Por),
+        "es" => Ok(LanguageCode::Spa),
+        _ => Err(LanguageCodeError::Unknown),
     }
 }

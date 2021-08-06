@@ -1,15 +1,11 @@
-use std::convert::TryFrom;
-
 use crate::{
-    de_roo::{DeRoo, DeRooError},
-    four_corner::{FourCorner, FourCornerError},
+    de_roo, four_corner,
     pos_error::PosError,
     shared::{attr, SharedError},
-    skip::{Skip, SkipError},
-    spahn_hadamitzky::{ShDesc, ShError},
+    skip, spahn_hadamitzky, DeRooError, FourCornerError, ShError, SkipError,
 };
+use kanjidic_types::{Misclassification, QueryCode};
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -30,75 +26,38 @@ pub enum QueryCodeError {
     UnknownMisclassification(PosError),
 }
 
-/// Information relating to a kanji that can be
-/// used for identification and lookup.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(tag = "tag", content = "content")]
-pub enum QueryCode {
-    /// The Halpern SKIP code
-    Skip(Skip),
-    /// Desrcriptor codes from The Kanji Dictionary
-    SpahnHadamitzky(ShDesc),
-    /// The Four Corner code
-    FourCorner(FourCorner),
-    /// Father Joseph De Roo's code system
-    DeRoo(DeRoo),
-    /// A possible misclassification of the kanji
-    Misclassification(Misclassification),
-}
-
-/// A possible misclassification of the kanji
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(tag = "tag", content = "content")]
-pub enum Misclassification {
-    /// A mistake in the division of the kanji
-    Position(Skip),
-    /// A mistake in the number of strokes
-    StrokeCount(Skip),
-    /// Mistakes in both the division and the number of strokes
-    StrokeAndPosition(Skip),
-    /// Ambiguous stroke counts
-    Ambiguous(Skip),
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for QueryCode {
-    type Error = QueryCodeError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        let qc_type = attr(node, "qc_type")?;
-        match qc_type {
-            "skip" => {
-                if let Some(misclass_kind) = node.attribute("skip_misclass") {
-                    Ok(QueryCode::Misclassification(match misclass_kind {
-                        "posn" => Ok(Misclassification::Position(Skip::try_from(node)?)),
-                        "stroke_count" => Ok(Misclassification::StrokeCount(Skip::try_from(node)?)),
-                        "stroke_and_posn" => {
-                            Ok(Misclassification::StrokeAndPosition(Skip::try_from(node)?))
-                        }
-                        "stroke_diff" => Ok(Misclassification::Ambiguous(Skip::try_from(node)?)),
-                        _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(
-                            node,
-                        ))),
-                    }?))
-                } else {
-                    Ok(QueryCode::Skip(Skip::try_from(node)?))
-                }
+pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
+    let qc_type = attr(node, "qc_type")?;
+    match qc_type {
+        "skip" => {
+            if let Some(misclass_kind) = node.attribute("skip_misclass") {
+                Ok(QueryCode::Misclassification(match misclass_kind {
+                    "posn" => Ok(Misclassification::Position(skip::from(node)?)),
+                    "stroke_count" => Ok(Misclassification::StrokeCount(skip::from(node)?)),
+                    "stroke_and_posn" => {
+                        Ok(Misclassification::StrokeAndPosition(skip::from(node)?))
+                    }
+                    "stroke_diff" => Ok(Misclassification::Ambiguous(skip::from(node)?)),
+                    _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(
+                        node,
+                    ))),
+                }?))
+            } else {
+                Ok(QueryCode::Skip(skip::from(node)?))
             }
-            "sh_desc" => Ok(QueryCode::SpahnHadamitzky(ShDesc::try_from(node)?)),
-            "four_corner" => Ok(QueryCode::FourCorner(FourCorner::try_from(node)?)),
-            "deroo" => Ok(QueryCode::DeRoo(DeRoo::try_from(node)?)),
-            _ => Err(QueryCodeError::UnknownType(PosError::from(node))),
         }
+        "sh_desc" => Ok(QueryCode::SpahnHadamitzky(spahn_hadamitzky::from(node)?)),
+        "four_corner" => Ok(QueryCode::FourCorner(four_corner::from(node)?)),
+        "deroo" => Ok(QueryCode::DeRoo(de_roo::from(node)?)),
+        _ => Err(QueryCodeError::UnknownType(PosError::from(node))),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{
-        skip::{SkipSolid, SolidSubpattern},
-        test_shared::DOC,
-    };
+    use super::from;
+    use crate::test_shared::DOC;
+    use kanjidic_types::{QueryCode, Skip, SkipSolid, SolidSubpattern};
 
     #[test]
     fn query_code() {
@@ -106,7 +65,7 @@ mod tests {
             .descendants()
             .find(|node| node.has_tag_name("q_code"))
             .unwrap();
-        let query_code = QueryCode::try_from(node);
+        let query_code = from(node);
         assert_eq!(
             query_code,
             Ok(QueryCode::Skip(Skip::Solid(SkipSolid {

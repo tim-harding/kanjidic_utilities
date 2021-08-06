@@ -18,8 +18,6 @@ mod grade;
 pub use grade::*;
 mod header;
 pub use header::*;
-mod kangxi;
-pub use kangxi::*;
 mod kunyomi;
 pub use kunyomi::*;
 mod kuten;

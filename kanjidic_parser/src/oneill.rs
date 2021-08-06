@@ -1,17 +1,15 @@
+use crate::{
+    pos_error::PosError,
+    shared::{take_uint, text, IResult, NomErr, NomErrorReason, SharedError},
+};
+use kanjidic_types::{Oneill, OneillSuffix};
 use nom::{
     bytes::complete::take_while,
     combinator::{map, map_res},
     sequence::tuple,
 };
 use roxmltree::Node;
-use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
 use thiserror::Error;
-
-use crate::{
-    pos_error::PosError,
-    shared::{take_uint, text, IResult, NomErr, NomErrorReason, SharedError},
-};
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum OneillError {
@@ -35,39 +33,13 @@ impl<'a> From<NomErr<'a>> for OneillStrError {
     }
 }
 
-/// An index into the Japanese Names reference book
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Oneill {
-    /// The reference number
-    pub number: u16,
-    /// A reference's suffix
-    pub suffix: OneillSuffix,
+pub fn from(node: Node) -> Result<Oneill, OneillError> {
+    from_str(text(node)?).map_err(|err| OneillError::Parse(PosError::from(node), err))
 }
 
-/// The suffix for a Japanese Names reference
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub enum OneillSuffix {
-    /// No suffix
-    None,
-    /// 'A' suffix
-    A,
-}
-
-impl<'a, 'input> TryFrom<Node<'a, 'input>> for Oneill {
-    type Error = OneillError;
-
-    fn try_from(node: Node<'a, 'input>) -> Result<Self, Self::Error> {
-        Self::try_from(text(node)?).map_err(|err| OneillError::Parse(PosError::from(node), err))
-    }
-}
-
-impl TryFrom<&str> for Oneill {
-    type Error = OneillStrError;
-
-    fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let (_i, index) = parse(text)?;
-        Ok(index)
-    }
+fn from_str(text: &str) -> Result<Oneill, OneillStrError> {
+    let (_i, index) = parse(text)?;
+    Ok(index)
 }
 
 fn parse(s: &str) -> IResult<Oneill> {

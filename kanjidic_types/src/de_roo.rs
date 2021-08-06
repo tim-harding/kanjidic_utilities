@@ -1,4 +1,4 @@
-use num_enum::{TryFromPrimitive};
+use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 
 /// Identification of a kanji in the De Roo system.
