@@ -23,6 +23,8 @@ struct Opts {
     input: String,
     #[clap(short, long)]
     output: String,
+    #[clap(short, long)]
+    header: bool,
 }
 
 fn main() -> Result<(), KdcError> {
@@ -31,7 +33,12 @@ fn main() -> Result<(), KdcError> {
     let start = xml.find("<kanjidic2>").ok_or(KdcError::DtdSkip)?;
     let skipped = std::str::from_utf8(&xml.as_bytes()[start..])?;
     let kanjidic = Kanjidic::try_from(skipped)?;
-    let json = serde_json::to_string_pretty(&kanjidic).map_err(|err| KdcError::Json(err.into()))?;
+    let json = if opts.header {
+        serde_json::to_string_pretty(&kanjidic)
+    } else {
+        serde_json::to_string_pretty(&kanjidic.characters)
+    }
+    .map_err(|err| KdcError::Json(err.into()))?;
     fs::write(opts.output, json)?;
     Ok(())
 }
