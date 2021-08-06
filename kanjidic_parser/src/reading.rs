@@ -38,7 +38,6 @@ mod tests {
     use super::from;
     use crate::test_shared::DOC;
     use kanjidic_types::{PinYin, Reading, Tone};
-    use std::convert::TryFrom;
 
     #[test]
     fn reading() {
