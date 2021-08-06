@@ -24,7 +24,11 @@ impl TryFrom<&str> for LanguageCode {
             "eng" => Ok(Self::Eng),
             "fra" => Ok(Self::Fra),
             "por" => Ok(Self::Por),
-            "Spa" => Ok(Self::Spa),
+            "spa" => Ok(Self::Spa),
+            "en" => Ok(Self::Eng),
+            "fr" => Ok(Self::Fra),
+            "pt" => Ok(Self::Por),
+            "es" => Ok(Self::Spa),
             _ => Err(LanguageCodeError::Unknown),
         }
     }
