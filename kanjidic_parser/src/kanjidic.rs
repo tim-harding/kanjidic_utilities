@@ -1,6 +1,7 @@
 use std::convert::TryFrom;
 
-use roxmltree::Document;
+use rayon::prelude::*;
+use roxmltree::{Document, Node};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -40,7 +41,9 @@ impl<'a> TryFrom<&'a Document<'a>> for Kanjidic {
         let characters: Result<Vec<Character>, CharacterError> = root
             .children()
             .filter(|child| child.has_tag_name("character"))
-            .map(|node| Character::try_from(node))
+            .collect::<Vec<Node>>()
+            .par_iter()
+            .map(|node| Character::try_from(*node))
             .collect::<Result<Vec<Character>, CharacterError>>();
         let characters = characters?;
         Ok(Self { header, characters })
