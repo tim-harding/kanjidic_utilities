@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "kanjidic_types", 
     "kanjidic_parser",
     "kanjidic_converter",
     "kanjidic_server",
