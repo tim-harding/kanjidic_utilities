@@ -7,7 +7,6 @@ use crate::{
 };
 use kanjidic_types::Meaning;
 use roxmltree::Node;
-use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]

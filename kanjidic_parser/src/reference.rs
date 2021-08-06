@@ -4,7 +4,7 @@ use crate::{
     shared::{attr, text_uint, SharedError},
     BusyPeopleError, MoroError, OneillError,
 };
-use kanjidic_types::{Moro, Reference};
+use kanjidic_types::Reference;
 use roxmltree::Node;
 use thiserror::Error;
 

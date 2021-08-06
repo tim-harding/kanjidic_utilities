@@ -1,6 +1,6 @@
 use crate::{
     database_version::{DatabaseVersion, DatabaseVersionError},
-    date_of_creation::{self, DateOfCreation, DateOfCreationError},
+    date_of_creation::{DateOfCreation, DateOfCreationError},
     shared::{child, text_uint, SharedError},
 };
 use roxmltree::Node;
