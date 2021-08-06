@@ -55,13 +55,12 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Meaning {
 
 #[cfg(test)]
 mod tests {
-    use isolang::Language;
-
     use super::*;
     use crate::{
         kunyomi::{Kunyomi, KunyomiKind},
         pin_yin::PinYin,
         test_shared::DOC,
+        LanguageCode,
     };
 
     #[test]
@@ -93,63 +92,63 @@ mod tests {
                 translations: vec![
                     Translation {
                         text: "Asia".into(),
-                        language: Language::Eng,
+                        language: LanguageCode::Eng,
                     },
                     Translation {
                         text: "rank next".into(),
-                        language: Language::Eng,
+                        language: LanguageCode::Eng,
                     },
                     Translation {
                         text: "come after".into(),
-                        language: Language::Eng,
+                        language: LanguageCode::Eng,
                     },
                     Translation {
                         text: "-ous".into(),
-                        language: Language::Eng,
+                        language: LanguageCode::Eng,
                     },
                     Translation {
                         text: "Asie".into(),
-                        language: Language::Fra,
+                        language: LanguageCode::Fra,
                     },
                     Translation {
                         text: "suivant".into(),
-                        language: Language::Fra,
+                        language: LanguageCode::Fra,
                     },
                     Translation {
                         text: "sub-".into(),
-                        language: Language::Fra,
+                        language: LanguageCode::Fra,
                     },
                     Translation {
                         text: "sous-".into(),
-                        language: Language::Fra,
+                        language: LanguageCode::Fra,
                     },
                     Translation {
                         text: "pref. para indicar".into(),
-                        language: Language::Spa,
+                        language: LanguageCode::Spa,
                     },
                     Translation {
                         text: "venir después de".into(),
-                        language: Language::Spa,
+                        language: LanguageCode::Spa,
                     },
                     Translation {
                         text: "Asia".into(),
-                        language: Language::Spa,
+                        language: LanguageCode::Spa,
                     },
                     Translation {
                         text: "Ásia".into(),
-                        language: Language::Por,
+                        language: LanguageCode::Por,
                     },
                     Translation {
                         text: "próxima".into(),
-                        language: Language::Por,
+                        language: LanguageCode::Por,
                     },
                     Translation {
                         text: "o que vem depois".into(),
-                        language: Language::Por,
+                        language: LanguageCode::Por,
                     },
                     Translation {
                         text: "-ous".into(),
-                        language: Language::Por,
+                        language: LanguageCode::Por,
                     },
                 ],
             })

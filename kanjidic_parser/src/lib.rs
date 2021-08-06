@@ -52,6 +52,8 @@ mod variant;
 pub use variant::*;
 mod kanjidic;
 pub use kanjidic::*;
+mod language_code;
+pub use language_code::*;
 mod shared;
 
 #[cfg(test)]

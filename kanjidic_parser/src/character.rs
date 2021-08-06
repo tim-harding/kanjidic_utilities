@@ -2,11 +2,11 @@ use std::convert::TryFrom;
 
 use crate::{
     codepoint::{Codepoint, CodepointError},
-    reference::{Reference, ReferenceError},
     grade::{Grade, GradeError},
     meaning::{Meaning, MeaningError},
     query_code::{QueryCode, QueryCodeError},
     radical::{Radical, RadicalError},
+    reference::{Reference, ReferenceError},
     shared::{child, children, text, text_uint, SharedError},
     stroke_count::{StrokeCount, StrokeCountError},
     variant::{Variant, VariantError},
@@ -115,8 +115,6 @@ fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option
 
 #[cfg(test)]
 mod tests {
-    use isolang::Language;
-
     use super::*;
     use crate::{
         de_roo::{DeRoo, ExtremeBottom, ExtremeTop},
@@ -132,6 +130,7 @@ mod tests {
         spahn_hadamitzky::ShDesc,
         test_shared::DOC,
         translation::Translation,
+        LanguageCode,
     };
 
     #[test]
@@ -245,63 +244,63 @@ mod tests {
                     translations: vec![
                         Translation {
                             text: "Asia".into(),
-                            language: Language::Eng,
+                            language: LanguageCode::Eng,
                         },
                         Translation {
                             text: "rank next".into(),
-                            language: Language::Eng,
+                            language: LanguageCode::Eng,
                         },
                         Translation {
                             text: "come after".into(),
-                            language: Language::Eng,
+                            language: LanguageCode::Eng,
                         },
                         Translation {
                             text: "-ous".into(),
-                            language: Language::Eng,
+                            language: LanguageCode::Eng,
                         },
                         Translation {
                             text: "Asie".into(),
-                            language: Language::Fra,
+                            language: LanguageCode::Fra,
                         },
                         Translation {
                             text: "suivant".into(),
-                            language: Language::Fra,
+                            language: LanguageCode::Fra,
                         },
                         Translation {
                             text: "sub-".into(),
-                            language: Language::Fra,
+                            language: LanguageCode::Fra,
                         },
                         Translation {
                             text: "sous-".into(),
-                            language: Language::Fra,
+                            language: LanguageCode::Fra,
                         },
                         Translation {
                             text: "pref. para indicar".into(),
-                            language: Language::Spa,
+                            language: LanguageCode::Spa,
                         },
                         Translation {
                             text: "venir después de".into(),
-                            language: Language::Spa,
+                            language: LanguageCode::Spa,
                         },
                         Translation {
                             text: "Asia".into(),
-                            language: Language::Spa,
+                            language: LanguageCode::Spa,
                         },
                         Translation {
                             text: "Ásia".into(),
-                            language: Language::Por,
+                            language: LanguageCode::Por,
                         },
                         Translation {
                             text: "próxima".into(),
-                            language: Language::Por,
+                            language: LanguageCode::Por,
                         },
                         Translation {
                             text: "o que vem depois".into(),
-                            language: Language::Por,
+                            language: LanguageCode::Por,
                         },
                         Translation {
                             text: "-ous".into(),
-                            language: Language::Por,
+                            language: LanguageCode::Por,
                         },
                     ],
                 }]
