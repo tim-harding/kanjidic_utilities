@@ -12,17 +12,20 @@ pub struct Character {
     /// Alternate classifications for the character by radical.
     pub radicals: Vec<Radical>,
     /// The kanji grade level.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub grade: Option<Grade>,
     /// The stroke count of the character.
     pub stroke_counts: StrokeCount,
     /// Cross-references to other characters or alternative indexings.
     pub variants: Vec<Variant>,
     /// A ranking of how often the character appears in newspapers.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub frequency: Option<u16>,
     /// The kanji's name as a radical if it is one.
     pub radical_names: Vec<String>,
     /// Old JLPT level of the kanji. Based on pre-2010 test levels
     /// that go up to four, not five.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub jlpt: Option<u8>,
     /// Indexes into dictionaries and other instructional books
     pub references: Vec<Reference>,

@@ -21,6 +21,7 @@ pub struct FourCorner {
     /// In the database, we only ever see this with the fifth
     /// corner. Still, not including it is technically
     /// allowed, so I include it here for generality.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub fifth_corner: Option<Stroke>,
 }
 
