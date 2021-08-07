@@ -9,13 +9,6 @@ pub struct Moro {
     /// The page
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page: Option<u16>,
-    /// The reference index
-    pub index: MoroIndex,
-}
-
-/// The reference index
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct MoroIndex {
     /// The item number
     pub index: u16,
     /// A letter that appears after the index

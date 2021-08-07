@@ -76,9 +76,9 @@ fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option
 mod tests {
     use kanjidic_types::{
         Character, Codepoint, DeRoo, ExtremeBottom, ExtremeTop, FourCorner, Grade, KangXi, Kunyomi,
-        KunyomiKind, Kuten, LanguageCode, Meaning, Moro, MoroIndex, MoroSuffix, Oneill,
-        OneillSuffix, PinYin, QueryCode, Radical, RadicalKind, Reading, Reference, ShDesc, Skip,
-        SkipSolid, SolidSubpattern, Stroke, StrokeCount, Tone, Translation, Variant,
+        KunyomiKind, Kuten, LanguageCode, Meaning, Moro, MoroSuffix, Oneill, OneillSuffix, PinYin,
+        QueryCode, Radical, RadicalKind, Reading, Reference, ShDesc, Skip, SkipSolid,
+        SolidSubpattern, Stroke, StrokeCount, Tone, Translation, Variant,
     };
 
     use super::from;
@@ -143,10 +143,8 @@ mod tests {
                     Reference::Moro(Moro {
                         volume: Some(1),
                         page: Some(525),
-                        index: MoroIndex {
-                            index: 272,
-                            suffix: MoroSuffix::None,
-                        },
+                        index: 272,
+                        suffix: MoroSuffix::None,
                     }),
                     Reference::Henshall { index: 997 },
                     Reference::ShKk { index: 1616 },
