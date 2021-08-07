@@ -36,7 +36,10 @@ pub fn from(node: Node) -> Result<Moro, MoroError> {
 fn parse_index(s: &str) -> IResult<MoroIndex> {
     map(parts, |parts| {
         let (number, suffix) = parts;
-        MoroIndex { index: number, suffix }
+        MoroIndex {
+            index: number,
+            suffix,
+        }
     })(s)
 }
 
