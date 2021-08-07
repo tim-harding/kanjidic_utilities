@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "tag", content = "content")]
 pub enum Grade {
     /// A Kyouiku kanji learned in grades 1-6.
-    Kyouiku(u8),
+    Kyouiku { year: u8 },
     /// A remaining Jouyou kanji to be learned in junior hi-school.
     Jouyou,
     /// A Jinmeiyou kanji for use in names that is approved
