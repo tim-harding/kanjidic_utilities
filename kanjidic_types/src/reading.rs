@@ -9,13 +9,13 @@ pub enum Reading {
     /// The modern romanization of the Chinese reading.
     PinYin(PinYin),
     /// The romanized form of the Korean reading.
-    KoreanRomanized(String),
+    KoreanRomanized { text: String },
     /// The Korean reading of the kanji in Hangul.
-    KoreanHangul(String),
+    KoreanHangul { text: String },
     /// The Vietnamese reading supplied by Minh Chau Pham.
-    Vietnam(String),
+    Vietnam { text: String },
     /// The onyomi reading of the kanji in katakana.
-    Onyomi(String),
+    Onyomi { text: String },
     /// The kunyomi reading of the kanji in hiragana or katakana.
     Kunyomi(Kunyomi),
 }

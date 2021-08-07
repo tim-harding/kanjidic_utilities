@@ -24,10 +24,18 @@ pub fn from(node: Node) -> Result<Reading, ReadingError> {
     let r_type = attr(node, "r_type")?;
     match r_type {
         "pinyin" => Ok(Reading::PinYin(pin_yin::from(node)?)),
-        "korean_r" => Ok(Reading::KoreanRomanized(text(node)?.into())),
-        "korean_h" => Ok(Reading::KoreanHangul(text(node)?.into())),
-        "vietnam" => Ok(Reading::Vietnam(text(node)?.into())),
-        "ja_on" => Ok(Reading::Onyomi(text(node)?.into())),
+        "korean_r" => Ok(Reading::KoreanRomanized {
+            text: text(node)?.into(),
+        }),
+        "korean_h" => Ok(Reading::KoreanHangul {
+            text: text(node)?.into(),
+        }),
+        "vietnam" => Ok(Reading::Vietnam {
+            text: text(node)?.into(),
+        }),
+        "ja_on" => Ok(Reading::Onyomi {
+            text: text(node)?.into(),
+        }),
         "ja_kun" => Ok(Reading::Kunyomi(kunyomi::from(node)?)),
         _ => Err(ReadingError::UnrecognizedType(PosError::from(node))),
     }

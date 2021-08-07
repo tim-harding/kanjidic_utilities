@@ -188,11 +188,11 @@ mod tests {
                             romanization: "ya".into(),
                             tone: Tone::Falling,
                         }),
-                        Reading::KoreanRomanized("a".into()),
-                        Reading::KoreanHangul("아".into()),
-                        Reading::Vietnam("A".into()),
-                        Reading::Vietnam("Á".into()),
-                        Reading::Onyomi("ア".into()),
+                        Reading::KoreanRomanized { text: "a".into() },
+                        Reading::KoreanHangul { text: "아".into() },
+                        Reading::Vietnam { text: "A".into() },
+                        Reading::Vietnam { text: "Á".into() },
+                        Reading::Onyomi { text: "ア".into() },
                         Reading::Kunyomi(Kunyomi {
                             kind: KunyomiKind::Normal,
                             okurigana: vec!["つ".into(), "ぐ".into(),]
