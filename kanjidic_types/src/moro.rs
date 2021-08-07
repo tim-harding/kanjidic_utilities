@@ -15,7 +15,7 @@ pub struct Moro {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct MoroIndex {
     /// The item number
-    pub number: u16,
+    pub index: u16,
     /// A letter that appears after the index
     pub suffix: MoroSuffix,
 }

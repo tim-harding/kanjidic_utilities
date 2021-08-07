@@ -14,7 +14,7 @@ pub struct BusyPeople {
 #[serde(tag = "tag", content = "content")]
 pub enum Chapter {
     /// A chapter number.
-    Chapter(u8),
+    Chapter { index: u8 },
     /// Some of the chapter are called "A",
     /// but it isn't specified anywhere what that means.
     A,

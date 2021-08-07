@@ -49,7 +49,10 @@ fn parts(s: &str) -> IResult<(u8, char, Chapter)> {
 }
 
 fn chapter(s: &str) -> IResult<Chapter> {
-    alt((value(Chapter::A, char('A')), map(number, Chapter::Chapter)))(s)
+    alt((
+        value(Chapter::A, char('A')),
+        map(number, |index| Chapter::Chapter { index }),
+    ))(s)
 }
 
 fn number(s: &str) -> IResult<u8> {
@@ -81,7 +84,7 @@ mod tests {
             busy_people,
             Ok(BusyPeople {
                 volume: 3,
-                chapter: Chapter::Chapter(14),
+                chapter: Chapter::Chapter { index: 14 },
             })
         )
     }

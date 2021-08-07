@@ -36,7 +36,7 @@ pub fn from(node: Node) -> Result<Moro, MoroError> {
 fn parse_index(s: &str) -> IResult<MoroIndex> {
     map(parts, |parts| {
         let (number, suffix) = parts;
-        MoroIndex { number, suffix }
+        MoroIndex { index: number, suffix }
     })(s)
 }
 
@@ -83,7 +83,7 @@ mod tests {
                 volume: Some(1),
                 page: Some(525),
                 index: MoroIndex {
-                    number: 272,
+                    index: 272,
                     suffix: MoroSuffix::None,
                 },
             })

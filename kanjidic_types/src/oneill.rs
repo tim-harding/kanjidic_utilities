@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Oneill {
     /// The reference number
-    pub number: u16,
+    pub index: u16,
     /// A reference's suffix
     pub suffix: OneillSuffix,
 }

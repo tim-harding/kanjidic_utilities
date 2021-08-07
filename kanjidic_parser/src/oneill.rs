@@ -45,7 +45,7 @@ fn from_str(text: &str) -> Result<Oneill, OneillStrError> {
 fn parse(s: &str) -> IResult<Oneill> {
     map(parts, |parts| {
         let (number, suffix) = parts;
-        Oneill { number, suffix }
+        Oneill { index: number, suffix }
     })(s)
 }
 
