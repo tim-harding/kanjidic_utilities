@@ -21,14 +21,21 @@ pub enum QueryCode {
 
 /// A possible misclassification of the kanji
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(tag = "tag", content = "content")]
-pub enum Misclassification {
+pub struct Misclassification {
+    /// The skip code of the misclassification
+    pub skip: Skip,
+    /// The kind of misclassification
+    pub kind: MisclassificationKind,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub enum MisclassificationKind {
     /// A mistake in the division of the kanji
-    Position(Skip),
+    Position,
     /// A mistake in the number of strokes
-    StrokeCount(Skip),
+    StrokeCount,
     /// Mistakes in both the division and the number of strokes
-    StrokeAndPosition(Skip),
+    StrokeAndPosition,
     /// Ambiguous stroke counts
-    Ambiguous(Skip),
+    Ambiguous,
 }

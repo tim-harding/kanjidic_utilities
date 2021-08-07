@@ -4,7 +4,7 @@ use crate::{
     shared::{attr, SharedError},
     skip, spahn_hadamitzky, DeRooError, FourCornerError, ShError, SkipError,
 };
-use kanjidic_types::{Misclassification, QueryCode};
+use kanjidic_types::{Misclassification, MisclassificationKind, QueryCode};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -32,12 +32,22 @@ pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
         "skip" => {
             if let Some(misclass_kind) = node.attribute("skip_misclass") {
                 Ok(QueryCode::Misclassification(match misclass_kind {
-                    "posn" => Ok(Misclassification::Position(skip::from(node)?)),
-                    "stroke_count" => Ok(Misclassification::StrokeCount(skip::from(node)?)),
-                    "stroke_and_posn" => {
-                        Ok(Misclassification::StrokeAndPosition(skip::from(node)?))
-                    }
-                    "stroke_diff" => Ok(Misclassification::Ambiguous(skip::from(node)?)),
+                    "posn" => Ok(Misclassification {
+                        kind: MisclassificationKind::Position,
+                        skip: skip::from(node)?,
+                    }),
+                    "stroke_count" => Ok(Misclassification {
+                        kind: MisclassificationKind::StrokeCount,
+                        skip: skip::from(node)?,
+                    }),
+                    "stroke_and_posn" => Ok(Misclassification {
+                        kind: MisclassificationKind::StrokeAndPosition,
+                        skip: skip::from(node)?,
+                    }),
+                    "stroke_diff" => Ok(Misclassification {
+                        kind: MisclassificationKind::Ambiguous,
+                        skip: skip::from(node)?,
+                    }),
                     _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(
                         node,
                     ))),
