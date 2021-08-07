@@ -14,6 +14,6 @@ pub enum Codepoint {
     Jis213(Kuten),
     /// Unicode character
     Unicode{
-        codepoint: u32
+        code: u32
     },
 }

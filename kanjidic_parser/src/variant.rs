@@ -33,11 +33,17 @@ pub fn from(node: Node) -> Result<Variant, VariantError> {
         "jis212" => Ok(Variant::Jis212(kuten::from(node)?)),
         "jis213" => Ok(Variant::Jis213(kuten::from(node)?)),
         "deroo" => Ok(Variant::DeRoo(de_roo::from(node)?)),
-        "njecd" => Ok(Variant::Halpern(text_uint::<u16>(node)?)),
+        "njecd" => Ok(Variant::Halpern {
+            code: text_uint::<u16>(node)?,
+        }),
         "s_h" => Ok(Variant::Sh(spahn_hadamitzky::from(node)?)),
-        "nelson_c" => Ok(Variant::Nelson(text_uint::<u16>(node)?)),
+        "nelson_c" => Ok(Variant::Nelson {
+            code: text_uint::<u16>(node)?,
+        }),
         "oneill" => Ok(Variant::ONeill(oneill::from(node)?)),
-        "ucs" => Ok(Variant::Unicode(text_hex(node)?)),
+        "ucs" => Ok(Variant::Unicode {
+            code: text_hex(node)?,
+        }),
         _ => Err(VariantError::UnknownVariant(PosError::from(node))),
     }
 }

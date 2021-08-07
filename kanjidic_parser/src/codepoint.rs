@@ -25,7 +25,7 @@ pub fn from(node: Node) -> Result<Codepoint, CodepointError> {
         "jis212" => Ok(Codepoint::Jis212(kuten::from_str(text)?)),
         "jis213" => Ok(Codepoint::Jis213(kuten::from_str(text)?)),
         "ucs" => Ok(Codepoint::Unicode {
-            codepoint: text_hex(node)?,
+            code: text_hex(node)?,
         }),
         _ => Err(CodepointError::Encoding),
     }
@@ -44,6 +44,6 @@ mod tests {
             .find(|node| node.has_tag_name("cp_value"))
             .unwrap();
         let code = from(node);
-        assert_eq!(code, Ok(Codepoint::Unicode { codepoint: 20124 }))
+        assert_eq!(code, Ok(Codepoint::Unicode { code: 20124 }))
     }
 }

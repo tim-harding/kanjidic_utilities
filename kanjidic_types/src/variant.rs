@@ -15,15 +15,15 @@ pub enum Variant {
     /// A coding in JIS X 0213
     Jis213(Kuten),
     /// A unicode codepoint
-    Unicode(u32),
+    Unicode { code: u32 },
     /// An identification in the De Roo system
     DeRoo(DeRoo),
     /// Index in the NJECD system.
-    Halpern(u16),
+    Halpern { code: u16 },
     /// The Kanji Dictionary kanji code.
     Sh(ShDesc),
     /// Index in the Modern Reader's Japanese-English dictionary.
-    Nelson(u16),
+    Nelson { code: u16 },
     /// Index in Japanese Names by P.G. O'Neill.
     ONeill(Oneill),
 }
