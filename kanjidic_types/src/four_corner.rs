@@ -1,5 +1,6 @@
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use serde_repr::*;
 
 /// A kanji classification using the Four Corner system.
 /// http://www.edrdg.org/wwwjdic/FOURCORNER.html
@@ -34,8 +35,8 @@ pub struct FourCorner {
     TryFromPrimitive,
     PartialOrd,
     Ord,
-    Serialize,
-    Deserialize,
+    Serialize_repr,
+    Deserialize_repr,
 )]
 #[repr(u8)]
 pub enum Stroke {

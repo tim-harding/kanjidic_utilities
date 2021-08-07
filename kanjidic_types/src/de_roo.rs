@@ -1,5 +1,6 @@
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use serde_repr::*;
 
 /// Identification of a kanji in the De Roo system.
 /// http://www.edrdg.org/wwwjdic/deroo.html
@@ -21,8 +22,8 @@ pub struct DeRoo {
     PartialOrd,
     Ord,
     Hash,
-    Serialize,
-    Deserialize,
+    Serialize_repr,
+    Deserialize_repr,
 )]
 #[repr(u8)]
 pub enum ExtremeTop {
@@ -82,8 +83,8 @@ pub enum ExtremeTop {
     PartialOrd,
     Ord,
     Hash,
-    Serialize,
-    Deserialize,
+    Serialize_repr,
+    Deserialize_repr,
 )]
 #[repr(u8)]
 pub enum ExtremeBottom {

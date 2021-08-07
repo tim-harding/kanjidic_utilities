@@ -1,5 +1,6 @@
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use serde_repr::*;
 
 /// Kanji code from the SKIP system of indexing.
 /// http://www.edrdg.org/wwwjdic/SKIP.html
@@ -63,8 +64,8 @@ pub struct SkipSolid {
     PartialOrd,
     Ord,
     Hash,
-    Serialize,
-    Deserialize,
+    Serialize_repr,
+    Deserialize_repr,
 )]
 #[repr(u8)]
 pub enum SolidSubpattern {

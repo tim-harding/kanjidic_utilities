@@ -1,5 +1,6 @@
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
+use serde_repr::*;
 
 // A modern PinYin romanization of the Chinese reading.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Serialize, Deserialize)]
@@ -22,8 +23,8 @@ pub struct PinYin {
     Clone,
     Copy,
     TryFromPrimitive,
-    Serialize,
-    Deserialize,
+    Serialize_repr,
+    Deserialize_repr,
 )]
 #[repr(u8)]
 pub enum Tone {
