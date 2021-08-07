@@ -2,7 +2,7 @@ use crate::{
     pos_error::PosError,
     shared::{attr, text_uint, SharedError},
 };
-use kanjidic_types::{KangXi, Radical, TryFromPrimitiveError};
+use kanjidic_types::{KangXi, Radical, RadicalKind, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -22,8 +22,14 @@ pub fn from(node: Node) -> Result<Radical, RadicalError> {
     let kang_xi = KangXi::try_from(kang_xi_number)?;
     let tag = attr(node, "rad_type")?;
     match tag {
-        "classical" => Ok(Radical::Classical(kang_xi)),
-        "nelson_c" => Ok(Radical::Nelson(kang_xi)),
+        "classical" => Ok(Radical {
+            kind: RadicalKind::Classical,
+            radical: kang_xi,
+        }),
+        "nelson_c" => Ok(Radical {
+            kind: RadicalKind::Nelson,
+            radical: kang_xi,
+        }),
         _ => Err(RadicalError::Kind(PosError::from(node))),
     }
 }
@@ -32,7 +38,7 @@ pub fn from(node: Node) -> Result<Radical, RadicalError> {
 mod tests {
     use super::from;
     use crate::test_shared::DOC;
-    use kanjidic_types::{KangXi, Radical};
+    use kanjidic_types::{KangXi, Radical, RadicalKind};
 
     #[test]
     fn parse_radical() {
@@ -41,6 +47,12 @@ mod tests {
             .find(|node| node.has_tag_name("rad_value"))
             .unwrap();
         let radical = from(node);
-        assert_eq!(radical, Ok(Radical::Classical(KangXi::Two)))
+        assert_eq!(
+            radical,
+            Ok(Radical {
+                kind: RadicalKind::Classical,
+                radical: KangXi::Two,
+            })
+        )
     }
 }

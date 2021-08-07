@@ -77,8 +77,8 @@ mod tests {
     use kanjidic_types::{
         Character, Codepoint, DeRoo, ExtremeBottom, ExtremeTop, FourCorner, Grade, KangXi, Kunyomi,
         KunyomiKind, Kuten, LanguageCode, Meaning, Moro, MoroIndex, MoroSuffix, Oneill,
-        OneillSuffix, PinYin, QueryCode, Radical, Reading, Reference, ShDesc, Skip, SkipSolid,
-        SolidSubpattern, Stroke, StrokeCount, Tone, Translation, Variant,
+        OneillSuffix, PinYin, QueryCode, Radical, RadicalKind, Reading, Reference, ShDesc, Skip,
+        SkipSolid, SolidSubpattern, Stroke, StrokeCount, Tone, Translation, Variant,
     };
 
     use super::from;
@@ -104,8 +104,14 @@ mod tests {
                     })
                 ],
                 radicals: vec![
-                    Radical::Classical(KangXi::Two),
-                    Radical::Nelson(KangXi::One),
+                    Radical {
+                        kind: RadicalKind::Classical,
+                        radical: KangXi::Two,
+                    },
+                    Radical {
+                        kind: RadicalKind::Nelson,
+                        radical: KangXi::One,
+                    },
                 ],
                 grade: Some(Grade::Jouyou),
                 stroke_counts: StrokeCount {

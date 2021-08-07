@@ -28,6 +28,7 @@ pub struct Misclassification {
     pub kind: MisclassificationKind,
 }
 
+/// A kind of kanji misclassification
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum MisclassificationKind {
     /// A mistake in the division of the kanji
