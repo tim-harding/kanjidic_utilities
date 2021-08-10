@@ -1,0 +1,413 @@
+type BusyPeople {
+    volume: Int!
+    chapter: Chapter!
+}
+
+union Chapter = Chapter_Numbered | Chapter_A 
+
+type Chapter_Numbered {
+    index: Int!
+}
+
+type Chapter_A {}
+
+enum LanguageCode {
+    AA
+    AB
+    AE
+    AF
+    AK
+    AM
+    AN
+    AR
+    AS
+    AV
+    AY
+    AZ
+    BA
+    BE
+    BG
+    BI
+    BM
+    BN
+    BO
+    BR
+    BS
+    CA
+    CE
+    CH
+    CO
+    CR
+    CS
+    CU
+    CV
+    CY
+    DA
+    DE
+    DV
+    DZ
+    EE
+    EL
+    EN
+    EO
+    ES
+    ET
+    EU
+    FA
+    FF
+    FI
+    FJ
+    FO
+    FR
+    FY
+    GA
+    GD
+    GL
+    GN
+    GU
+    GV
+    HA
+    HE
+    HI
+    HO
+    HR
+    HT
+    HU
+    HY
+    HZ
+    IA
+    ID
+    IE
+    IG
+    II
+    IK
+    IO
+    IS
+    IT
+    IU
+    JA
+    JV
+    KA
+    KG
+    KI
+    KJ
+    KK
+    KL
+    KM
+    KN
+    KO
+    KR
+    KS
+    KU
+    KV
+    KW
+    KY
+    LA
+    LB
+    LG
+    LI
+    LN
+    LO
+    LT
+    LU
+    LV
+    MG
+    MH
+    MI
+    MK
+    ML
+    MN
+    MR
+    MS
+    MT
+    MY
+    NA
+    NB
+    ND
+    NE
+    NG
+    NL
+    NN
+    NO
+    NR
+    NV
+    NY
+    OC
+    OJ
+    OM
+    OR
+    OS
+    PA
+    PI
+    PL
+    PS
+    PT
+    QU
+    RM
+    RN
+    RO
+    RU
+    RW
+    SA
+    SC
+    SD
+    SE
+    SG
+    SI
+    SK
+    SL
+    SM
+    SN
+    SO
+    SQ
+    SR
+    SS
+    ST
+    SU
+    SV
+    SW
+    TA
+    TE
+    TG
+    TH
+    TI
+    TK
+    TL
+    TN
+    TO
+    TR
+    TS
+    TT
+    TW
+    TY
+    UG
+    UK
+    UR
+    UZ
+    VE
+    VI
+    VO
+    WA
+    WO
+    XH
+    YI
+    YO
+    ZA
+    ZH
+    ZU
+}
+
+type Translation {
+    text: String!
+    language: LanguageCode!
+}
+
+type StrokeCount {
+    accepted: Int!
+    miscounts: [Int!]!
+}
+
+type ShDesc {
+    radical_strokes: Int!
+    radical: String!
+    other_strokes: Int!
+    sequence: Int!
+}
+
+type SkipHorizonal {
+    left: Int!
+    right: Int!
+}
+
+type SkipVertical {
+    top: Int!
+    bottom: Int!
+}
+
+type SkipEnclosure {
+    exterior: Int!
+    interior: Int!
+}
+
+type SkipSolid {
+    total_stroke_count: Int!
+    solid_subpattern: Int!
+}
+
+union Skip = SkipHorizonal | SkipVertical | SkipEnclosure | SkipSolid
+
+type PinYin {
+    romanization: String!
+    tone: Int!
+}
+
+enum OneillSuffix {
+    NONE
+    A
+}
+
+type Oneill {
+    index: Int!
+    suffix: OneillSuffix!
+}
+
+enum MoroSuffix {
+    NONE
+    P
+    X
+    PX
+}
+
+type Moro {
+    volume: Int
+    page: Int
+    index: Int!
+    suffix: MoroSuffix!
+}
+
+type Kuten {
+    plane: Int!
+    ku: Int!
+    ten: Int!
+}
+
+enum KunyomiKind {
+    NORMAL
+    PREFIX
+    SUFFIX
+}
+
+type Kunyomi {
+    okurigana: [String!]
+    kind: KunyomiKind!
+}
+
+type Grade_Kyouiku {
+    year: Int!
+}
+
+type Grade_Jouyou {}
+type Grade_Jinmeiyou {}
+type Grade_JinmeiJouyouVariant {}
+
+union Grade = Grade_Kyouiku | Grade_Jouyou | Grade_Jinmeiyou | Grade_JinmeiyouJouyouVariant
+
+enum Stroke {
+    LID
+    LINE_HORIZONTAL
+    LINE_VERTICAL
+    DOT
+    CROSS
+    SKEWER
+    BOX
+    ANGLE
+    HACHI
+    CHIISAI
+}
+
+type FourCorner {
+    top_left: Stroke!
+    top_right: Stroke!
+    bottom_left: Stroke!
+    bottom_right: Stroke!
+    fifth_corner: Stroke
+}
+
+enum DeRooExtremeTop {
+    DOT
+    ROOF_DOT
+    DOTTED_CLIFF
+    ALTAR
+    KANA_U
+    LID
+    HORNS
+
+    SMALL_ON_BOX
+    SMALL
+    VERTICAL_LINE
+    HAND_ON_THE_LEFT
+    CROSS
+    CROSS_ON_BOX
+    KANA_KA
+    WOMAN
+    TREE
+    LETTER_H
+
+    KANA_NO
+    MAN_ON_THE_LEFT
+    THOUSAND
+    MAN_ON_THE_TOP
+    COW
+    KANA_KU
+    HILL_TOP
+    LEFT_ARROW
+    ROOF_DIAGONAL_LINE
+    X
+
+    HORIZONTAL_LINE
+    FOURTH
+    BALD
+    CLIFF
+    TOP_LEFT_CORNER
+    TOP_RIGHT_CORNER
+    UPSIDE_DOWN_CAN
+    MOUTH
+    SUN
+    EYE_TOP
+}
+
+enum DeRooExtremeBottom {
+    FOUR_DOTS
+    SMALL
+    WATER
+
+    KANA_RI
+    SEAL
+    SWORD_BOTTOM
+    MOON
+    DOTLESS_INCH
+    INCH
+    MOUTH_LEFT_HOOK
+    BIRD_BOTTOM
+    ANIMAL
+    BOW_BOTTOM
+    LEFT_HOOK
+
+    VERTICAL_LINE
+    CROSS
+
+    RIGHT_HOOK
+    LEGS
+    HEART
+    TASSELED_SPEAR_BOTTOM
+
+    KANANO
+
+    SMALL_PODIUM
+    BACK_KANA_NO
+    BIG
+    TREE
+    SMALL_SPOON
+    GOVERN
+    AGAIN
+    WINDY_AGAIN
+    WOMAN
+
+    HEAD_BOTTOM
+
+    WATAKUSHI_BOTTOM
+
+    HORIZONTAL_LINE
+    STANDING_BOTTOM
+    DISH_BOTTOM
+    BOTTOM_CORNER
+    MOUNTAIN
+    MOUTH
+    SUN
+    EYE
+}
+
+type DeRoo {
+    top: DeRooExtremeTop!
+    bottom: DeRooExtremeBottom!
+}
