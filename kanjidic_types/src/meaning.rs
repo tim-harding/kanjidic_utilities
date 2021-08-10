@@ -9,6 +9,4 @@ pub struct Meaning {
     pub readings: Vec<Reading>,
     /// Translations of the kanji into different languages.
     pub translations: Vec<Translation>,
-    /// Japanese readings associated with names.
-    pub nanori: Vec<String>,
 }

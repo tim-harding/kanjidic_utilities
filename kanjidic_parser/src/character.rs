@@ -1,8 +1,8 @@
 use crate::{
     codepoint, grade, meaning, query_code, radical, reference,
     shared::{child, children, text, text_uint, SharedError},
-    stroke_count, variant, CodepointError, GradeError, MeaningError, QueryCodeError, RadicalError,
-    ReferenceError, StrokeCountError, VariantError,
+    stroke_count, variant, CodepointError, GradeError, MeaningError, PosError, QueryCodeError,
+    RadicalError, ReferenceError, StrokeCountError, VariantError,
 };
 use kanjidic_types::Character;
 use roxmltree::Node;
@@ -28,6 +28,8 @@ pub enum CharacterError {
     QueryCode(#[from] QueryCodeError),
     #[error("(Character) Dictionary reference: {0}")]
     DictionaryReference(#[from] ReferenceError),
+    #[error("(Character) Nanori node missing text: {0}")]
+    NanoriText(PosError),
 }
 
 pub fn from(node: Node) -> Result<Character, CharacterError> {
@@ -48,7 +50,20 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
         Err(other) => Err(other),
     }?;
     let query_codes = children(child(node, "query_code")?, "q_code", query_code::from)?;
-    let meanings = children(node, "reading_meaning", meaning::from)?;
+    let (meanings, nanori) = match child(node, "reading_meaning") {
+        Ok(reading_meaning) => {
+            let meanings = children(reading_meaning, "rmgroup", meaning::from)?;
+            let nanori = children(reading_meaning, "nanori", |child| {
+                text(child)
+                    .map(|s: &str| s.to_owned())
+                    .map_err(|_| CharacterError::NanoriText(PosError::from(reading_meaning)))
+            })?;
+            (meanings, nanori)
+        }
+        Err(_) => {
+            (vec![], vec![])
+        }
+    };
     let decomposition = decomposition(&literal);
     Ok(Character {
         literal,
@@ -63,6 +78,7 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
         references,
         query_codes,
         meanings,
+        nanori,
         decomposition,
     })
 }
@@ -75,7 +91,7 @@ fn decomposition(literal: &str) -> Option<Vec<String>> {
                 .iter()
                 .map(|&s| s.to_owned())
                 .collect();
-            return Some(out)
+            return Some(out);
         }
     }
     None
@@ -196,8 +212,8 @@ mod tests {
                     }),
                 ],
                 radical_names: vec![],
+                nanori: vec!["や".into(), "つぎ".into(), "つぐ".into(),],
                 meanings: vec![Meaning {
-                    nanori: vec!["や".into(), "つぎ".into(), "つぐ".into(),],
                     readings: vec![
                         Reading::PinYin(PinYin {
                             romanization: "ya".into(),

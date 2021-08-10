@@ -1,7 +1,6 @@
 use crate::{
-    pos_error::PosError,
     reading,
-    shared::{child, children, text, SharedError},
+    shared::{children, SharedError},
     translation::{self, TranslationError},
     ReadingError,
 };
@@ -13,27 +12,18 @@ use thiserror::Error;
 pub enum MeaningError {
     #[error("(Meaning) Shared: {0}")]
     Shared(#[from] SharedError),
-    #[error("(Meaning) Nanori node missing text: {0}")]
-    NanoriText(PosError),
     #[error("(Meaning) Reading: {0}")]
     Reading(#[from] ReadingError),
     #[error("(Meaning) Translation: {0}")]
     Translation(#[from] TranslationError),
 }
 
-pub fn from(node: Node) -> Result<Meaning, MeaningError> {
-    let nanori = children(node, "nanori", |child| {
-        text(child)
-            .map(|s: &str| s.to_owned())
-            .map_err(|_| MeaningError::NanoriText(PosError::from(node)))
-    })?;
-    let rmgroup = child(node, "rmgroup")?;
+pub fn from(rmgroup: Node) -> Result<Meaning, MeaningError> {
     let readings = children(rmgroup, "reading", reading::from)?;
     let translations = children(rmgroup, "meaning", translation::from)?;
     Ok(Meaning {
         readings,
         translations,
-        nanori,
     })
 }
 
@@ -55,7 +45,6 @@ mod tests {
         assert_eq!(
             meaning,
             Ok(Meaning {
-                nanori: vec!["や".into(), "つぎ".into(), "つぐ".into(),],
                 readings: vec![
                     Reading::PinYin(PinYin {
                         romanization: "ya".into(),
