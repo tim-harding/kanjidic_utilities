@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate rocket;
 
-use std::collections::HashSet;
-
 use futures::stream::TryStreamExt;
 use kanjidic_types::{
     Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations,
@@ -60,65 +58,102 @@ struct CharacterResponse {
     pub decomposition: Option<Vec<String>>,
 }
 
-impl From<(Character, Fields)> for CharacterResponse {
-    fn from(value: (Character, Fields)) -> Self {
+impl CharacterResponse {
+    fn new(character: &Character, fields: &[Field], languages: &[String]) -> Self {
+        if fields.len() == 0 {
+            Self::all_fields(character, languages)
+        } else {
+            Self::filtered_fields(character, fields, languages)
+        }
+    }
+
+    fn filtered_fields(character: &Character, fields: &[Field], languages: &[String]) -> Self {
         let mut out = CharacterResponse::default();
-        out.literal = value.0.literal;
-        if value.1.fields.contains(&Field::Codepoints) {
-            out.codepoints = Some(value.0.codepoints);
+        out.literal = character.literal.clone();
+        if fields.contains(&Field::Codepoints) {
+            out.codepoints = Some(character.codepoints.clone());
         }
-        if value.1.fields.contains(&Field::Radicals) {
-            out.radicals = Some(value.0.radicals);
+        if fields.contains(&Field::Radicals) {
+            out.radicals = Some(character.radicals.clone());
         }
-        if value.1.fields.contains(&Field::Grade) {
-            out.grade = value.0.grade;
+        if fields.contains(&Field::Grade) {
+            out.grade = character.grade;
         }
-        if value.1.fields.contains(&Field::StrokeCounts) {
-            out.stroke_counts = Some(value.0.stroke_counts);
+        if fields.contains(&Field::StrokeCounts) {
+            out.stroke_counts = Some(character.stroke_counts.clone());
         }
-        if value.1.fields.contains(&Field::Variants) {
-            out.variants = Some(value.0.variants);
+        if fields.contains(&Field::Variants) {
+            out.variants = Some(character.variants.clone());
         }
-        if value.1.fields.contains(&Field::Frequency) {
-            out.frequency = value.0.frequency;
+        if fields.contains(&Field::Frequency) {
+            out.frequency = character.frequency;
         }
-        if value.1.fields.contains(&Field::RadicalNames) {
-            out.radical_names = Some(value.0.radical_names);
+        if fields.contains(&Field::RadicalNames) {
+            out.radical_names = Some(character.radical_names.clone());
         }
-        if value.1.fields.contains(&Field::Jlpt) {
-            out.jlpt = value.0.jlpt;
+        if fields.contains(&Field::Jlpt) {
+            out.jlpt = character.jlpt;
         }
-        if value.1.fields.contains(&Field::References) {
-            out.references = Some(value.0.references);
+        if fields.contains(&Field::References) {
+            out.references = Some(character.references.clone());
         }
-        if value.1.fields.contains(&Field::QueryCodes) {
-            out.query_codes = Some(value.0.query_codes);
+        if fields.contains(&Field::QueryCodes) {
+            out.query_codes = Some(character.query_codes.clone());
         }
-        if value.1.fields.contains(&Field::Readings) {
-            out.readings = Some(value.0.readings);
+        if fields.contains(&Field::Readings) {
+            out.readings = Some(character.readings.clone());
         }
-        if value.1.fields.contains(&Field::Nanori) {
-            out.nanori = Some(value.0.nanori);
+        if fields.contains(&Field::Nanori) {
+            out.nanori = Some(character.nanori.clone());
         }
-        if value.1.fields.contains(&Field::Decomposition) {
-            out.decomposition = value.0.decomposition;
+        if fields.contains(&Field::Decomposition) {
+            out.decomposition = character.decomposition.clone();
         }
-
-        if value.1.fields.contains(&Field::Translations) {
-            let mut translations = Translations::default();
-            for (language, localization) in value.0.translations.iter() {
-                if value.1.languages.contains(language) {
-                    translations.insert(language.into(), localization.clone());
-                }
-            }
-            out.translations = Some(translations);
+        if fields.contains(&Field::Translations) {
+            out.translations = Some(Self::translations(&character.translations, languages));
         }
-
         out
+    }
+
+    fn translations(translations: &Translations, languages: &[String]) -> Translations {
+        if languages.len() == 0 {
+            translations.clone()
+        } else {
+            Self::filtered_translations(translations, languages)
+        }
+    }
+
+    fn filtered_translations(translations: &Translations, languages: &[String]) -> Translations {
+        let out: Translations = translations
+            .iter()
+            .filter(|(k, _)| languages.contains(k))
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        out
+    }
+
+    fn all_fields(character: &Character, languages: &[String]) -> Self {
+        Self {
+            literal: character.literal.clone(),
+            codepoints: Some(character.codepoints.clone()),
+            radicals: Some(character.radicals.clone()),
+            grade: character.grade,
+            stroke_counts: Some(character.stroke_counts.clone()),
+            variants: Some(character.variants.clone()),
+            frequency: character.frequency,
+            radical_names: Some(character.radical_names.clone()),
+            jlpt: character.jlpt,
+            references: Some(character.references.clone()),
+            query_codes: Some(character.query_codes.clone()),
+            readings: Some(character.readings.clone()),
+            nanori: Some(character.nanori.clone()),
+            decomposition: character.decomposition.clone(),
+            translations: Some(Self::translations(&character.translations, languages)),
+        }
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize, Hash, FromFormField)]
 enum Field {
     Codepoints,
     Radicals,
@@ -136,16 +171,11 @@ enum Field {
     Decomposition,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Default)]
-struct Fields {
-    pub fields: HashSet<Field>,
-    pub languages: Vec<String>,
-}
-
-#[get("/kanji/<literal>", data = "<fields>")]
+#[get("/kanji/<literal>?<field>&<language>")]
 async fn kanji(
     literal: &str,
-    fields: Json<Fields>,
+    field: Vec<Field>,
+    language: Vec<String>,
     db: &State<Collection<Character>>,
 ) -> Result<Json<CharacterResponse>, &'static str> {
     let filter = doc! {"literal": literal};
@@ -162,7 +192,7 @@ async fn kanji(
         Ok(Some(character)) => character,
         Err(_) | Ok(None) => return Err("No kanji found for literal"),
     };
-    let response = CharacterResponse::from((character, fields.to_owned()));
+    let response = CharacterResponse::new(&character, &field, &language);
     Ok(Json(response))
 }
 
