@@ -10,7 +10,7 @@ pub struct Moro {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page: Option<u16>,
     /// The item number
-    pub index: u16,
+    pub number: u16,
     /// A letter that appears after the index
     pub suffix: MoroSuffix,
 }
