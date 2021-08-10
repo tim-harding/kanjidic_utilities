@@ -96,7 +96,7 @@ mod tests {
             Ok(Character {
                 literal: "亜".into(),
                 codepoints: vec![
-                    Codepoint::Unicode { codepoint: 20124 },
+                    Codepoint::Unicode(20124),
                     Codepoint::Jis208(Kuten {
                         plane: 1,
                         ku: 16,
