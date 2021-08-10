@@ -13,5 +13,7 @@ pub enum Codepoint {
     /// Encoding in JIS X 0213-2000
     Jis213(Kuten),
     /// Unicode character
-    Unicode { code: u32 },
+    Unicode{
+        codepoint: u32
+    },
 }
