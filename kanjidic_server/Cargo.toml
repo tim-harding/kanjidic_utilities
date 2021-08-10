@@ -5,8 +5,6 @@ edition = "2018"
 
 [dependencies]
 rocket = "0.5.0-rc.1"
-juniper = "0.15.7"
-diesel = { version = "1.4.4", features = ["postgres"] }
 dotenv = "0.15.0"
 
 [dependencies.rocket_sync_db_pools]

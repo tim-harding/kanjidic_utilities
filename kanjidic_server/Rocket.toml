@@ -1,2 +1,0 @@
-[global.databases]
-postgres_wsl2 = { url = "postgres://postgres:docker@172.25.19.247:5432/kanjidic" }
