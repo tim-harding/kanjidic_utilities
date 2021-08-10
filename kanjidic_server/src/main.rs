@@ -1,17 +1,49 @@
 #[macro_use]
 extern crate rocket;
 
-use mongodb::{options::ClientOptions, Client};
+use futures::stream::TryStreamExt;
+use kanjidic_types::Character;
+use mongodb::{
+    bson::doc,
+    options::{ClientOptions, FindOptions},
+    Client, Collection,
+};
 use rocket::{
     fairing::{self, AdHoc},
-    Build, Rocket,
+    serde::json::Json,
+    Build, Rocket, State,
 };
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().attach(AdHoc::try_on_ignite("Connect Database", init_db))
+    rocket::build()
+        .attach(AdHoc::try_on_ignite("Connect Database", init_db))
+        .mount("/", routes![kanji])
 }
 
+#[get("/kanji/<literal>")]
+async fn kanji(
+    literal: &str,
+    db: &State<Collection<Character>>,
+) -> Result<Json<Character>, &'static str> {
+    let filter = doc! {"literal": literal};
+    let find_options = {
+        let mut find_options = FindOptions::default();
+        find_options.limit = Some(1);
+        find_options
+    };
+    let mut cursor = match db.find(filter, find_options).await {
+        Ok(cursor) => cursor,
+        Err(_) => return Err("No kanji found for literal"),
+    };
+    let character = match cursor.try_next().await {
+        Ok(Some(character)) => character,
+        Err(_) | Ok(None) => return Err("No kanji found for literal"),
+    };
+    Ok(Json(character))
+}
+
+// Reference: https://github.com/SergioBenitez/Rocket/blob/v0.5-rc/examples/databases/src/sqlx.rs
 async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
     let db_url = match std::env::var("mongodb_url") {
         Ok(url) => url,
@@ -34,5 +66,6 @@ async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
             return Err(rocket);
         }
     };
-    Ok(rocket.manage(client))
+    let collection = client.database("kanjidic").collection::<Character>("kanji");
+    Ok(rocket.manage(collection))
 }
