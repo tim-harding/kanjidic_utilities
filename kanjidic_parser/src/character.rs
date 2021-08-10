@@ -143,10 +143,8 @@ mod tests {
                     Reference::Moro(Moro {
                         volume: Some(1),
                         page: Some(525),
-                        index: MoroIndex {
-                            number: 272,
-                            suffix: MoroSuffix::None,
-                        },
+                        index: 272,
+                        suffix: MoroSuffix::None,
                     }),
                     Reference::Henshall(997),
                     Reference::ShKk(1616),

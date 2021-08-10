@@ -30,14 +30,7 @@ pub fn from(node: Node) -> Result<Moro, MoroError> {
     })
 }
 
-fn parse_index(s: &str) -> IResult<MoroIndex> {
-    map(parts, |parts| {
-        let (number, suffix) = parts;
-        MoroIndex { number, suffix }
-    })(s)
-}
-
-fn parts(s: &str) -> IResult<(u16, MoroSuffix)> {
+fn parse_index(s: &str) -> IResult<(u16, MoroSuffix)> {
     tuple((take_uint, index_suffix))(s)
 }
 
@@ -79,10 +72,8 @@ mod tests {
             Ok(Moro {
                 volume: Some(1),
                 page: Some(525),
-                index: MoroIndex {
-                    number: 272,
-                    suffix: MoroSuffix::None,
-                },
+                index: 272,
+                suffix: MoroSuffix::None,
             })
         )
     }
