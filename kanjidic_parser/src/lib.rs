@@ -22,8 +22,6 @@ mod kunyomi;
 pub use kunyomi::*;
 mod kuten;
 pub use kuten::*;
-mod meaning;
-pub use meaning::*;
 mod moro;
 pub use moro::*;
 mod oneill;
@@ -50,8 +48,6 @@ mod variant;
 pub use variant::*;
 mod kanjidic;
 pub use kanjidic::*;
-mod language_code;
-pub use language_code::*;
 mod shared;
 
 #[cfg(test)]

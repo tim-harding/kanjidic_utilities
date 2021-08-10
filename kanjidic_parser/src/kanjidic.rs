@@ -23,7 +23,7 @@ pub enum KanjidicError {
     Character(#[from] CharacterError),
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Kanjidic {
     pub header: Header,
     pub characters: Vec<Character>,
@@ -67,6 +67,7 @@ mod tests {
     use std::convert::TryFrom;
 
     #[test]
+    #[ignore]
     fn kanjidic() {
         let _kanjidic = Kanjidic::try_from(&DOC as &Document).unwrap();
     }

@@ -1,10 +1,10 @@
 use crate::{
-    codepoint, grade, meaning, query_code, radical, reference,
+    codepoint, grade, query_code, radical, reading, reference,
     shared::{child, children, text, text_uint, SharedError},
-    stroke_count, variant, CodepointError, GradeError, MeaningError, PosError, QueryCodeError,
-    RadicalError, ReferenceError, StrokeCountError, VariantError,
+    stroke_count, translation, variant, CodepointError, GradeError, PosError, QueryCodeError,
+    RadicalError, ReadingError, ReferenceError, StrokeCountError, TranslationError, VariantError,
 };
-use kanjidic_types::Character;
+use kanjidic_types::{Character, Translations};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -22,8 +22,10 @@ pub enum CharacterError {
     StrokeCount(#[from] StrokeCountError),
     #[error("(Character) Variant: {0}")]
     Variant(#[from] VariantError),
-    #[error("(Character) Meaning: {0}")]
-    Meaning(#[from] MeaningError),
+    #[error("(Character) Translation: {0}")]
+    Translation(#[from] TranslationError),
+    #[error("(Character) Reading: {0}")]
+    Reading(#[from] ReadingError),
     #[error("(Character) Query code: {0}")]
     QueryCode(#[from] QueryCodeError),
     #[error("(Character) Dictionary reference: {0}")]
@@ -50,19 +52,19 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
         Err(other) => Err(other),
     }?;
     let query_codes = children(child(node, "query_code")?, "q_code", query_code::from)?;
-    let (meanings, nanori) = match child(node, "reading_meaning") {
+    let (readings, nanori, translations) = match child(node, "reading_meaning") {
         Ok(reading_meaning) => {
-            let meanings = children(reading_meaning, "rmgroup", meaning::from)?;
+            let rmgroup = child(reading_meaning, "rmgroup")?;
+            let readings = children(rmgroup, "reading", reading::from)?;
+            let translations = translation::from(rmgroup)?;
             let nanori = children(reading_meaning, "nanori", |child| {
                 text(child)
                     .map(|s: &str| s.to_owned())
                     .map_err(|_| CharacterError::NanoriText(PosError::from(reading_meaning)))
             })?;
-            (meanings, nanori)
+            (readings, nanori, translations)
         }
-        Err(_) => {
-            (vec![], vec![])
-        }
+        Err(_) => (vec![], vec![], Translations::default()),
     };
     let decomposition = decomposition(&literal);
     Ok(Character {
@@ -77,8 +79,9 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
         jlpt,
         references,
         query_codes,
-        meanings,
         nanori,
+        readings,
+        translations,
         decomposition,
     })
 }
@@ -106,11 +109,13 @@ fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option
 
 #[cfg(test)]
 mod tests {
+    use std::{collections::HashMap, iter::FromIterator};
+
     use kanjidic_types::{
         Character, Codepoint, DeRoo, ExtremeBottom, ExtremeTop, FourCorner, Grade, KangXi, Kunyomi,
-        KunyomiKind, Kuten, LanguageCode, Meaning, Moro, MoroSuffix, Oneill, OneillSuffix, PinYin,
-        QueryCode, Radical, RadicalKind, Reading, Reference, ShDesc, Skip, SkipSolid,
-        SolidSubpattern, Stroke, StrokeCount, Tone, Translation, Variant,
+        KunyomiKind, Kuten, Moro, MoroSuffix, Oneill, OneillSuffix, PinYin, QueryCode, Radical,
+        RadicalKind, Reading, Reference, ShDesc, Skip, SkipSolid, SolidSubpattern, Stroke,
+        StrokeCount, Tone, Variant,
     };
 
     use super::from;
@@ -213,85 +218,58 @@ mod tests {
                 ],
                 radical_names: vec![],
                 nanori: vec!["や".into(), "つぎ".into(), "つぐ".into(),],
-                meanings: vec![Meaning {
-                    readings: vec![
-                        Reading::PinYin(PinYin {
-                            romanization: "ya".into(),
-                            tone: Tone::Falling,
-                        }),
-                        Reading::KoreanRomanized("a".into()),
-                        Reading::KoreanHangul("아".into()),
-                        Reading::Vietnam("A".into()),
-                        Reading::Vietnam("Á".into()),
-                        Reading::Onyomi("ア".into()),
-                        Reading::Kunyomi(Kunyomi {
-                            kind: KunyomiKind::Normal,
-                            okurigana: vec!["つ".into(), "ぐ".into(),]
-                        })
-                    ],
-                    translations: vec![
-                        Translation {
-                            text: "Asia".into(),
-                            language: LanguageCode::Eng,
-                        },
-                        Translation {
-                            text: "rank next".into(),
-                            language: LanguageCode::Eng,
-                        },
-                        Translation {
-                            text: "come after".into(),
-                            language: LanguageCode::Eng,
-                        },
-                        Translation {
-                            text: "-ous".into(),
-                            language: LanguageCode::Eng,
-                        },
-                        Translation {
-                            text: "Asie".into(),
-                            language: LanguageCode::Fra,
-                        },
-                        Translation {
-                            text: "suivant".into(),
-                            language: LanguageCode::Fra,
-                        },
-                        Translation {
-                            text: "sub-".into(),
-                            language: LanguageCode::Fra,
-                        },
-                        Translation {
-                            text: "sous-".into(),
-                            language: LanguageCode::Fra,
-                        },
-                        Translation {
-                            text: "pref. para indicar".into(),
-                            language: LanguageCode::Spa,
-                        },
-                        Translation {
-                            text: "venir después de".into(),
-                            language: LanguageCode::Spa,
-                        },
-                        Translation {
-                            text: "Asia".into(),
-                            language: LanguageCode::Spa,
-                        },
-                        Translation {
-                            text: "Ásia".into(),
-                            language: LanguageCode::Por,
-                        },
-                        Translation {
-                            text: "próxima".into(),
-                            language: LanguageCode::Por,
-                        },
-                        Translation {
-                            text: "o que vem depois".into(),
-                            language: LanguageCode::Por,
-                        },
-                        Translation {
-                            text: "-ous".into(),
-                            language: LanguageCode::Por,
-                        },
-                    ],
-                }]
+                readings: vec![
+                    Reading::PinYin(PinYin {
+                        romanization: "ya".into(),
+                        tone: Tone::Falling,
+                    }),
+                    Reading::KoreanRomanized("a".into()),
+                    Reading::KoreanHangul("아".into()),
+                    Reading::Vietnam("A".into()),
+                    Reading::Vietnam("Á".into()),
+                    Reading::Onyomi("ア".into()),
+                    Reading::Kunyomi(Kunyomi {
+                        kind: KunyomiKind::Normal,
+                        okurigana: vec!["つ".into(), "ぐ".into(),]
+                    })
+                ],
+                translations: HashMap::from_iter([
+                    (
+                        "en".to_owned(),
+                        vec![
+                            "Asia".to_owned(),
+                            "rank next".to_owned(),
+                            "come after".to_owned(),
+                            "-ous".to_owned(),
+                        ]
+                    ),
+                    (
+                        "fr".to_owned(),
+                        vec![
+                            "Asie".to_owned(),
+                            "suivant".to_owned(),
+                            "sub-".to_owned(),
+                            "sous-".to_owned(),
+                        ]
+                    ),
+                    (
+                        "pt".to_owned(),
+                        vec![
+                            "Ásia".to_owned(),
+                            "próxima".to_owned(),
+                            "o que vem depois".to_owned(),
+                            "-ous".to_owned(),
+                        ]
+                    ),
+                    (
+                        "es".to_owned(),
+                        vec![
+                            "pref. para indicar".to_owned(),
+                            "venir después de".to_owned(),
+                            "Asia".to_owned(),
+                        ]
+                    )
+                ])
             })
         )
     }

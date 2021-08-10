@@ -1,9 +1,13 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
-use crate::{Codepoint, Grade, Meaning, QueryCode, Radical, Reference, StrokeCount, Variant};
+use crate::{Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Variant};
+
+pub type Translations = HashMap<String, Vec<String>>;
 
 /// Information about a kanji.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Character {
     /// The character itself.
     pub literal: String,
@@ -31,8 +35,10 @@ pub struct Character {
     pub references: Vec<Reference>,
     /// Codes used to identify the kanji
     pub query_codes: Vec<QueryCode>,
-    /// Different meanings of the kanji.
-    pub meanings: Vec<Meaning>,
+    /// Different ways the kanji can be read.
+    pub readings: Vec<Reading>,
+    /// Translations of the kanji into different languages.
+    pub translations: Translations,
     /// Japanese readings associated with names.
     pub nanori: Vec<String>,
     /// The constituent radicals in the kanji
