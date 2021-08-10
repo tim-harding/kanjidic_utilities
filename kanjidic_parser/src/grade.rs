@@ -28,7 +28,7 @@ pub fn from(node: Node) -> Result<Grade, GradeError> {
 
 fn from_u8(n: u8) -> Result<Grade, GradeStrError> {
     match n {
-        1..=6 => Ok(Grade::Kyouiku { year: n }),
+        1..=6 => Ok(Grade::Kyouiku(n)),
         8 => Ok(Grade::Jouyou),
         9 => Ok(Grade::Jinmeiyou),
         10 => Ok(Grade::JinmeiyouJouyouVariant),
