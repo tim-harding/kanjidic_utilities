@@ -33,4 +33,7 @@ pub struct Character {
     pub query_codes: Vec<QueryCode>,
     /// Different meanings of the kanji.
     pub meanings: Vec<Meaning>,
+    /// The constituent radicals in the kanji
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decomposition: Option<Vec<String>>,
 }

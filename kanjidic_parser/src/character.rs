@@ -31,7 +31,7 @@ pub enum CharacterError {
 }
 
 pub fn from(node: Node) -> Result<Character, CharacterError> {
-    let literal = text(child(node, "literal")?)?.into();
+    let literal = text(child(node, "literal")?)?.to_owned();
     let codepoints = children(child(node, "codepoint")?, "cp_value", codepoint::from)?;
     let radicals = children(child(node, "radical")?, "rad_value", radical::from)?;
     let misc = child(node, "misc")?;
@@ -49,6 +49,7 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
     }?;
     let query_codes = children(child(node, "query_code")?, "q_code", query_code::from)?;
     let meanings = children(node, "reading_meaning", meaning::from)?;
+    let decomposition = decomposition(&literal);
     Ok(Character {
         literal,
         codepoints,
@@ -62,7 +63,22 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
         references,
         query_codes,
         meanings,
+        decomposition,
     })
+}
+
+fn decomposition(literal: &str) -> Option<Vec<String>> {
+    for decomposition in kradical_static::DECOMPOSITIONS {
+        if decomposition.kanji == literal {
+            let out: Vec<String> = decomposition
+                .radicals
+                .iter()
+                .map(|&s| s.to_owned())
+                .collect();
+            return Some(out)
+        }
+    }
+    None
 }
 
 fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option<T>, E> {
@@ -95,6 +111,7 @@ mod tests {
             character,
             Ok(Character {
                 literal: "亜".into(),
+                decomposition: Some(vec!["｜".into(), "一".into(), "口".into()]),
                 codepoints: vec![
                     Codepoint::Unicode(20124),
                     Codepoint::Jis208(Kuten {
