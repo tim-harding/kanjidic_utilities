@@ -2,10 +2,19 @@
 extern crate rocket;
 
 use futures::stream::TryStreamExt;
-use mongodb::{bson::doc, options::ClientOptions, Client, Collection};
-use rocket::{Build, Rocket, State, fairing::{self, AdHoc}, log::private::info, serde::json::Json};
+use mongodb::{
+    bson::{doc, to_bson, Document},
+    options::{ClientOptions, FindOptions},
+    Client, Collection,
+};
+use rocket::{
+    fairing::{self, AdHoc},
+    log::private::info,
+    serde::json::Json,
+    Build, Rocket, State,
+};
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::{borrow::BorrowMut, collections::{HashMap, HashSet}};
 
 mod character_response;
 use character_response::CharacterResponse;
@@ -42,7 +51,9 @@ async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
             return Err(rocket);
         }
     };
-    let collection = client.database("kanjidic").collection::<CharacterResponse>("kanji");
+    let collection = client
+        .database("kanjidic")
+        .collection::<CharacterResponse>("kanji");
     Ok(rocket.manage(collection))
 }
 
@@ -67,9 +78,6 @@ async fn kanji(
     Ok(Json(character))
 }
 
-// Todo: use FindOptions.projection to limit fields
-// and populate CharacterResponse directly
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct KanjisResponse {
     pub valid_radicals: HashSet<String>,
@@ -83,13 +91,52 @@ async fn kanjis(
     language: Vec<String>,
     db: &State<Collection<CharacterResponse>>,
 ) -> Result<Json<KanjisResponse>, &'static str> {
-    let _field: HashSet<_> = field.into_iter().collect();
-    let _language: HashSet<_> = language.into_iter().collect();
     let filter = doc! {"decomposition": {"$all": radical}};
+    let find_options = {
+        let mut find_options = FindOptions::default();
+        let mut projection: Document = field
+            .into_iter()
+            .filter_map(|field| {
+                let key = match field {
+                    Field::Radicals => None,
+                    Field::Decomposition => None,
+                    Field::Translations => Some("translations"),
+                    Field::Codepoints => Some("codepoints"),
+                    Field::Grade => Some("grade"),
+                    Field::StrokeCounts => Some("stroke_counts"),
+                    Field::Variants => Some("variants"),
+                    Field::Frequency => Some("frequency"),
+                    Field::RadicalNames => Some("radical_names"),
+                    Field::Jlpt => Some("jlpt"),
+                    Field::References => Some("references"),
+                    Field::QueryCodes => Some("query_codes"),
+                    Field::Readings => Some("readings"),
+                    Field::Nanori => Some("nanori"),
+                };
+                key.map(|key| (key.to_owned(), to_bson(&1).unwrap()))
+            })
+            .collect();
+        projection.extend([
+            ("literal".to_owned(), to_bson(&1).unwrap()),
+            ("decomposition".to_owned(), to_bson(&1).unwrap()),
+        ]);
+        if language.len() > 0 {
+            let translations: Document = language
+                .into_iter()
+                .map(|lang| (lang, to_bson(&1).unwrap()))
+                .collect();
+            let _old = projection.insert("translations", translations);
+        }
+        find_options.projection = Some(projection);
+        find_options
+    };
     let now = std::time::Instant::now();
-    let mut cursor = match db.find(filter, None).await {
+    let mut cursor = match db.find(filter, find_options).await {
         Ok(cursor) => cursor,
-        Err(_) => return Err("No kanji found for radicals"),
+        Err(err) => {
+            error!("kanjis db.find: {}", err);
+            return Err("No kanji found for radicals");
+        }
     };
     info!("db.find elapsed: {}", now.elapsed().as_millis());
     let mut characters = vec![];
