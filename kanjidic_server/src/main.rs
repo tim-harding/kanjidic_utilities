@@ -4,11 +4,7 @@ extern crate rocket;
 use futures::stream::TryStreamExt;
 use kanjidic_types::Character;
 use mongodb::{bson::doc, options::ClientOptions, Client, Collection};
-use rocket::{
-    fairing::{self, AdHoc},
-    serde::json::Json,
-    Build, Rocket, State,
-};
+use rocket::{Build, Rocket, State, fairing::{self, AdHoc}, log::private::info, serde::json::Json};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
@@ -92,20 +88,26 @@ async fn kanjis(
     let field: HashSet<_> = field.into_iter().collect();
     let language: HashSet<_> = language.into_iter().collect();
     let filter = doc! {"decomposition": {"$all": radical}};
+    let now = std::time::Instant::now();
     let mut cursor = match db.find(filter, None).await {
         Ok(cursor) => cursor,
         Err(_) => return Err("No kanji found for radicals"),
     };
+    info!("db.find elapsed: {}", now.elapsed().as_millis());
     let mut characters = vec![];
     let mut valid_radicals = HashSet::default();
+    let now = std::time::Instant::now();
+    let mut acc = 0;
     loop {
         match cursor.try_next().await {
             Ok(Some(character)) => {
+                let now = std::time::Instant::now();
                 if let Some(decomposition) = &character.decomposition {
                     valid_radicals.extend(decomposition.clone().into_iter())
                 }
                 let response_part = CharacterResponse::new(character, &field, &language);
                 characters.push(response_part);
+                acc += now.elapsed().as_micros();
             }
             Ok(None) => break,
             Err(err) => {
@@ -114,6 +116,8 @@ async fn kanjis(
             }
         }
     }
+    info!("cursor.try_next elapsed: {}", now.elapsed().as_millis());
+    info!("Process character elapsed: {}", acc / 1000);
     let response = KanjisResponse {
         valid_radicals,
         characters,
