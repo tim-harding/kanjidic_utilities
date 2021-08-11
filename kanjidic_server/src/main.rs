@@ -2,7 +2,6 @@
 extern crate rocket;
 
 use futures::stream::TryStreamExt;
-use kanjidic_types::Character;
 use mongodb::{bson::doc, options::ClientOptions, Client, Collection};
 use rocket::{Build, Rocket, State, fairing::{self, AdHoc}, log::private::info, serde::json::Json};
 use serde::{Deserialize, Serialize};
@@ -43,7 +42,7 @@ async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
             return Err(rocket);
         }
     };
-    let collection = client.database("kanjidic").collection::<Character>("kanji");
+    let collection = client.database("kanjidic").collection::<CharacterResponse>("kanji");
     Ok(rocket.manage(collection))
 }
 
@@ -52,10 +51,10 @@ async fn kanji(
     literal: &str,
     field: Vec<Field>,
     language: Vec<String>,
-    db: &State<Collection<Character>>,
+    db: &State<Collection<CharacterResponse>>,
 ) -> Result<Json<CharacterResponse>, &'static str> {
-    let field: HashSet<_> = field.into_iter().collect();
-    let language: HashSet<_> = language.into_iter().collect();
+    let _field: HashSet<_> = field.into_iter().collect();
+    let _language: HashSet<_> = language.into_iter().collect();
     let filter = doc! {"literal": literal};
     let character = match db.find_one(filter, None).await {
         Ok(Some(character)) => character,
@@ -65,8 +64,7 @@ async fn kanji(
             return Err("Internal error");
         }
     };
-    let response = CharacterResponse::new(character, &field, &language);
-    Ok(Json(response))
+    Ok(Json(character))
 }
 
 // Todo: use FindOptions.projection to limit fields
@@ -83,10 +81,10 @@ async fn kanjis(
     radical: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
-    db: &State<Collection<Character>>,
+    db: &State<Collection<CharacterResponse>>,
 ) -> Result<Json<KanjisResponse>, &'static str> {
-    let field: HashSet<_> = field.into_iter().collect();
-    let language: HashSet<_> = language.into_iter().collect();
+    let _field: HashSet<_> = field.into_iter().collect();
+    let _language: HashSet<_> = language.into_iter().collect();
     let filter = doc! {"decomposition": {"$all": radical}};
     let now = std::time::Instant::now();
     let mut cursor = match db.find(filter, None).await {
@@ -105,8 +103,7 @@ async fn kanjis(
                 if let Some(decomposition) = &character.decomposition {
                     valid_radicals.extend(decomposition.clone().into_iter())
                 }
-                let response_part = CharacterResponse::new(character, &field, &language);
-                characters.push(response_part);
+                characters.push(character);
                 acc += now.elapsed().as_micros();
             }
             Ok(None) => break,
