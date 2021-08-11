@@ -1,20 +1,16 @@
 #[macro_use]
 extern crate rocket;
 
-use std::collections::HashSet;
-
 use futures::stream::TryStreamExt;
 use kanjidic_types::Character;
-use mongodb::{
-    bson::doc,
-    options::{ClientOptions, FindOptions},
-    Client, Collection,
-};
+use mongodb::{bson::doc, options::ClientOptions, Client, Collection};
 use rocket::{
     fairing::{self, AdHoc},
     serde::json::Json,
     Build, Rocket, State,
 };
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
 mod character_response;
 use character_response::CharacterResponse;
@@ -77,30 +73,37 @@ async fn kanji(
     Ok(Json(response))
 }
 
+// Todo: use FindOptions.projection to limit fields
+// and populate CharacterResponse directly
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct KanjisResponse {
+    pub valid_radicals: HashSet<String>,
+    pub characters: Vec<CharacterResponse>,
+}
+
 #[get("/kanjis?<radical>&<field>&<language>")]
 async fn kanjis(
     radical: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
     db: &State<Collection<Character>>,
-) -> Result<Json<Vec<CharacterResponse>>, &'static str> {
+) -> Result<Json<KanjisResponse>, &'static str> {
     let field: HashSet<_> = field.into_iter().collect();
     let language: HashSet<_> = language.into_iter().collect();
     let filter = doc! {"decomposition": {"$all": radical}};
-    let find_options = {
-        let mut find_options = FindOptions::default();
-        // Todo: allow a configurable limit
-        find_options.limit = Some(10);
-        find_options
-    };
-    let mut cursor = match db.find(filter, find_options).await {
+    let mut cursor = match db.find(filter, None).await {
         Ok(cursor) => cursor,
         Err(_) => return Err("No kanji found for radicals"),
     };
     let mut characters = vec![];
+    let mut valid_radicals = HashSet::default();
     loop {
         match cursor.try_next().await {
             Ok(Some(character)) => {
+                if let Some(decomposition) = &character.decomposition {
+                    valid_radicals.extend(decomposition.clone().into_iter())
+                }
                 let response_part = CharacterResponse::new(character, &field, &language);
                 characters.push(response_part);
             }
@@ -111,5 +114,9 @@ async fn kanjis(
             }
         }
     }
-    Ok(Json(characters))
+    let response = KanjisResponse {
+        valid_radicals,
+        characters,
+    };
+    Ok(Json(response))
 }
