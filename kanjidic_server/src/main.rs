@@ -72,8 +72,8 @@ async fn radicals(
     let languages: HashSet<_> = language.into_iter().collect();
     let mut errors = vec![];
     let mut decomposition_sets = vec![];
-    for radical in radical {
-        match cache.radk.get(&radical) {
+    for radical in radical.iter() {
+        match cache.radk.get(radical) {
             Some(set) => decomposition_sets.push(set),
             None => {
                 errors.push(format!("Could not find radical: {}", radical));
@@ -104,14 +104,14 @@ async fn radicals(
             }
         })
         .collect();
-    let valid_next: HashSet<_> = match decomposition_sets.pop() {
-        Some(set) => set
-            .clone()
-            .into_iter()
-            .filter(|radical| decomposition_sets.iter().all(|s| s.contains(radical)))
-            .collect(),
-        None => HashSet::default(),
-    };
+    let mut valid_next: HashSet<_> = decomposition_sets
+        .clone()
+        .into_iter()
+        .flat_map(|set| set.clone().into_iter())
+        .collect();
+    for radical in radical.iter() {
+        let _ = valid_next.remove(radical);
+    }
     let response = RadicalsResponse {
         errors,
         valid_next,
