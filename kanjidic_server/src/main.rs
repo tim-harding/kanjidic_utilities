@@ -56,6 +56,7 @@ async fn kanji(
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct RadicalsResponse {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<String>,
     pub valid_next: HashSet<String>,
     pub kanji: Vec<CharacterResponse>,
