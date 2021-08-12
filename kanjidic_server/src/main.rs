@@ -4,7 +4,7 @@ extern crate rocket;
 use cache::Cache;
 use mongodb::bson::doc;
 use rocket::{fairing::AdHoc, serde::json::Json, State};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::collections::HashSet;
 
 mod character_response;
@@ -24,19 +24,19 @@ fn rocket() -> _ {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-struct KanjiResponse {
+struct KanjiResponse<'a> {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     errors: Vec<String>,
-    kanji: Vec<CharacterResponse>,
+    kanji: Vec<CharacterResponse<'a>>,
 }
 
 #[get("/kanji?<literal>&<field>&<language>")]
-async fn kanji(
+async fn kanji<'a>(
     literal: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
-    cache: &State<Cache>,
-) -> Result<Json<KanjiResponse>, &'static str> {
+    cache: &'a State<Cache>,
+) -> Result<Json<KanjiResponse<'a>>, &'static str> {
     let fields: HashSet<_> = field.into_iter().collect();
     let languages: HashSet<_> = language.into_iter().collect();
     let mut errors = vec![];
@@ -54,21 +54,21 @@ async fn kanji(
     Ok(Json(response))
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct RadicalsResponse {
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+struct RadicalsResponse<'a> {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<String>,
-    pub valid_next: HashSet<String>,
-    pub kanji: Vec<CharacterResponse>,
+    pub valid_next: HashSet<&'a str>,
+    pub kanji: Vec<CharacterResponse<'a>>,
 }
 
 #[get("/radicals?<radical>&<field>&<language>")]
-async fn radicals(
+async fn radicals<'a>(
     radical: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
-    cache: &State<Cache>,
-) -> Result<Json<RadicalsResponse>, &'static str> {
+    cache: &'a State<Cache>,
+) -> Result<Json<RadicalsResponse<'a>>, &'static str> {
     let fields: HashSet<_> = field.into_iter().collect();
     let languages: HashSet<_> = language.into_iter().collect();
     let mut errors = vec![];
@@ -94,8 +94,8 @@ async fn radicals(
         .iter()
         .filter_map(|&literal| match cache.kanji.get(literal) {
             Some(character) => {
-                if let Some(decomposition) = character.decomposition.clone() {
-                    valid_next.extend(decomposition.into_iter());
+                if let Some(decomposition) = &character.decomposition {
+                    valid_next.extend(decomposition.iter().map(|s| s.as_str()));
                 }
                 Some(CharacterResponse::new(&character, &fields, &languages))
             }
@@ -106,7 +106,7 @@ async fn radicals(
         })
         .collect();
     for radical in radical.iter() {
-        let _ = valid_next.remove(radical);
+        let _ = valid_next.remove(radical.as_str());
     }
     let response = RadicalsResponse {
         errors,

@@ -1,49 +1,59 @@
-use std::collections::HashSet;
-
-use kanjidic_types::{Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations, Variant};
-use serde::{Deserialize, Serialize};
+use std::collections::{HashMap, HashSet};
+use kanjidic_types::{
+    Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations,
+    Variant,
+};
+use serde::Serialize;
 
 use crate::field::Field;
 
-// Todo: Can these be borrowed types?
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub struct CharacterResponse {
-    pub literal: String,
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Default)]
+pub struct CharacterResponse<'a> {
+    pub literal: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub codepoints: Option<Vec<Codepoint>>,
+    pub codepoints: Option<&'a [Codepoint]>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub radicals: Option<Vec<Radical>>,
+    pub radicals: Option<&'a [Radical]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub grade: Option<Grade>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub stroke_counts: Option<StrokeCount>,
+    pub stroke_counts: Option<&'a StrokeCount>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub variants: Option<Vec<Variant>>,
+    pub variants: Option<&'a [Variant]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub frequency: Option<u16>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub radical_names: Option<Vec<String>>,
+    pub radical_names: Option<&'a [String]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub jlpt: Option<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub references: Option<Vec<Reference>>,
+    pub references: Option<&'a [Reference]>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub query_codes: Option<Vec<QueryCode>>,
+    pub query_codes: Option<&'a [QueryCode]>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub readings: Option<Vec<Reading>>,
+    pub readings: Option<&'a [Reading]>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub translations: Option<Translations>,
+    pub translations: Option<TranslationsResponse<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub nanori: Option<Vec<String>>,
+    pub nanori: Option<&'a [String]>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub decomposition: Option<Vec<String>>,
+    pub decomposition: Option<&'a [String]>,
+}
+
+type FilteredTranslations<'a> = HashMap<&'a str, &'a [String]>;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(untagged)]
+pub enum TranslationsResponse<'a> {
+    All(&'a Translations),
+    Some(FilteredTranslations<'a>),
 }
 
 type Languages = HashSet<String>;
 type Fields = HashSet<Field>;
 
-impl CharacterResponse {
-    pub fn new(character: &Character, fields: &Fields, languages: &Languages) -> Self {
+impl<'a, 'b> CharacterResponse<'a> {
+    pub fn new(character: &'a Character, fields: &'b Fields, languages: &'b Languages) -> Self {
         if fields.contains(&Field::All) {
             Self::all_fields(character, languages)
         } else {
@@ -51,47 +61,54 @@ impl CharacterResponse {
         }
     }
 
-    fn filtered_fields(character: &Character, fields: &Fields, languages: &Languages) -> Self {
+    fn filtered_fields(
+        character: &'a Character,
+        fields: &'b Fields,
+        languages: &'b Languages,
+    ) -> Self {
         let mut out = CharacterResponse::default();
-        out.literal = character.literal.clone();
+        out.literal = &character.literal;
         if fields.contains(&Field::Codepoints) {
-            out.codepoints = Some(character.codepoints.clone());
+            out.codepoints = Some(&character.codepoints);
         }
         if fields.contains(&Field::Radicals) {
-            out.radicals = Some(character.radicals.clone());
+            out.radicals = Some(&character.radicals);
         }
         if fields.contains(&Field::Grade) {
             out.grade = character.grade;
         }
         if fields.contains(&Field::StrokeCounts) {
-            out.stroke_counts = Some(character.stroke_counts.clone());
+            out.stroke_counts = Some(&character.stroke_counts);
         }
         if fields.contains(&Field::Variants) {
-            out.variants = Some(character.variants.clone());
+            out.variants = Some(&character.variants);
         }
         if fields.contains(&Field::Frequency) {
             out.frequency = character.frequency;
         }
         if fields.contains(&Field::RadicalNames) {
-            out.radical_names = Some(character.radical_names.clone());
+            out.radical_names = Some(&character.radical_names);
         }
         if fields.contains(&Field::Jlpt) {
             out.jlpt = character.jlpt;
         }
         if fields.contains(&Field::References) {
-            out.references = Some(character.references.clone());
+            out.references = Some(&character.references);
         }
         if fields.contains(&Field::QueryCodes) {
-            out.query_codes = Some(character.query_codes.clone());
+            out.query_codes = Some(&character.query_codes);
         }
         if fields.contains(&Field::Readings) {
-            out.readings = Some(character.readings.clone());
+            out.readings = Some(&character.readings);
         }
         if fields.contains(&Field::Nanori) {
-            out.nanori = Some(character.nanori.clone());
+            out.nanori = Some(&character.nanori);
         }
         if fields.contains(&Field::Decomposition) {
-            out.decomposition = character.decomposition.clone();
+            out.decomposition = match &character.decomposition {
+                Some(decomposition) => Some(decomposition.as_slice()),
+                None => None,
+            }
         }
         if fields.contains(&Field::Translations) {
             out.translations = Some(Self::translations(&character.translations, languages));
@@ -99,40 +116,48 @@ impl CharacterResponse {
         out
     }
 
-    fn translations(translations: &Translations, languages: &Languages) -> Translations {
-        // Todo: Does this make sense?
+    fn translations(
+        translations: &'a Translations,
+        languages: &'b Languages,
+    ) -> TranslationsResponse<'a> {
         if languages.len() == 0 {
-            translations.clone()
+            TranslationsResponse::All(&translations)
         } else {
-            Self::filtered_translations(translations, languages)
+            TranslationsResponse::Some(Self::filtered_translations(translations, languages))
         }
     }
 
-    fn filtered_translations(translations: &Translations, languages: &Languages) -> Translations {
-        let out: Translations = translations
-            .clone()
-            .into_iter()
-            .filter(|(k, _)| languages.contains(k))
+    fn filtered_translations(
+        translations: &'a Translations,
+        languages: &'b Languages,
+    ) -> FilteredTranslations<'a> {
+        let out: FilteredTranslations = translations
+            .iter()
+            .filter(|(k, _)| languages.contains(*k))
+            .map(|(k, v)| (k.as_str(), v.as_slice()))
             .collect();
         out
     }
 
-    fn all_fields(character: &Character, languages: &Languages) -> Self {
+    fn all_fields(character: &'a Character, languages: &'b Languages) -> Self {
         Self {
-            literal: character.literal.clone(),
-            codepoints: Some(character.codepoints.clone()),
-            radicals: Some(character.radicals.clone()),
+            literal: &character.literal,
+            codepoints: Some(&character.codepoints),
+            radicals: Some(&character.radicals),
             grade: character.grade,
-            stroke_counts: Some(character.stroke_counts.clone()),
-            variants: Some(character.variants.clone()),
+            stroke_counts: Some(&character.stroke_counts),
+            variants: Some(&character.variants),
             frequency: character.frequency,
-            radical_names: Some(character.radical_names.clone()),
+            radical_names: Some(&character.radical_names),
             jlpt: character.jlpt,
-            references: Some(character.references.clone()),
-            query_codes: Some(character.query_codes.clone()),
-            readings: Some(character.readings.clone()),
-            nanori: Some(character.nanori.clone()),
-            decomposition: character.decomposition.clone(),
+            references: Some(&character.references),
+            query_codes: Some(&character.query_codes),
+            readings: Some(&character.readings),
+            nanori: Some(&character.nanori),
+            decomposition: match &character.decomposition {
+                Some(decomposition) => Some(decomposition.as_slice()),
+                None => None,
+            },
             translations: Some(Self::translations(&character.translations, languages)),
         }
     }

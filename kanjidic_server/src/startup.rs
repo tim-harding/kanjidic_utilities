@@ -1,9 +1,17 @@
-use std::collections::HashSet;
+use crate::cache::{Cache, KanjiCache, RadkCache};
 use futures::stream::TryStreamExt;
 use kanjidic_types::Character;
-use mongodb::{Client, Database, bson::doc, options::ClientOptions};
-use rocket::{Build, Rocket, fairing};
-use crate::cache::{Cache, KanjiCache, Radk, RadkCache};
+use mongodb::{bson::doc, options::ClientOptions, Client, Database};
+use rocket::{fairing, Build, Rocket};
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Radk {
+    pub radical: String,
+    pub stroke: u8,
+    pub kanji: HashSet<String>,
+}
 
 pub async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
     let db_url = match std::env::var("mongodb_url") {
