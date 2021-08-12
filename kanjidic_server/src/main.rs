@@ -2,12 +2,7 @@
 extern crate rocket;
 
 use cache::Cache;
-use futures::stream::TryStreamExt;
-use mongodb::{
-    bson::{doc, to_bson, Document},
-    options::FindOptions,
-    Database,
-};
+use mongodb::bson::doc;
 use rocket::{fairing::AdHoc, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -25,7 +20,7 @@ fn rocket() -> _ {
     rocket::build()
         .attach(AdHoc::try_on_ignite("Connect Database", init_db))
         .attach(AdHoc::try_on_ignite("Create cache", init_cache))
-        .mount("/", routes![kanji, kanjis])
+        .mount("/", routes![kanji, radicals])
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -60,146 +55,67 @@ async fn kanji(
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct KanjisResponse {
-    pub intersection: HashSet<String>,
-    pub characters: Vec<CharacterResponse>,
+struct RadicalsResponse {
+    pub errors: Vec<String>,
+    pub valid_next: HashSet<String>,
+    pub kanji: Vec<CharacterResponse>,
 }
 
-#[get("/kanjis?<radical>&<field>&<language>")]
-async fn kanjis(
+#[get("/radicals?<radical>&<field>&<language>")]
+async fn radicals(
     radical: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
-    db: &State<Database>,
-) -> Result<Json<KanjisResponse>, &'static str> {
-    let characters = kanjis_characters(&radical, field, language, db).await?;
-    let intersection = kanjis_intersection(&radical, db).await?;
-    let response = KanjisResponse {
-        intersection,
-        characters,
-    };
-    Ok(Json(response))
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-struct Adjacency {
-    pub radical: String,
-    pub adjacents: Vec<String>,
-}
-
-async fn kanjis_intersection(
-    radical: &[String],
-    db: &Database,
-) -> Result<HashSet<String>, &'static str> {
-    let filter = doc! {"radical": {"$in": radical}};
-    let mut cursor = match db
-        .collection::<Adjacency>("adjacency")
-        .find(filter, None)
-        .await
-    {
-        Ok(cursor) => cursor,
-        Err(err) => {
-            error!("adjacency db.find: {}", err);
-            return Err("Internal error");
-        }
-    };
-    let mut sets = vec![];
-    loop {
-        match cursor.try_next().await {
-            Ok(Some(adjacency)) => {
-                let set: HashSet<_> = adjacency.adjacents.into_iter().collect();
-                sets.push(set)
-            }
-            Ok(None) => break,
-            Err(err) => {
-                error!("Error reading an intersection: {}", err);
-                return Err("Internal error");
+    cache: &State<Cache>,
+) -> Result<Json<RadicalsResponse>, &'static str> {
+    let fields: HashSet<_> = field.into_iter().collect();
+    let languages: HashSet<_> = language.into_iter().collect();
+    let mut errors = vec![];
+    let mut decomposition_sets = vec![];
+    for radical in radical {
+        match cache.radk.get(&radical) {
+            Some(set) => decomposition_sets.push(set),
+            None => {
+                errors.push(format!("Could not find radical: {}", radical));
             }
         }
     }
-    let adjacents: HashSet<_> = match sets.pop() {
-        Some(seed) => seed
+    let literals: Vec<_> = match decomposition_sets.pop() {
+        Some(set) => set
+            .iter()
+            .filter(|literal| decomposition_sets.iter().all(|&s| s.contains(*literal)))
+            .collect(),
+        None => vec![],
+    };
+    let mut errors = vec![];
+    let mut decomposition_sets = vec![];
+    let kanji: Vec<_> = literals
+        .iter()
+        .filter_map(|&literal| match cache.kanji.get(literal) {
+            Some(data) => {
+                if let Some(set) = &data.decomposition {
+                    decomposition_sets.push(set);
+                }
+                Some(CharacterResponse::new(&data.character, &fields, &languages))
+            }
+            None => {
+                errors.push(format!("Could not find kanji: {}", literal));
+                None
+            }
+        })
+        .collect();
+    let valid_next: HashSet<_> = match decomposition_sets.pop() {
+        Some(set) => set
+            .clone()
             .into_iter()
-            .filter(|k| sets.iter().all(|s| s.contains(k)))
+            .filter(|radical| decomposition_sets.iter().all(|s| s.contains(radical)))
             .collect(),
         None => HashSet::default(),
     };
-    Ok(adjacents)
-}
-
-async fn kanjis_characters(
-    radical: &[String],
-    field: Vec<Field>,
-    language: Vec<String>,
-    db: &Database,
-) -> Result<Vec<CharacterResponse>, &'static str> {
-    let filter = doc! {"decomposition": {"$all": radical}};
-    let find_options = {
-        let mut find_options = FindOptions::default();
-        // Todo: make this configurable
-        find_options.limit = Some(10);
-        find_options.projection = Some(projection(field, language));
-        find_options
+    let response = RadicalsResponse {
+        errors,
+        valid_next,
+        kanji,
     };
-    let mut cursor = match db
-        .collection::<CharacterResponse>("kanji")
-        .find(filter, find_options)
-        .await
-    {
-        Ok(cursor) => cursor,
-        Err(err) => {
-            error!("kanjis db.find: {}", err);
-            return Err("No kanji found for radicals");
-        }
-    };
-    let mut characters = vec![];
-    loop {
-        match cursor.try_next().await {
-            Ok(Some(character)) => {
-                characters.push(character);
-            }
-            Ok(None) => break,
-            Err(err) => {
-                error!("Error reading a kanji: {}", err);
-                return Err("Internal error");
-            }
-        }
-    }
-    Ok(characters)
-}
-
-fn projection(field: Vec<Field>, language: Vec<String>) -> Document {
-    let mut projection: Document = field
-        .into_iter()
-        .map(|field| {
-            let key = match field {
-                // Todo: This "all" handling is just to make things compile
-                Field::All => "",
-                Field::Radicals => "radicals",
-                Field::Decomposition => "decomposition",
-                Field::Translations => "translations",
-                Field::Codepoints => "codepoints",
-                Field::Grade => "grade",
-                Field::StrokeCounts => "stroke_counts",
-                Field::Variants => "variants",
-                Field::Frequency => "frequency",
-                Field::RadicalNames => "radical_names",
-                Field::Jlpt => "jlpt",
-                Field::References => "references",
-                Field::QueryCodes => "query_codes",
-                Field::Readings => "readings",
-                Field::Nanori => "nanori",
-            };
-            (key.to_owned(), to_bson(&1).unwrap())
-        })
-        .collect();
-    projection.extend([("literal".to_owned(), to_bson(&1).unwrap())]);
-    if language.len() > 0 {
-        let translations: Document = language
-            .into_iter()
-            .map(|lang| (lang, to_bson(&1).unwrap()))
-            .collect();
-        let _old = projection.insert("translations", translations);
-    }
-    projection
+    Ok(Json(response))
 }
