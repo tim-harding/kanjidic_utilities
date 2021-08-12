@@ -2,7 +2,6 @@
 extern crate rocket;
 
 use futures::stream::TryStreamExt;
-use kanjidic_types::Character;
 use mongodb::{
     bson::{doc, to_bson, Document},
     options::{ClientOptions, FindOneOptions, FindOptions},
@@ -25,7 +24,6 @@ use field::Field;
 fn rocket() -> _ {
     rocket::build()
         .attach(AdHoc::try_on_ignite("Connect Database", init_db))
-        .attach(AdHoc::try_on_ignite("Create cache", init_cache))
         .mount("/", routes![kanji, kanjis])
 }
 
@@ -54,36 +52,6 @@ async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
     };
     let database = client.database("kanjidic");
     Ok(rocket.manage(database))
-}
-
-async fn init_cache(rocket: Rocket<Build>) -> fairing::Result {
-    let db = rocket.state::<Database>().unwrap();
-    let filter = doc! {};
-    let mut cursor = match db
-        .collection::<Character>("kanji")
-        .find(filter, None)
-        .await
-    {
-        Ok(cursor) => cursor,
-        Err(err) => {
-            error!("adjacency db.find: {}", err);
-            return Err(rocket);
-        }
-    };
-    let mut characters = vec![];
-    loop {
-        match cursor.try_next().await {
-            Ok(Some(character)) => {
-                characters.push(character)
-            }
-            Ok(None) => break,
-            Err(err) => {
-                error!("Error reading an intersection: {}", err);
-                return Err(rocket);
-            }
-        }
-    }
-    Ok(rocket.manage(characters))
 }
 
 #[get("/kanji/<literal>?<field>&<language>")]
