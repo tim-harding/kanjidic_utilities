@@ -3,7 +3,7 @@ use futures::stream::TryStreamExt;
 use kanjidic_types::Character;
 use mongodb::{Client, Database, bson::doc, options::ClientOptions};
 use rocket::{Build, Rocket, fairing};
-use crate::cache::{Cache, KanjiCache, KanjiData, Radk, RadkCache};
+use crate::cache::{Cache, KanjiCache, Radk, RadkCache};
 
 pub async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
     let db_url = match std::env::var("mongodb_url") {
@@ -86,15 +86,7 @@ async fn get_kanji_data(db: &Database) -> Result<KanjiCache, ()> {
         match cursor.try_next().await {
             Ok(Some(character)) => {
                 let literal = character.literal.clone();
-                let decomposition: Option<HashSet<_>> = character
-                    .decomposition
-                    .clone()
-                    .map(|d| d.into_iter().collect());
-                let data = KanjiData {
-                    character,
-                    decomposition,
-                };
-                kanji.insert(literal, data);
+                kanji.insert(literal, character);
             }
             Ok(None) => break,
             Err(err) => {

@@ -43,7 +43,7 @@ async fn kanji(
     let kanji: Vec<_> = literal
         .iter()
         .filter_map(|literal| match cache.kanji.get(literal) {
-            Some(data) => Some(CharacterResponse::new(&data.character, &fields, &languages)),
+            Some(character) => Some(CharacterResponse::new(&character, &fields, &languages)),
             None => {
                 errors.push(format!("Could not find kanji: {}", literal));
                 None
@@ -89,26 +89,21 @@ async fn radicals(
         None => vec![],
     };
     let mut errors = vec![];
-    let mut decomposition_sets = vec![];
+    let mut valid_next = HashSet::default();
     let kanji: Vec<_> = literals
         .iter()
         .filter_map(|&literal| match cache.kanji.get(literal) {
-            Some(data) => {
-                if let Some(set) = &data.decomposition {
-                    decomposition_sets.push(set);
+            Some(character) => {
+                if let Some(decomposition) = character.decomposition.clone() {
+                    valid_next.extend(decomposition.into_iter());
                 }
-                Some(CharacterResponse::new(&data.character, &fields, &languages))
+                Some(CharacterResponse::new(&character, &fields, &languages))
             }
             None => {
                 errors.push(format!("Could not find kanji: {}", literal));
                 None
             }
         })
-        .collect();
-    let mut valid_next: HashSet<_> = decomposition_sets
-        .clone()
-        .into_iter()
-        .flat_map(|set| set.clone().into_iter())
         .collect();
     for radical in radical.iter() {
         let _ = valid_next.remove(radical);
