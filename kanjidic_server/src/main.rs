@@ -88,7 +88,6 @@ async fn radicals<'a>(
             .collect(),
         None => vec![],
     };
-    let mut errors = vec![];
     let mut valid_next = HashSet::default();
     let kanji: Vec<_> = literals
         .iter()
