@@ -1,18 +1,16 @@
 #[macro_use]
 extern crate rocket;
 
+use cache::Cache;
 use futures::stream::TryStreamExt;
 use mongodb::{
     bson::{doc, to_bson, Document},
-    options::{FindOneOptions, FindOptions},
+    options::FindOptions,
     Database,
 };
-use rocket::{
-    fairing::{AdHoc},
-    serde::json::Json, State,
-};
+use rocket::{fairing::AdHoc, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
-use std::collections::{HashSet};
+use std::collections::HashSet;
 
 mod character_response;
 use character_response::CharacterResponse;
@@ -30,32 +28,35 @@ fn rocket() -> _ {
         .mount("/", routes![kanji, kanjis])
 }
 
-#[get("/kanji/<literal>?<field>&<language>")]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+struct KanjiResponse {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    errors: Vec<String>,
+    kanji: Vec<CharacterResponse>,
+}
+
+#[get("/kanji?<literal>&<field>&<language>")]
 async fn kanji(
-    literal: &str,
+    literal: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
-    db: &State<Database>,
-) -> Result<Json<CharacterResponse>, &'static str> {
-    let filter = doc! {"literal": literal};
-    let find_options = {
-        let mut find_options = FindOneOptions::default();
-        find_options.projection = Some(projection(field, language));
-        find_options
-    };
-    let character = match db
-        .collection::<CharacterResponse>("kanji")
-        .find_one(filter, find_options)
-        .await
-    {
-        Ok(Some(character)) => character,
-        Ok(None) => return Err("No kanji found for literal"),
-        Err(err) => {
-            error!("Error reading a kanji: {}", err);
-            return Err("Internal error");
-        }
-    };
-    Ok(Json(character))
+    cache: &State<Cache>,
+) -> Result<Json<KanjiResponse>, &'static str> {
+    let fields: HashSet<_> = field.into_iter().collect();
+    let languages: HashSet<_> = language.into_iter().collect();
+    let mut errors = vec![];
+    let kanji: Vec<_> = literal
+        .iter()
+        .filter_map(|literal| match cache.kanji.get(literal) {
+            Some(data) => Some(CharacterResponse::new(&data.character, &fields, &languages)),
+            None => {
+                errors.push(format!("Could not find kanji: {}", literal));
+                None
+            }
+        })
+        .collect();
+    let response = KanjiResponse { errors, kanji };
+    Ok(Json(response))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -172,6 +173,8 @@ fn projection(field: Vec<Field>, language: Vec<String>) -> Document {
         .into_iter()
         .map(|field| {
             let key = match field {
+                // Todo: This "all" handling is just to make things compile
+                Field::All => "",
                 Field::Radicals => "radicals",
                 Field::Decomposition => "decomposition",
                 Field::Translations => "translations",
