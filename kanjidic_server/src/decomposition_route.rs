@@ -12,7 +12,7 @@ pub struct RadicalsResponse<'a> {
 }
 
 #[get("/radicals?<radical>&<field>&<language>")]
-pub async fn radicals<'a>(
+pub async fn decomposition<'a>(
     radical: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
