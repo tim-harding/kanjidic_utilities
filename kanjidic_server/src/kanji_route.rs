@@ -10,7 +10,7 @@ pub struct KanjiResponse<'a> {
     kanji: Vec<CharacterResponse<'a>>,
 }
 
-#[get("/kanji?<literal>&<field>&<language>")]
+#[get("/kanji/literals?<literal>&<field>&<language>")]
 pub async fn kanji<'a>(
     literal: Vec<String>,
     field: Vec<Field>,

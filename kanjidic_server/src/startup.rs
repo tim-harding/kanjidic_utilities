@@ -1,17 +1,8 @@
-use crate::cache::{Cache, KanjiCache, RadkCache};
+use crate::cache::{Cache, KanjiCache, Radk, RadkCache};
 use futures::stream::TryStreamExt;
 use kanjidic_types::Character;
 use mongodb::{bson::doc, options::ClientOptions, Client, Database};
 use rocket::{fairing, Build, Rocket};
-use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Radk {
-    pub radical: String,
-    pub stroke: u8,
-    pub kanji: HashSet<String>,
-}
 
 pub async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
     let db_url = match std::env::var("mongodb_url") {
@@ -66,9 +57,7 @@ async fn get_radk_data(db: &Database) -> Result<RadkCache, ()> {
     loop {
         match cursor.try_next().await {
             Ok(Some(radk)) => {
-                let Radk { kanji, radical, .. } = radk;
-                let kanji: HashSet<_> = kanji.into_iter().collect();
-                cache.insert(radical, kanji);
+                cache.insert(radk.radical.clone(), radk);
             }
             Ok(None) => break,
             Err(err) => {

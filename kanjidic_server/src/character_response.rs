@@ -60,6 +60,9 @@ impl<'a, 'b> CharacterResponse<'a> {
             Self::filtered_fields(character, fields, languages)
         }
     }
+    
+    // Todo: iterate and match on fields array,
+    // don't use a hashset here
 
     fn filtered_fields(
         character: &'a Character,

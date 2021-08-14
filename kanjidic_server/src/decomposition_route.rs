@@ -1,7 +1,7 @@
+use crate::{cache::Cache, character_response::CharacterResponse, field::Field};
+use rocket::{serde::json::Json, State};
 use serde::Serialize;
 use std::collections::HashSet;
-use rocket::{serde::json::Json, State};
-use crate::{cache::Cache, character_response::CharacterResponse, field::Field};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct RadicalsResponse<'a> {
@@ -11,7 +11,7 @@ pub struct RadicalsResponse<'a> {
     pub kanji: Vec<CharacterResponse<'a>>,
 }
 
-#[get("/radicals?<radical>&<field>&<language>")]
+#[get("/kanji/decomposition?<radical>&<field>&<language>")]
 pub async fn decomposition<'a>(
     radical: Vec<String>,
     field: Vec<Field>,
@@ -32,8 +32,13 @@ pub async fn decomposition<'a>(
     }
     let literals: Vec<_> = match decomposition_sets.pop() {
         Some(set) => set
+            .kanji
             .iter()
-            .filter(|literal| decomposition_sets.iter().all(|&s| s.contains(*literal)))
+            .filter(|literal| {
+                decomposition_sets
+                    .iter()
+                    .all(|&s| s.kanji.contains(*literal))
+            })
             .collect(),
         None => vec![],
     };
