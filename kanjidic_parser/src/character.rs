@@ -86,7 +86,7 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
     })
 }
 
-fn decomposition(literal: &str) -> Option<Vec<String>> {
+fn decomposition(literal: &str) -> Vec<String> {
     for decomposition in kradical_static::DECOMPOSITIONS {
         if decomposition.kanji == literal {
             let out: Vec<String> = decomposition
@@ -94,10 +94,10 @@ fn decomposition(literal: &str) -> Option<Vec<String>> {
                 .iter()
                 .map(|&s| s.to_owned())
                 .collect();
-            return Some(out);
+            return out;
         }
     }
-    None
+    vec![]
 }
 
 fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option<T>, E> {

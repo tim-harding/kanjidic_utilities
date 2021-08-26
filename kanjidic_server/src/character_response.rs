@@ -7,6 +7,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::field::Field;
 
+// Todo: also skip parsing empty arrays?
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Default)]
 pub struct CharacterResponse<'a> {
     pub literal: &'a str,
@@ -108,10 +109,7 @@ impl<'a, 'b> CharacterResponse<'a> {
             out.nanori = Some(&character.nanori);
         }
         if fields.contains(&Field::Decomposition) {
-            out.decomposition = match &character.decomposition {
-                Some(decomposition) => Some(decomposition.as_slice()),
-                None => None,
-            }
+            out.decomposition = Some(&character.decomposition)
         }
         if fields.contains(&Field::Translations) {
             out.translations = Some(Self::translations(&character.translations, languages));
@@ -157,10 +155,7 @@ impl<'a, 'b> CharacterResponse<'a> {
             query_codes: Some(&character.query_codes),
             readings: Some(&character.readings),
             nanori: Some(&character.nanori),
-            decomposition: match &character.decomposition {
-                Some(decomposition) => Some(decomposition.as_slice()),
-                None => None,
-            },
+            decomposition: Some(&character.decomposition),
             translations: Some(Self::translations(&character.translations, languages)),
         }
     }

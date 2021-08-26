@@ -47,9 +47,7 @@ pub async fn decomposition<'a>(
         .iter()
         .filter_map(|&literal| match cache.kanji.get(literal) {
             Some(character) => {
-                if let Some(decomposition) = &character.decomposition {
-                    valid_next.extend(decomposition.iter().map(|s| s.as_str()));
-                }
+                valid_next.extend(character.decomposition.iter().map(|s| s.as_str()));
                 Some(CharacterResponse::new(&character, &fields, &languages))
             }
             None => {
