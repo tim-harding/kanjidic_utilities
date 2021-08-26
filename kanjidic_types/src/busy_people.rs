@@ -32,19 +32,19 @@ pub enum Chapter {
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum BusyPeopleStrError {
+pub enum BusyPeopleParseError {
     #[error("(Busy people) Format: {0}")]
     Format(NomErrorReason),
 }
 
-impl<'a> From<NomErr<'a>> for BusyPeopleStrError {
+impl<'a> From<NomErr<'a>> for BusyPeopleParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
 }
 
 impl TryFrom<&str> for BusyPeople {
-    type Error = BusyPeopleStrError;
+    type Error = BusyPeopleParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, o) = parts(text)?;

@@ -12,11 +12,11 @@ pub enum GradeError {
     #[error("(Grade) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Grade) Parsing: {0}, {1}")]
-    Parse(PosError, GradeStrError),
+    Parse(PosError, GradeU8Error),
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum GradeStrError {
+pub enum GradeU8Error {
     #[error("(Grade) {0} is not a recognized grade level")]
     Unrecognized(u8),
 }
@@ -26,13 +26,13 @@ pub fn from(node: Node) -> Result<Grade, GradeError> {
     from_u8(n).map_err(|err| GradeError::Parse(PosError::from(node), err))
 }
 
-fn from_u8(n: u8) -> Result<Grade, GradeStrError> {
+fn from_u8(n: u8) -> Result<Grade, GradeU8Error> {
     match n {
         1..=6 => Ok(Grade::Kyouiku(n)),
         8 => Ok(Grade::Jouyou),
         9 => Ok(Grade::Jinmeiyou),
         10 => Ok(Grade::JinmeiyouJouyouVariant),
-        n => Err(GradeStrError::Unrecognized(n)),
+        n => Err(GradeU8Error::Unrecognized(n)),
     }
 }
 

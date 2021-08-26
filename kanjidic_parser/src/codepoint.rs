@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 use crate::{
     shared::{self, attr, text_hex, SharedError},
 };
-use kanjidic_types::{Codepoint, Kuten, KutenStrError};
+use kanjidic_types::{Codepoint, Kuten, KutenParseError};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -13,7 +13,7 @@ pub enum CodepointError {
     #[error("(Codepoint) Unrecognized encoding")]
     Encoding,
     #[error("(Codepoint) Kuten: {0}")]
-    Kuten(#[from] KutenStrError),
+    Kuten(#[from] KutenParseError),
 }
 
 pub fn from(node: Node) -> Result<Codepoint, CodepointError> {

@@ -3,7 +3,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{ShDesc, ShStrError};
+use kanjidic_types::{ShDesc, ShParseError};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -12,7 +12,7 @@ pub enum ShError {
     #[error("(Spahn Hadamitzky) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Spahn Hadamitzky) Parsing: {0}, {1}")]
-    Parse(PosError, ShStrError),
+    Parse(PosError, ShParseError),
 }
 
 pub fn from(node: Node) -> Result<ShDesc, ShError> {

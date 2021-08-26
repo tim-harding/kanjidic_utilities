@@ -31,19 +31,19 @@ pub enum KunyomiKind {
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum KunyomiStrError {
+pub enum KunyomiParseError {
     #[error("(Kunyomi) Format: {0}")]
     Format(NomErrorReason),
 }
 
-impl<'a> From<NomErr<'a>> for KunyomiStrError {
+impl<'a> From<NomErr<'a>> for KunyomiParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
 }
 
 impl TryFrom<&str> for Kunyomi {
-    type Error = KunyomiStrError;
+    type Error = KunyomiParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, (pre, okurigana, post)) = parts(text)?;

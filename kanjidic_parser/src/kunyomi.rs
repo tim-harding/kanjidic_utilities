@@ -4,7 +4,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{Kunyomi, KunyomiStrError};
+use kanjidic_types::{Kunyomi, KunyomiParseError};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -13,7 +13,7 @@ pub enum KunyomiError {
     #[error("(Kunyomi) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Kunyomi) Parsing: {0}, {1}")]
-    Parse(PosError, KunyomiStrError),
+    Parse(PosError, KunyomiParseError),
 }
 
 pub fn from(node: Node) -> Result<Kunyomi, KunyomiError> {

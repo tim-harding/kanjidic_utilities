@@ -2,7 +2,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{PinYin, PinYinStrError};
+use kanjidic_types::{PinYin, PinYinParseError};
 
 use roxmltree::Node;
 use std::convert::TryFrom;
@@ -13,7 +13,7 @@ pub enum PinYinError {
     #[error("(Pin Yin) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Pin Yin) Parsing: {0}, {1}")]
-    Parse(PosError, PinYinStrError),
+    Parse(PosError, PinYinParseError),
 }
 
 pub fn from(node: Node) -> Result<PinYin, PinYinError> {

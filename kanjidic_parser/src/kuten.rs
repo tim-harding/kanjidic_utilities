@@ -4,7 +4,7 @@ use crate::{
     pos_error::PosError,
     shared::{text, SharedError},
 };
-use kanjidic_types::{Kuten, KutenStrError};
+use kanjidic_types::{Kuten, KutenParseError};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -13,7 +13,7 @@ pub enum KutenError {
     #[error("(Kuten) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Kuten) Parsing: {0}, {1}")]
-    Parse(PosError, KutenStrError),
+    Parse(PosError, KutenParseError),
 }
 
 pub fn from(node: Node) -> Result<Kuten, KutenError> {

@@ -4,7 +4,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{FourCorner, FourCornerStrError};
+use kanjidic_types::{FourCorner, FourCornerParseError};
 use roxmltree::Node;
 
 use thiserror::Error;
@@ -14,7 +14,7 @@ pub enum FourCornerError {
     #[error("(Four corner) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Four corner) Parsing: {0}, {1}")]
-    Str(PosError, FourCornerStrError),
+    Str(PosError, FourCornerParseError),
 }
 
 pub fn from(node: Node) -> Result<FourCorner, FourCornerError> {

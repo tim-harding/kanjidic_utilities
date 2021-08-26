@@ -5,12 +5,6 @@ use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-// They are in the form nxnn.n,
-// e.g.  3k11.2, where the  kanji has 3 strokes in the
-// identifying radical, it is radical "k" in the SH
-// classification system, there are 11 other strokes, and it is
-// the 2nd kanji in the 3k11 sequence.
-
 /// Descriptor code for The Kanji Dictionary.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct ShDesc {
@@ -26,12 +20,12 @@ pub struct ShDesc {
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum ShStrError {
+pub enum ShParseError {
     #[error("(Spahn Hadamitzky) Format: {0}")]
     Format(NomErrorReason),
 }
 
-impl<'a> From<NomErr<'a>> for ShStrError {
+impl<'a> From<NomErr<'a>> for ShParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
@@ -44,7 +38,7 @@ impl<'a> From<NomErr<'a>> for ShStrError {
 // the 2nd kanji in the 3k11 sequence.
 
 impl TryFrom<&str> for ShDesc {
-    type Error = ShStrError;
+    type Error = ShParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, (radical_strokes, radical, other_strokes, _, sequence)) = parts(text)?;

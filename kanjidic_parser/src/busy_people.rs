@@ -4,7 +4,7 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{BusyPeople, BusyPeopleStrError};
+use kanjidic_types::{BusyPeople, BusyPeopleParseError};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -13,7 +13,7 @@ pub enum BusyPeopleError {
     #[error("(Busy people) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Busy people) Parsing: {0}, {1}")]
-    Parse(PosError, BusyPeopleStrError),
+    Parse(PosError, BusyPeopleParseError),
 }
 
 pub fn from(node: Node) -> Result<BusyPeople, BusyPeopleError> {

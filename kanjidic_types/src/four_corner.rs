@@ -67,7 +67,7 @@ pub enum Stroke {
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
-pub enum FourCornerStrError {
+pub enum FourCornerParseError {
     #[error("(Four corner) Failed to extract a stroke: {0}")]
     Stroke(#[from] TryFromPrimitiveError<Stroke>),
     #[error("(Four corner) Too few characters for four corners code")]
@@ -79,7 +79,7 @@ pub enum FourCornerStrError {
 }
 
 impl TryFrom<&str> for FourCorner {
-    type Error = FourCornerStrError;
+    type Error = FourCornerParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let mut iter = text.chars();
@@ -88,7 +88,7 @@ impl TryFrom<&str> for FourCorner {
         let bottom_left = take_stroke(&mut iter)?;
         let bottom_right = take_stroke(&mut iter)?;
         if iter.next() != Some('.') {
-            return Err(FourCornerStrError::Pattern);
+            return Err(FourCornerParseError::Pattern);
         }
         let fifth_corner = take_stroke(&mut iter)?;
         Ok(FourCorner {
@@ -101,13 +101,13 @@ impl TryFrom<&str> for FourCorner {
     }
 }
 
-fn take_stroke(chars: &mut Chars) -> Result<Stroke, FourCornerStrError> {
-    let int: u8 = char_to_u8(chars.next().ok_or(FourCornerStrError::ToFewCharacters)?)?;
+fn take_stroke(chars: &mut Chars) -> Result<Stroke, FourCornerParseError> {
+    let int: u8 = char_to_u8(chars.next().ok_or(FourCornerParseError::ToFewCharacters)?)?;
     let stroke = Stroke::try_from(int)?;
     Ok(stroke)
 }
 
-fn char_to_u8(c: char) -> Result<u8, FourCornerStrError> {
+fn char_to_u8(c: char) -> Result<u8, FourCornerParseError> {
     match c {
         '0' => Ok(0),
         '1' => Ok(1),
@@ -119,6 +119,6 @@ fn char_to_u8(c: char) -> Result<u8, FourCornerStrError> {
         '7' => Ok(7),
         '8' => Ok(8),
         '9' => Ok(9),
-        _ => Err(FourCornerStrError::Digit),
+        _ => Err(FourCornerParseError::Digit),
     }
 }
