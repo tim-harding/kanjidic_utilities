@@ -17,18 +17,8 @@ pub struct BusyPeople {
     /// The volume
     pub volume: u8,
     /// The chapter
-    pub chapter: Chapter,
-}
-
-/// Either the chapter number or chapter A in Japanese for Busy People.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(tag = "tag", content = "content")]
-pub enum Chapter {
-    /// A chapter number.
-    Numbered(u8),
-    /// Some of the chapter are called "A",
-    /// but it isn't specified anywhere what that means.
-    A,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chapter: Option<u8>,
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
@@ -53,12 +43,12 @@ impl TryFrom<&str> for BusyPeople {
     }
 }
 
-fn parts(s: &str) -> IResult<(u8, char, Chapter)> {
+fn parts(s: &str) -> IResult<(u8, char, Option<u8>)> {
     tuple((number, char('.'), chapter))(s)
 }
 
-fn chapter(s: &str) -> IResult<Chapter> {
-    alt((value(Chapter::A, char('A')), map(number, Chapter::Numbered)))(s)
+fn chapter(s: &str) -> IResult<Option<u8>> {
+    alt((value(None, char('A')), map(number, Some)))(s)
 }
 
 fn number(s: &str) -> IResult<u8> {
