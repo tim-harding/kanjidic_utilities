@@ -1,9 +1,9 @@
+use std::convert::TryFrom;
 use crate::{
     pos_error::PosError,
-    shared::{self, take_uint, IResult, NomErr, NomErrorReason, SharedError},
+    shared::{self, SharedError},
 };
-use kanjidic_types::ShDesc;
-use nom::{bytes::complete::take, character::complete::char, sequence::tuple};
+use kanjidic_types::{ShDesc, ShStrError};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -15,42 +15,9 @@ pub enum ShError {
     Parse(PosError, ShStrError),
 }
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum ShStrError {
-    #[error("(Spahn Hadamitzky) Format: {0}")]
-    Format(NomErrorReason),
-}
-
-impl<'a> From<NomErr<'a>> for ShStrError {
-    fn from(err: NomErr<'a>) -> Self {
-        Self::Format(err.into())
-    }
-}
-
-// They are in the form nxnn.n,
-// e.g.  3k11.2, where the  kanji has 3 strokes in the
-// identifying radical, it is radical "k" in the SH
-// classification system, there are 11 other strokes, and it is
-// the 2nd kanji in the 3k11 sequence.
-
-fn from_str(text: &str) -> Result<ShDesc, ShStrError> {
-    let (_i, (radical_strokes, radical, other_strokes, _, sequence)) = parts(text)?;
-    let radical = radical.chars().next().unwrap();
-    Ok(ShDesc {
-        radical_strokes,
-        radical,
-        other_strokes,
-        sequence,
-    })
-}
-
 pub fn from(node: Node) -> Result<ShDesc, ShError> {
     let text = shared::text(node)?;
-    from_str(text).map_err(|err| ShError::Parse(PosError::from(node), err))
-}
-
-fn parts(s: &str) -> IResult<(u8, &str, u8, char, u8)> {
-    tuple((take_uint, take(1u8), take_uint, char('.'), take_uint))(s)
+    ShDesc::try_from(text).map_err(|err| ShError::Parse(PosError::from(node), err))
 }
 
 #[cfg(test)]

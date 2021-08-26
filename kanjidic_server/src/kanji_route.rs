@@ -1,7 +1,7 @@
+use crate::{cache::Cache, character_response::CharacterResponse, field::Field};
+use rocket::{serde::json::Json, State};
 use serde::Serialize;
 use std::collections::HashSet;
-use rocket::{serde::json::Json, State};
-use crate::{cache::Cache, character_response::CharacterResponse, field::Field};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct KanjiResponse<'a> {

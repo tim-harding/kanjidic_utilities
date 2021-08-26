@@ -1,9 +1,8 @@
+use std::convert::TryFrom;
 use crate::{
-    kuten,
     shared::{self, attr, text_hex, SharedError},
-    KutenStrError,
 };
-use kanjidic_types::Codepoint;
+use kanjidic_types::{Codepoint, Kuten, KutenStrError};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -21,9 +20,9 @@ pub fn from(node: Node) -> Result<Codepoint, CodepointError> {
     let text = shared::text(node)?;
     let encoding = attr(node, "cp_type")?;
     match encoding {
-        "jis208" => Ok(Codepoint::Jis208(kuten::from_str(text)?)),
-        "jis212" => Ok(Codepoint::Jis212(kuten::from_str(text)?)),
-        "jis213" => Ok(Codepoint::Jis213(kuten::from_str(text)?)),
+        "jis208" => Ok(Codepoint::Jis208(Kuten::try_from(text)?)),
+        "jis212" => Ok(Codepoint::Jis212(Kuten::try_from(text)?)),
+        "jis213" => Ok(Codepoint::Jis213(Kuten::try_from(text)?)),
         "ucs" => Ok(Codepoint::Unicode(text_hex(node)?)),
         _ => Err(CodepointError::Encoding),
     }

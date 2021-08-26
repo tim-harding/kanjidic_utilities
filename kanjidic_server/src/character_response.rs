@@ -1,9 +1,9 @@
-use std::collections::{HashMap, HashSet};
 use kanjidic_types::{
     Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations,
     Variant,
 };
 use serde::Serialize;
+use std::collections::{HashMap, HashSet};
 
 use crate::field::Field;
 
@@ -60,7 +60,7 @@ impl<'a, 'b> CharacterResponse<'a> {
             Self::filtered_fields(character, fields, languages)
         }
     }
-    
+
     // Todo: iterate and match on fields array,
     // don't use a hashset here
 

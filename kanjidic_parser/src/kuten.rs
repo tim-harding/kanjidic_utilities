@@ -1,13 +1,12 @@
-use kanjidic_types::Kuten;
-use nom::character::complete::char;
-use nom::sequence::tuple;
-use roxmltree::Node;
-use thiserror::Error;
+use std::convert::TryFrom;
 
 use crate::{
     pos_error::PosError,
-    shared::{take_uint, text, IResult, NomErr, NomErrorReason, SharedError},
+    shared::{text, SharedError},
 };
+use kanjidic_types::{Kuten, KutenStrError};
+use roxmltree::Node;
+use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum KutenError {
@@ -17,30 +16,8 @@ pub enum KutenError {
     Parse(PosError, KutenStrError),
 }
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum KutenStrError {
-    #[error("(Kuten) Format: {0}")]
-    Format(NomErrorReason),
-}
-
-impl<'a> From<NomErr<'a>> for KutenStrError {
-    fn from(err: NomErr<'a>) -> Self {
-        Self::Format(err.into())
-    }
-}
-
 pub fn from(node: Node) -> Result<Kuten, KutenError> {
-    from_str(text(node)?).map_err(|err| KutenError::Parse(PosError::from(node), err))
-}
-
-pub fn from_str(text: &str) -> Result<Kuten, KutenStrError> {
-    let (_i, o) = kuten_parts(text)?;
-    let (plane, _, ku, _, ten) = o;
-    Ok(Kuten { plane, ku, ten })
-}
-
-fn kuten_parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
-    tuple((take_uint, char('-'), take_uint, char('-'), take_uint))(s)
+    Kuten::try_from(text(node)?).map_err(|err| KutenError::Parse(PosError::from(node), err))
 }
 
 #[cfg(test)]

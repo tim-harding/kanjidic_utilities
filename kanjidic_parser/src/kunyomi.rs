@@ -1,15 +1,10 @@
+use std::convert::TryFrom;
+
 use crate::{
     pos_error::PosError,
-    shared::{self, IResult, NomErr, NomErrorReason, SharedError},
+    shared::{self, SharedError},
 };
-use kanjidic_types::{Kunyomi, KunyomiKind};
-use nom::{
-    bytes::complete::is_not,
-    character::complete::char,
-    combinator::{map, opt},
-    multi::separated_list1,
-    sequence::tuple,
-};
+use kanjidic_types::{Kunyomi, KunyomiStrError};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -21,45 +16,9 @@ pub enum KunyomiError {
     Parse(PosError, KunyomiStrError),
 }
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum KunyomiStrError {
-    #[error("(Kunyomi) Format: {0}")]
-    Format(NomErrorReason),
-}
-
-impl<'a> From<NomErr<'a>> for KunyomiStrError {
-    fn from(err: NomErr<'a>) -> Self {
-        Self::Format(err.into())
-    }
-}
-
 pub fn from(node: Node) -> Result<Kunyomi, KunyomiError> {
     let text = shared::text(node)?;
-    from_str(text).map_err(|err| KunyomiError::Parse(PosError::from(node), err))
-}
-
-fn from_str(text: &str) -> Result<Kunyomi, KunyomiStrError> {
-    let (_i, (pre, okurigana, post)) = parts(text)?;
-    let kind = if pre {
-        KunyomiKind::Prefix
-    } else if post {
-        KunyomiKind::Suffix
-    } else {
-        KunyomiKind::Normal
-    };
-    Ok(Kunyomi { okurigana, kind })
-}
-
-fn parts(s: &str) -> IResult<(bool, Vec<String>, bool)> {
-    tuple((fix, okurigana, fix))(s)
-}
-
-fn okurigana(s: &str) -> IResult<Vec<String>> {
-    separated_list1(char('.'), map(is_not("-."), |s: &str| s.into()))(s)
-}
-
-fn fix(s: &str) -> IResult<bool> {
-    map(opt(char('-')), |c| c.is_some())(s)
+    Kunyomi::try_from(text).map_err(|err| KunyomiError::Parse(PosError::from(node), err))
 }
 
 #[cfg(test)]

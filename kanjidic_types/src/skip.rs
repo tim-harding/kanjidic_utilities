@@ -1,6 +1,12 @@
+use crate::{
+    shared::NomErrorReason, take_uint, IResult, NomErr, TryFromPrimitiveError,
+};
+use nom::{character::complete::char, sequence::tuple};
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_repr::*;
+use std::convert::TryFrom;
+use thiserror::Error;
 
 /// Kanji code from the SKIP system of indexing.
 /// http://www.edrdg.org/wwwjdic/SKIP.html
@@ -77,4 +83,54 @@ pub enum SolidSubpattern {
     ThroughLine,
     /// Does not contain any of the above.
     Other,
+}
+
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum SkipStrError {
+    #[error("(Skip) Invalid solid pattern: {0}")]
+    InvalidSolidPattern(#[from] TryFromPrimitiveError<SolidSubpattern>),
+    #[error("(Skip) Format: {0}")]
+    Format(NomErrorReason),
+    #[error("(Skip) Digit indicating the pattern was not valid")]
+    SkipKind,
+}
+
+impl<'a> From<NomErr<'a>> for SkipStrError {
+    fn from(err: NomErr<'a>) -> Self {
+        Self::Format(err.into())
+    }
+}
+
+impl TryFrom<&str> for Skip {
+    type Error = SkipStrError;
+
+    fn try_from(text: &str) -> Result<Self, Self::Error> {
+        let (_i, (pattern_kind, _, first, _, second)) = parts(text)?;
+        match pattern_kind {
+            1 => Ok(Self::Horizontal(SkipHorizontal {
+                left: first,
+                right: second,
+            })),
+            2 => Ok(Self::Vertical(SkipVertical {
+                top: first,
+                bottom: second,
+            })),
+            3 => Ok(Self::Enclosure(SkipEnclosure {
+                exterior: first,
+                interior: second,
+            })),
+            4 => {
+                let solid_subpattern = SolidSubpattern::try_from(second)?;
+                Ok(Self::Solid(SkipSolid {
+                    total_stroke_count: first,
+                    solid_subpattern,
+                }))
+            }
+            _ => Err(SkipStrError::SkipKind),
+        }
+    }
+}
+
+fn parts(s: &str) -> IResult<(u8, char, u8, char, u8)> {
+    tuple((take_uint, char('-'), take_uint, char('-'), take_uint))(s)
 }

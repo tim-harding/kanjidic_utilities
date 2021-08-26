@@ -38,5 +38,7 @@ mod stroke_count;
 pub use stroke_count::*;
 mod variant;
 pub use variant::*;
+mod shared;
+pub use shared::*;
 
 pub use num_enum::TryFromPrimitiveError;

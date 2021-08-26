@@ -1,20 +1,12 @@
 use crate::{
     pos_error::PosError,
-    shared::{self, IResult, NomErr, NomErrorReason, SharedError},
+    shared::{self, SharedError},
 };
-use kanjidic_types::{PinYin, Tone, TryFromPrimitiveError};
-use nom::{
-    branch::alt,
-    bytes::complete::{tag, take_while1},
-    character::streaming::one_of,
-    combinator::{map, recognize, value},
-    multi::many_till,
-};
+use kanjidic_types::{PinYin, PinYinStrError};
+
 use roxmltree::Node;
 use std::convert::TryFrom;
 use thiserror::Error;
-
-use crate::shared::take_uint;
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
 pub enum PinYinError {
@@ -24,55 +16,9 @@ pub enum PinYinError {
     Parse(PosError, PinYinStrError),
 }
 
-#[derive(Error, Debug, PartialEq, Eq, Clone)]
-pub enum PinYinStrError {
-    #[error("(Pin yin) Tone not recognized: {0}")]
-    InvalidTone(#[from] TryFromPrimitiveError<Tone>),
-    #[error("(Pin yin) Format: {0}")]
-    Format(NomErrorReason),
-}
-
-impl<'a> From<NomErr<'a>> for PinYinStrError {
-    fn from(err: NomErr<'a>) -> Self {
-        Self::Format(err.into())
-    }
-}
-
-fn from_str(text: &str) -> Result<PinYin, PinYinStrError> {
-    let (_i, (romanization, tone)) = parts(text)?;
-    let tone = Tone::try_from(tone)?;
-    Ok(PinYin { romanization, tone })
-}
-
 pub fn from(node: Node) -> Result<PinYin, PinYinError> {
     let text = shared::text(node)?;
-    from_str(text).map_err(|err| PinYinError::Parse(PosError::from(node), err))
-}
-
-fn parts(s: &str) -> IResult<(String, u8)> {
-    map(pronunciation_parts, |(parts, tone)| (parts.join(""), tone))(s)
-}
-
-fn pronunciation_parts(s: &str) -> IResult<(Vec<&str>, u8)> {
-    many_till(alt((umlaut, carrot, special_letter, letters)), take_uint)(s)
-}
-
-// Todo: Check that this is working correctly.
-// Tests do not currently cover this.
-fn umlaut(s: &str) -> IResult<&str> {
-    value("ü", tag("u:"))(s)
-}
-
-fn carrot(s: &str) -> IResult<&str> {
-    value("ê", tag("e^"))(s)
-}
-
-fn special_letter(s: &str) -> IResult<&str> {
-    recognize(one_of("ue"))(s)
-}
-
-fn letters(s: &str) -> IResult<&str> {
-    take_while1(|c: char| c != 'u' && c != 'e' && c.is_ascii_alphabetic())(s)
+    PinYin::try_from(text).map_err(|err| PinYinError::Parse(PosError::from(node), err))
 }
 
 #[cfg(test)]
