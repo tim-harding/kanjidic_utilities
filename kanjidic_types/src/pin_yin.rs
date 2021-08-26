@@ -58,6 +58,8 @@ pub enum PinYinParseError {
     Format(NomErrorReason),
 }
 
+// Todo: move this one back to parsing and check for others
+
 impl<'a> From<NomErr<'a>> for PinYinParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
