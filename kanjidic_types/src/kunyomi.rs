@@ -13,8 +13,10 @@ use thiserror::Error;
 /// A kunyomi kanji reading.
 #[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Kunyomi {
-    /// The okurigana
-    pub okurigana: Vec<String>,
+    /// The kunyomi reading
+    pub reading: String,
+    /// The okurigana if relevant
+    pub okurigana: Option<String>,
     /// Whether the reading is as a prefix or suffix.
     pub kind: KunyomiKind,
 }
@@ -34,6 +36,8 @@ pub enum KunyomiKind {
 pub enum KunyomiParseError {
     #[error("(Kunyomi) Format: {0}")]
     Format(NomErrorReason),
+    #[error("(Kunyomi) Expected one or two kunyomi reading pieces")]
+    IncorrectPieces,
 }
 
 impl<'a> From<NomErr<'a>> for KunyomiParseError {
@@ -46,7 +50,7 @@ impl TryFrom<&str> for Kunyomi {
     type Error = KunyomiParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
-        let (_i, (pre, okurigana, post)) = parts(text)?;
+        let (_i, (pre, pieces, post)) = parts(text)?;
         let kind = if pre {
             KunyomiKind::Prefix
         } else if post {
@@ -54,7 +58,17 @@ impl TryFrom<&str> for Kunyomi {
         } else {
             KunyomiKind::Normal
         };
-        Ok(Kunyomi { okurigana, kind })
+        let mut iter = pieces.into_iter();
+        let reading = iter.next().ok_or(KunyomiParseError::IncorrectPieces)?;
+        let okurigana = iter.next();
+        if let Some(_) = iter.next() {
+            return Err(KunyomiParseError::IncorrectPieces);
+        }
+        Ok(Kunyomi {
+            reading,
+            okurigana,
+            kind,
+        })
     }
 }
 
