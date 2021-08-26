@@ -14,6 +14,7 @@ use thiserror::Error;
 
 // A modern PinYin romanization of the Chinese reading.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PinYin {
     /// The romanized reading.
     pub romanization: String,

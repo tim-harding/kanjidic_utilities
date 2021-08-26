@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// An entry in the dictionary Daikanwajiten.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Moro {
     /// The volume
     #[serde(skip_serializing_if = "Option::is_none")]

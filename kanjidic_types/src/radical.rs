@@ -4,6 +4,7 @@ use crate::KangXi;
 
 /// A kanji classification based on its radical.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Radical {
     /// The kind of radical classification
     pub kind: RadicalKind,

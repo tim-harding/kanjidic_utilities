@@ -12,6 +12,7 @@ use thiserror::Error;
 
 /// A kunyomi kanji reading.
 #[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Kunyomi {
     /// The kunyomi reading
     pub reading: String,

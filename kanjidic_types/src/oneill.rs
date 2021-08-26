@@ -10,6 +10,7 @@ use thiserror::Error;
 
 /// An index into the Japanese Names reference book
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Oneill {
     /// The reference number
     pub number: u16,

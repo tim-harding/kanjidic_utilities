@@ -8,6 +8,7 @@ use thiserror::Error;
 /// A kanji classification using the Four Corner system.
 /// http://www.edrdg.org/wwwjdic/FOURCORNER.html
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FourCorner {
     /// The stroke at the top left corner.
     pub top_left: Stroke,

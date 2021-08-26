@@ -25,6 +25,7 @@ pub enum Skip {
 
 /// Left and right parts of the kanji.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SkipHorizontal {
     /// Number of strokes in the left part.
     pub left: u8,
@@ -34,6 +35,7 @@ pub struct SkipHorizontal {
 
 /// Top and bottom parts of the kanji.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SkipVertical {
     /// Number of strokes in the top part.
     pub top: u8,
@@ -43,6 +45,7 @@ pub struct SkipVertical {
 
 /// Interior and exterior parts of the kanji.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SkipEnclosure {
     /// Number of strokes in the exterior part.
     pub exterior: u8,
@@ -52,6 +55,7 @@ pub struct SkipEnclosure {
 
 /// Classification for kanji that don't fit another pattern.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SkipSolid {
     /// The total number of strokes in the kanji.
     pub total_stroke_count: u8,

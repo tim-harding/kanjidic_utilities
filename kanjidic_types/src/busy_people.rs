@@ -13,6 +13,7 @@ use crate::{IResult, NomErr, NomErrorReason};
 
 /// A location in Japanese for Busy People.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BusyPeople {
     /// The volume
     pub volume: u8,

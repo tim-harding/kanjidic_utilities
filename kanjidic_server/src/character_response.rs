@@ -9,6 +9,7 @@ use crate::field::Field;
 
 // Todo: also skip parsing empty arrays?
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct CharacterResponse<'a> {
     pub literal: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]

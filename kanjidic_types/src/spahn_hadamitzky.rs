@@ -10,6 +10,7 @@ use thiserror::Error;
 /// Descriptor code for The Kanji Dictionary.
 /// The code reference can be found here: http://www.edrdg.org/wiki/index.php/KANJIDIC_Project
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ShDesc {
     /// Number of strokes in the identifying radical.
     pub radical_strokes: u8,

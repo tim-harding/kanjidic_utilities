@@ -21,6 +21,7 @@ pub enum QueryCode {
 
 /// A possible misclassification of the kanji
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Misclassification {
     /// The skip code of the misclassification
     pub skip: Skip,

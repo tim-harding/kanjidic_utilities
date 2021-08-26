@@ -7,6 +7,7 @@ use thiserror::Error;
 /// Identification of a kanji in the De Roo system.
 /// http://www.edrdg.org/wwwjdic/deroo.html
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DeRoo {
     /// The graphic element that appears at the top of the kanji.
     pub top: ExtremeTop,

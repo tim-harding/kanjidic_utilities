@@ -8,6 +8,7 @@ pub type Translations = HashMap<String, Vec<String>>;
 
 /// Information about a kanji.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Character {
     /// The character itself.
     pub literal: String,
