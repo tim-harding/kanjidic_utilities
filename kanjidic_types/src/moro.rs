@@ -12,6 +12,7 @@ pub struct Moro {
     /// The item number
     pub index: u16,
     /// A letter that appears after the index
+    #[serde(skip_serializing_if = "MoroSuffix::is_none")]
     pub suffix: MoroSuffix,
 }
 
@@ -26,4 +27,10 @@ pub enum MoroSuffix {
     X,
     /// PX suffix
     PX,
+}
+
+impl MoroSuffix {
+    pub fn is_none(&self) -> bool {
+        *self == Self::None
+    }
 }

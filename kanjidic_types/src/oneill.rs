@@ -14,6 +14,7 @@ pub struct Oneill {
     /// The reference number
     pub number: u16,
     /// A reference's suffix
+    #[serde(skip_serializing_if = "OneillSuffix::is_none")]
     pub suffix: OneillSuffix,
 }
 
@@ -24,6 +25,12 @@ pub enum OneillSuffix {
     None,
     /// 'A' suffix
     A,
+}
+
+impl OneillSuffix {
+    pub fn is_none(&self) -> bool {
+        *self == Self::None
+    }
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
