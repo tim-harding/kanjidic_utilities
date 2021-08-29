@@ -25,6 +25,7 @@ pub struct ShDesc {
 
 /// An identifying radical in the Spahn and Hadamitzky classification system.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum ShRadical {
     A,
     B,
