@@ -11,7 +11,7 @@ pub type Translations = HashMap<String, Vec<String>>;
 #[serde(rename_all = "camelCase")]
 pub struct Character {
     /// The character itself.
-    pub literal: String,
+    pub literal: char,
     /// Alternate encodings for the character.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub codepoints: Vec<Codepoint>,
@@ -52,5 +52,5 @@ pub struct Character {
     pub nanori: Vec<String>,
     /// The constituent radicals in the kanji
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
-    pub decomposition: Vec<String>,
+    pub decomposition: Vec<char>,
 }

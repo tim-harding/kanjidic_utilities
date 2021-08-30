@@ -11,7 +11,7 @@ use crate::field::Field;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CharacterResponse<'a> {
-    pub literal: &'a str,
+    pub literal: char,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub codepoints: Option<&'a [Codepoint]>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -39,7 +39,7 @@ pub struct CharacterResponse<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nanori: Option<&'a [String]>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub decomposition: Option<&'a [String]>,
+    pub decomposition: Option<&'a [char]>,
 }
 
 type FilteredTranslations<'a> = HashMap<&'a str, &'a [String]>;
@@ -72,7 +72,7 @@ impl<'a, 'b> CharacterResponse<'a> {
         languages: &'b Languages,
     ) -> Self {
         let mut out = CharacterResponse::default();
-        out.literal = &character.literal;
+        out.literal = character.literal;
         if fields.contains(&Field::Codepoints) {
             out.codepoints = Some(&character.codepoints);
         }
@@ -143,7 +143,7 @@ impl<'a, 'b> CharacterResponse<'a> {
 
     fn all_fields(character: &'a Character, languages: &'b Languages) -> Self {
         Self {
-            literal: &character.literal,
+            literal: character.literal,
             codepoints: Some(&character.codepoints),
             radicals: Some(&character.radicals),
             grade: character.grade,

@@ -2,14 +2,14 @@ use kanjidic_types::Character;
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 
-pub type KanjiCache = HashMap<String, Character>;
-pub type RadkCache = HashMap<String, Radk>;
+pub type KanjiCache = HashMap<char, Character>;
+pub type RadkCache = HashMap<char, Radk>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct Radk {
-    pub radical: String,
+    pub radical: char,
     pub stroke: u8,
-    pub kanji: HashSet<String>,
+    pub kanji: HashSet<char>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

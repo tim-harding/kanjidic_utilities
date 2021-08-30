@@ -9,6 +9,7 @@ mod field;
 mod kanji_route;
 mod radicals_route;
 mod startup;
+mod shared;
 
 use decomposition_route::decomposition;
 use kanji_route::kanji;

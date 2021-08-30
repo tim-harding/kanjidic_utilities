@@ -1,4 +1,6 @@
-use crate::{cache::Cache, character_response::CharacterResponse, field::Field};
+use crate::{
+    cache::Cache, character_response::CharacterResponse, field::Field, shared::string_to_char,
+};
 use rocket::{serde::json::Json, State};
 use serde::Serialize;
 use std::collections::HashSet;
@@ -17,10 +19,20 @@ pub async fn kanji<'a>(
     language: Vec<String>,
     cache: &'a State<Cache>,
 ) -> Result<Json<KanjiResponse<'a>>, &'static str> {
+    let mut errors = vec![];
+    let literals: Vec<_> = literal
+        .into_iter()
+        .filter_map(|s| {
+            let literal = string_to_char(&s);
+            if literal.is_none() {
+                errors.push(format!("Literals should be one unicode codepoint: {}", s));
+            }
+            literal
+        })
+        .collect();
     let fields: HashSet<_> = field.into_iter().collect();
     let languages: HashSet<_> = language.into_iter().collect();
-    let mut errors = vec![];
-    let kanji: Vec<_> = literal
+    let kanji: Vec<_> = literals
         .iter()
         .filter_map(|literal| match cache.kanji.get(literal) {
             Some(character) => Some(CharacterResponse::new(&character, &fields, &languages)),
