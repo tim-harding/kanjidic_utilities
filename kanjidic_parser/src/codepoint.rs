@@ -1,9 +1,7 @@
-use std::convert::TryFrom;
-use crate::{
-    shared::{self, attr, text_hex, SharedError},
-};
+use crate::shared::{self, attr, text_hex, SharedError};
 use kanjidic_types::{Codepoint, Kuten, KutenParseError};
 use roxmltree::Node;
+use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]

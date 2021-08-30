@@ -92,7 +92,7 @@ impl TryFrom<char> for ShRadical {
             'x' => Ok(ShRadical::X),
             'y' => Ok(ShRadical::Y),
             'z' => Ok(ShRadical::Z),
-            _ => Err(ShRadicalParseError::UnknownChar)
+            _ => Err(ShRadicalParseError::UnknownChar),
         }
     }
 }

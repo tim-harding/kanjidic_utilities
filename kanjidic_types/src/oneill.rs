@@ -29,9 +29,9 @@ pub enum OneillSuffix {
 }
 
 impl Default for OneillSuffix {
-   fn default() -> Self {
-       Self::None
-   } 
+    fn default() -> Self {
+        Self::None
+    }
 }
 
 impl OneillSuffix {

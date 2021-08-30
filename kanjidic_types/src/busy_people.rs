@@ -1,4 +1,3 @@
-use std::convert::TryFrom;
 use nom::{
     branch::alt,
     bytes::complete::take_while1,
@@ -7,6 +6,7 @@ use nom::{
     sequence::tuple,
 };
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 use thiserror::Error;
 
 use crate::{IResult, NomErr, NomErrorReason};

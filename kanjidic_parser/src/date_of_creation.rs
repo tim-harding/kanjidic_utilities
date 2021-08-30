@@ -1,5 +1,5 @@
 use crate::shared::{self, SharedError};
-use kanjidic_types::{IResult, NomErr, NomErrorReason, take_uint};
+use kanjidic_types::{take_uint, IResult, NomErr, NomErrorReason};
 use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
 use serde::{Deserialize, Serialize};

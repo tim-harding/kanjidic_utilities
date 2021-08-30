@@ -1,10 +1,10 @@
-use std::convert::TryFrom;
 use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
 use kanjidic_types::{ShDesc, ShParseError};
 use roxmltree::Node;
+use std::convert::TryFrom;
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]

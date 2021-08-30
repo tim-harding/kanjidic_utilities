@@ -1,6 +1,4 @@
-use crate::{
-    shared::NomErrorReason, take_uint, IResult, NomErr, TryFromPrimitiveError,
-};
+use crate::{shared::NomErrorReason, take_uint, IResult, NomErr, TryFromPrimitiveError};
 use nom::{character::complete::char, sequence::tuple};
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};

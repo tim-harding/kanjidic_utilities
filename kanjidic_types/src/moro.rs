@@ -31,9 +31,9 @@ pub enum MoroSuffix {
 }
 
 impl Default for MoroSuffix {
-   fn default() -> Self {
-       Self::None
-   } 
+    fn default() -> Self {
+        Self::None
+    }
 }
 
 impl MoroSuffix {

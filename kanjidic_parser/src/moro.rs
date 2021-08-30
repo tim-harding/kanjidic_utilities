@@ -2,7 +2,7 @@ use crate::{
     pos_error::PosError,
     shared::{attr_uint, text, SharedError},
 };
-use kanjidic_types::{IResult, Moro, MoroSuffix, NomErrorReason, take_uint};
+use kanjidic_types::{take_uint, IResult, Moro, MoroSuffix, NomErrorReason};
 use nom::{bytes::complete::take_while, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
 use thiserror::Error;
