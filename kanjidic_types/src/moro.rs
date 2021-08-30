@@ -13,7 +13,7 @@ pub struct Moro {
     /// The item number
     pub index: u16,
     /// A letter that appears after the index
-    #[serde(skip_serializing_if = "MoroSuffix::is_none")]
+    #[serde(skip_serializing_if = "MoroSuffix::is_none", default)]
     pub suffix: MoroSuffix,
 }
 
@@ -28,6 +28,12 @@ pub enum MoroSuffix {
     X,
     /// PX suffix
     PX,
+}
+
+impl Default for MoroSuffix {
+   fn default() -> Self {
+       Self::None
+   } 
 }
 
 impl MoroSuffix {
