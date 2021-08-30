@@ -30,18 +30,18 @@ pub fn from(node: Node) -> Result<Moro, MoroError> {
     })
 }
 
-fn parse_index(s: &str) -> IResult<(u16, MoroSuffix)> {
+fn parse_index(s: &str) -> IResult<(u16, Option<MoroSuffix>)> {
     tuple((take_uint, index_suffix))(s)
 }
 
-fn index_suffix(s: &str) -> IResult<MoroSuffix> {
+fn index_suffix(s: &str) -> IResult<Option<MoroSuffix>> {
     map_res(
         take_while(|c: char| c.is_ascii_alphabetic()),
         |text| match text {
-            "X" => Ok(MoroSuffix::X),
-            "P" => Ok(MoroSuffix::P),
-            "PX" => Ok(MoroSuffix::PX),
-            "" => Ok(MoroSuffix::None),
+            "X" =>  Ok(Some(MoroSuffix::X)),
+            "P" =>  Ok(Some(MoroSuffix::P)),
+            "PX" => Ok(Some(MoroSuffix::PX)),
+            "" => Ok(None),
             _ => Err(MoroError::IndexSuffix),
         },
     )(s)
