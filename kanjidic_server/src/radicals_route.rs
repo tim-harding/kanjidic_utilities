@@ -1,39 +1,17 @@
-use std::collections::{HashMap, HashSet};
-
-use crate::{cache::{Cache, Radk}, shared::string_to_char};
+use crate::{
+    cache::Cache,
+    radical_response::{Field, RadicalResponse},
+    shared::string_to_char,
+};
 use rocket::{serde::json::Json, State};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct RadicalResponse<'a> {
-    literal: char,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    strokes: Option<u8>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    kanji: Option<&'a HashSet<char>>,
-}
-
-impl<'a, 'b> RadicalResponse<'a> {
-    pub fn new(radk: &'a Radk, fields: &'b [Field]) -> Self {
-        let mut out = Self {
-            literal: radk.radical,
-            strokes: None,
-            kanji: None,
-        };
-        for field in fields {
-            match field {
-                Field::Strokes => out.strokes = Some(radk.stroke),
-                Field::Kanji => out.kanji = Some(&radk.kanji),
-            }
-        }
-        out
-    }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize, Hash, FromFormField)]
-pub enum Field {
-    Strokes,
-    Kanji,
+pub struct RadicalSomeResponse<'a> {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    errors: Vec<String>,
+    radicals: Vec<RadicalResponse<'a>>,
 }
 
 #[get("/radicals/literals?<literal>&<field>")]
@@ -41,7 +19,7 @@ pub async fn radicals_some<'a>(
     literal: Vec<String>,
     field: Vec<Field>,
     cache: &'a State<Cache>,
-) -> Result<Json<Vec<RadicalResponse<'a>>>, &'static str> {
+) -> Result<Json<RadicalSomeResponse<'a>>, &'static str> {
     let mut errors = vec![];
     let literals: Vec<_> = literal
         .into_iter()
@@ -66,21 +44,26 @@ pub async fn radicals_some<'a>(
             response
         })
         .collect();
-    Ok(Json(radicals))
+    let response = RadicalSomeResponse {
+        radicals,
+        errors,
+    };
+    Ok(Json(response))
 }
 
-// Todo: cache this
-type AllRadicals = HashMap<u8, Vec<char>>;
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Hash)]
+pub struct AllRadical {
+    strokes: u8,
+    literals: Vec<char>,
+}
 
 #[get("/radicals/all")]
 pub async fn radicals_all<'a>(
     cache: &'a State<Cache>,
-) -> Result<Json<AllRadicals>, &'static str> {
-    let mut out = AllRadicals::default();
-    for radical in cache
-        .radk
-        .values() {
-        match out.entry(radical.stroke) {
+) -> Result<Json<Vec<AllRadical>>, &'static str> {
+    let mut collect: HashMap<u8, Vec<char>> = HashMap::default();
+    for radical in cache.radk.values() {
+        match collect.entry(radical.stroke) {
             std::collections::hash_map::Entry::Occupied(mut entry) => {
                 entry.get_mut().push(radical.radical);
             }
@@ -89,5 +72,9 @@ pub async fn radicals_all<'a>(
             }
         }
     }
+    let out: Vec<_> = collect
+        .into_iter()
+        .map(|(strokes, radicals)| AllRadical { strokes, literals: radicals })
+        .collect();
     Ok(Json(out))
 }

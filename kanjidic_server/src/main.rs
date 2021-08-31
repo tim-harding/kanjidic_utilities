@@ -10,6 +10,7 @@ mod kanji_route;
 mod radicals_route;
 mod startup;
 mod shared;
+mod radical_response;
 
 use decomposition_route::decomposition;
 use kanji_route::kanji;
