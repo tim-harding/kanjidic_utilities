@@ -44,17 +44,34 @@ pub async fn radicals_some<'a>(
             response
         })
         .collect();
-    let response = RadicalSomeResponse {
-        radicals,
-        errors,
-    };
+    let response = RadicalSomeResponse { radicals, errors };
     Ok(Json(response))
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Hash)]
+#[derive(Debug, Clone, Serialize, Hash)]
 pub struct AllRadical {
     strokes: u8,
     literals: Vec<char>,
+}
+
+impl PartialEq for AllRadical {
+    fn eq(&self, other: &Self) -> bool {
+        self.strokes == other.strokes
+    }
+}
+
+impl Eq for AllRadical {}
+
+impl PartialOrd for AllRadical {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.strokes.partial_cmp(&other.strokes)
+    }
+}
+
+impl Ord for AllRadical {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.strokes.cmp(&other.strokes)
+    }
 }
 
 #[get("/radicals/all")]
@@ -72,9 +89,13 @@ pub async fn radicals_all<'a>(
             }
         }
     }
-    let out: Vec<_> = collect
+    let mut out: Vec<_> = collect
         .into_iter()
-        .map(|(strokes, radicals)| AllRadical { strokes, literals: radicals })
+        .map(|(strokes, radicals)| AllRadical {
+            strokes,
+            literals: radicals,
+        })
         .collect();
+    out.sort();
     Ok(Json(out))
 }
