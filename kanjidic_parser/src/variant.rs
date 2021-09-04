@@ -34,7 +34,7 @@ pub fn from(node: Node) -> Result<Variant, VariantError> {
         "jis213" => Ok(Variant::Jis213(kuten::from(node)?)),
         "deroo" => Ok(Variant::DeRoo(de_roo::from(node)?)),
         "njecd" => Ok(Variant::Halpern(text_uint::<u16>(node)?)),
-        "s_h" => Ok(Variant::Sh(spahn_hadamitzky::from(node)?)),
+        "s_h" => Ok(Variant::SpahnHadamitzky(spahn_hadamitzky::from(node)?)),
         "nelson_c" => Ok(Variant::Nelson(text_uint::<u16>(node)?)),
         "oneill" => Ok(Variant::ONeill(oneill::from(node)?)),
         "ucs" => Ok(Variant::Unicode(text_hex(node)?)),

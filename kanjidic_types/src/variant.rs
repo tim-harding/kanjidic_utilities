@@ -21,7 +21,7 @@ pub enum Variant {
     /// Index in the NJECD system.
     Halpern(u16),
     /// The Kanji Dictionary kanji code.
-    Sh(ShDesc),
+    SpahnHadamitzky(ShDesc),
     /// Index in the Modern Reader's Japanese-English dictionary.
     Nelson(u16),
     /// Index in Japanese Names by P.G. O'Neill.
