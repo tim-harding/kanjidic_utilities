@@ -10,7 +10,7 @@ nom = "6"
 rayon = "1.5"
 kanjidic_types = { path = "../kanjidic_types" }
 serde = { version = "1.0", features = ["derive"] }
-kradical_static = "0.1.0"
+kradical_static = "0"
 
 [dev-dependencies]
 lazy_static = "1.4"

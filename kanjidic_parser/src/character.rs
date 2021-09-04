@@ -32,10 +32,21 @@ pub enum CharacterError {
     DictionaryReference(#[from] ReferenceError),
     #[error("(Character) Nanori node missing text: {0}")]
     NanoriText(PosError),
+    #[error("(Character) Expected a single char")]
+    NonCharString,
+}
+
+pub fn string_to_char(s: &str) -> Result<char, CharacterError> {
+    let mut chars = s.chars();
+    let radical = chars.next().ok_or(CharacterError::NonCharString);
+    match chars.next() {
+        Some(_) => Err(CharacterError::NonCharString),
+        None => radical,
+    }
 }
 
 pub fn from(node: Node) -> Result<Character, CharacterError> {
-    let literal = text(child(node, "literal")?)?.to_owned();
+    let literal = string_to_char(text(child(node, "literal")?)?)?.to_owned();
     let codepoints = children(child(node, "codepoint")?, "cp_value", codepoint::from)?;
     let radicals = children(child(node, "radical")?, "rad_value", radical::from)?;
     let misc = child(node, "misc")?;
@@ -66,7 +77,7 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
         }
         Err(_) => (vec![], vec![], Translations::default()),
     };
-    let decomposition = decomposition(&literal);
+    let decomposition = decomposition(literal);
     Ok(Character {
         literal,
         codepoints,
@@ -86,13 +97,13 @@ pub fn from(node: Node) -> Result<Character, CharacterError> {
     })
 }
 
-fn decomposition(literal: &str) -> Vec<String> {
+fn decomposition(literal: char) -> Vec<char> {
     for decomposition in kradical_static::DECOMPOSITIONS {
         if decomposition.kanji == literal {
-            let out: Vec<String> = decomposition
+            let out: Vec<char> = decomposition
                 .radicals
                 .iter()
-                .map(|&s| s.to_owned())
+                .map(|&c| c)
                 .collect();
             return out;
         }
