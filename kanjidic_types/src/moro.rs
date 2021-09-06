@@ -22,11 +22,11 @@ pub struct Moro {
 pub enum MoroSuffix {
     /// No suffix
     None,
-    /// P suffix
+    /// Indicates an index in the original
     P,
-    /// X suffix
+    /// Indicates that the kanji has a close, but not identical, glyph in the JIS X 0208 standard
     X,
-    /// PX suffix
+    /// Indicates both P and X
     PX,
 }
 

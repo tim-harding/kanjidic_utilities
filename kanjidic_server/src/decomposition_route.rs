@@ -6,6 +6,7 @@ use serde::Serialize;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RadicalsResponse<'a> {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<String>,
