@@ -16,6 +16,7 @@ pub struct RadicalsResponse<'a> {
 
 // Todo: limit results
 // Todo: cache zero and one radical combinations
+// Todo: pagination
 
 #[get("/kanji/decomposition?<radical>&<field>&<language>")]
 pub async fn decomposition<'a>(
@@ -25,6 +26,16 @@ pub async fn decomposition<'a>(
     cache: &'a State<Cache>,
 ) -> Result<Json<RadicalsResponse<'a>>, &'static str> {
     let mut errors = vec![];
+    let fields: HashSet<_> = field.into_iter().collect();
+    let languages: HashSet<_> = language.into_iter().collect();
+    if radical.is_empty() {
+        let valid_next: HashSet<_> = cache.radk.keys().map(|&k| k).collect();
+        return Ok(Json(RadicalsResponse {
+            errors,
+            valid_next,
+            kanji: vec![],
+        }));
+    }
     let radicals: Vec<_> = radical
         .into_iter()
         .filter_map(|s| {
@@ -35,8 +46,6 @@ pub async fn decomposition<'a>(
             radical
         })
         .collect();
-    let fields: HashSet<_> = field.into_iter().collect();
-    let languages: HashSet<_> = language.into_iter().collect();
     let mut decomposition_sets = vec![];
     for radical in radicals.iter() {
         match cache.radk.get(&radical) {
