@@ -14,17 +14,23 @@ pub struct RadicalsResponse<'a> {
     pub kanji: Vec<CharacterResponse<'a>>,
 }
 
-// Todo: limit results
-// Todo: cache zero and one radical combinations
-// Todo: pagination
-
-#[get("/kanji/decomposition?<radical>&<field>&<language>")]
+#[get("/kanji/decomposition?<radical>&<field>&<language>&<page>&<limit>")]
 pub async fn decomposition<'a>(
     radical: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
+    page: Option<u16>,
+    limit: Option<u16>,
     cache: &'a State<Cache>,
 ) -> Result<Json<RadicalsResponse<'a>>, &'static str> {
+    let limit = match limit {
+        Some(limit) => std::cmp::min(limit, 16),
+        None => 16,
+    } as usize;
+    let page = match page {
+        Some(page) => page,
+        None => 0,
+    } as usize;
     let mut errors = vec![];
     let fields: HashSet<_> = field.into_iter().collect();
     let languages: HashSet<_> = language.into_iter().collect();
@@ -36,7 +42,7 @@ pub async fn decomposition<'a>(
             kanji: vec![],
         }));
     }
-    let radicals: Vec<_> = radical
+    let radical: Vec<_> = radical
         .into_iter()
         .filter_map(|s| {
             let radical = string_to_char(&s);
@@ -46,16 +52,22 @@ pub async fn decomposition<'a>(
             radical
         })
         .collect();
-    let mut decomposition_sets = vec![];
-    for radical in radicals.iter() {
-        match cache.radk.get(&radical) {
-            Some(set) => decomposition_sets.push(set),
-            None => {
-                errors.push(format!("Could not find radical: {}", radical));
-            }
-        }
-    }
-    let literals: Vec<_> = match decomposition_sets.pop() {
+    let (decomposition_sets, first_decomposition_set) = {
+        let mut decomposition_sets: Vec<_> = radical
+            .iter()
+            .filter_map(|radical| match cache.radk.get(&radical) {
+                Some(set) => Some(set),
+                None => {
+                    errors.push(format!("Could not find radical: {}", radical));
+                    None
+                }
+            })
+            .collect();
+        let first = decomposition_sets.pop();
+        (decomposition_sets, first)
+    };
+    let mut valid_next: HashSet<char> = HashSet::default();
+    let kanji: Vec<_> = match first_decomposition_set {
         Some(set) => set
             .kanji
             .iter()
@@ -64,24 +76,22 @@ pub async fn decomposition<'a>(
                     .iter()
                     .all(|&s| s.kanji.contains(*literal))
             })
+            .filter_map(|literal| match cache.kanji.get(literal) {
+                Some(character) => {
+                    valid_next.extend(character.decomposition.iter());
+                    Some(CharacterResponse::new(&character, &fields, &languages))
+                }
+                None => {
+                    errors.push(format!("Could not find kanji: {}", literal));
+                    None
+                }
+            })
+            .skip(page * limit)
+            .take(limit)
             .collect(),
         None => vec![],
     };
-    let mut valid_next: HashSet<char> = HashSet::default();
-    let kanji: Vec<_> = literals
-        .iter()
-        .filter_map(|&literal| match cache.kanji.get(literal) {
-            Some(character) => {
-                valid_next.extend(character.decomposition.iter());
-                Some(CharacterResponse::new(&character, &fields, &languages))
-            }
-            None => {
-                errors.push(format!("Could not find kanji: {}", literal));
-                None
-            }
-        })
-        .collect();
-    for radical in radicals.iter() {
+    for radical in radical.iter() {
         let _ = valid_next.remove(radical);
     }
     let response = RadicalsResponse {
