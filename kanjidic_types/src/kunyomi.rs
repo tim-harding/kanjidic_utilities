@@ -17,6 +17,7 @@ pub struct Kunyomi {
     /// The kunyomi reading
     pub reading: String,
     /// The okurigana if relevant
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub okurigana: Option<String>,
     /// Whether the reading is as a prefix or suffix.
     pub kind: KunyomiKind,
