@@ -12,34 +12,41 @@ use crate::field::Field;
 #[serde(rename_all = "camelCase")]
 pub struct CharacterResponse<'a> {
     pub literal: char,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub codepoints: Option<&'a [Codepoint]>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub radicals: Option<&'a [Radical]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub grade: Option<Grade>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stroke_counts: Option<&'a StrokeCount>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub variants: Option<&'a [Variant]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub frequency: Option<u16>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub radical_names: Option<&'a [String]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub jlpt: Option<u8>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub references: Option<&'a [Reference]>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub query_codes: Option<&'a [QueryCode]>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub readings: Option<&'a [Reading]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub translations: Option<TranslationsResponse<'a>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub nanori: Option<&'a [String]>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "none_or_empty")]
     pub decomposition: Option<&'a [char]>,
+}
+
+fn none_or_empty(value: &Option<&[impl std::any::Any]>) -> bool {
+    match value {
+        Some(array) => array.len() == 0,
+        None => true,
+    }
 }
 
 type FilteredTranslations<'a> = HashMap<&'a str, &'a [String]>;
