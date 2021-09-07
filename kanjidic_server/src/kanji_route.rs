@@ -12,35 +12,46 @@ pub struct KanjiResponse<'a> {
     kanji: Vec<CharacterResponse<'a>>,
 }
 
-#[get("/kanji/literals?<literal>&<field>&<language>")]
+#[get("/kanji/literals?<literal>&<field>&<language>&<limit>&<page>")]
 pub async fn kanji<'a>(
     literal: Vec<String>,
     field: Vec<Field>,
     language: Vec<String>,
+    limit: Option<u16>,
+    page: Option<u16>,
     cache: &'a State<Cache>,
 ) -> Result<Json<KanjiResponse<'a>>, &'static str> {
+    let limit = match limit {
+        Some(limit) => std::cmp::min(limit, 16),
+        None => 16,
+    } as usize;
+    let page = match page {
+        Some(page) => page,
+        None => 0,
+    } as usize;
     let mut errors = vec![];
-    let literals: Vec<_> = literal
-        .into_iter()
-        .filter_map(|s| {
-            let literal = string_to_char(&s);
-            if literal.is_none() {
-                errors.push(format!("Literals should be one unicode codepoint: {}", s));
-            }
-            literal
-        })
-        .collect();
     let fields: HashSet<_> = field.into_iter().collect();
     let languages: HashSet<_> = language.into_iter().collect();
-    let kanji: Vec<_> = literals
-        .iter()
-        .filter_map(|literal| match cache.kanji.get(literal) {
-            Some(character) => Some(CharacterResponse::new(&character, &fields, &languages)),
-            None => {
-                errors.push(format!("Could not find kanji: {}", literal));
-                None
+    let kanji: Vec<_> = literal
+        .into_iter()
+        .filter_map(|s| {
+            let literal = match string_to_char(&s) {
+                Some(literal) => literal,
+                None => {
+                    errors.push(format!("Literals should be one unicode codepoint: {}", s));
+                    return None;
+                }
+            };
+            match cache.kanji.get(&literal) {
+                Some(character) => Some(CharacterResponse::new(&character, &fields, &languages)),
+                None => {
+                    errors.push(format!("Could not find kanji: {}", literal));
+                    None
+                }
             }
         })
+        .skip(page * limit)
+        .take(limit)
         .collect();
     let response = KanjiResponse { errors, kanji };
     Ok(Json(response))
