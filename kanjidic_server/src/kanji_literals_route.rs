@@ -1,5 +1,5 @@
 use crate::{
-    cache::Cache, character_response::CharacterResponse, field::Field, shared::string_to_char,
+    cache::Cache, character_response::CharacterResponse, field::Field,
 };
 use rocket::{serde::json::Json, State};
 use serde::Serialize;
