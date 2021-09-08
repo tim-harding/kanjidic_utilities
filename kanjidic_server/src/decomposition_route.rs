@@ -14,9 +14,9 @@ pub struct RadicalsResponse<'a> {
     pub kanji: Vec<CharacterResponse<'a>>,
 }
 
-#[get("/kanji/decomposition?<radical>&<field>&<language>&<page>&<limit>")]
+#[get("/kanji/decomposition/<radicals>&<field>&<language>&<page>&<limit>")]
 pub async fn decomposition<'a>(
-    radical: Vec<String>,
+    radicals: String,
     field: Vec<Field>,
     language: Vec<String>,
     page: Option<u16>,
@@ -34,7 +34,7 @@ pub async fn decomposition<'a>(
     let mut errors = vec![];
     let field: HashSet<_> = field.into_iter().collect();
     let language: HashSet<_> = language.into_iter().collect();
-    if radical.is_empty() {
+    if radicals.len() == 0 {
         let valid_next: HashSet<_> = cache.radk.keys().map(|&k| k).collect();
         return Ok(Json(RadicalsResponse {
             errors,
@@ -42,19 +42,9 @@ pub async fn decomposition<'a>(
             kanji: vec![],
         }));
     }
-    let radical: Vec<_> = radical
-        .into_iter()
-        .filter_map(|s| {
-            let radical = string_to_char(&s);
-            if radical.is_none() {
-                errors.push(format!("Radicals should be one unicode codepoint: {}", s));
-            }
-            radical
-        })
-        .collect();
     let (decomposition_sets, first_decomposition_set) = {
-        let mut decomposition_sets: Vec<_> = radical
-            .iter()
+        let mut decomposition_sets: Vec<_> = radicals
+            .chars()
             .filter_map(|radical| match cache.radk.get(&radical) {
                 Some(set) => Some(set),
                 None => {
@@ -68,13 +58,13 @@ pub async fn decomposition<'a>(
     };
     let mut valid_next: HashSet<char> = HashSet::default();
     let kanji: Vec<_> = match first_decomposition_set {
-        Some(set) => set
+        Some(first) => first
             .kanji
             .iter()
-            .filter(|literal| {
+            .filter(|&kanji| {
                 decomposition_sets
                     .iter()
-                    .all(|&s| s.kanji.contains(*literal))
+                    .all(|&set| set.kanji.contains(kanji))
             })
             .filter_map(|literal| match cache.kanji.get(literal) {
                 Some(character) => {

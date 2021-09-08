@@ -12,9 +12,9 @@ pub struct KanjiResponse<'a> {
     kanji: Vec<CharacterResponse<'a>>,
 }
 
-#[get("/kanji/literals/<literal>?<field>&<language>&<limit>&<page>")]
+#[get("/kanji/literals/<literals>?<field>&<language>&<limit>&<page>")]
 pub async fn kanji<'a>(
-    literal: String,
+    literals: String,
     field: Vec<Field>,
     language: Vec<String>,
     limit: Option<u16>,
@@ -32,12 +32,12 @@ pub async fn kanji<'a>(
     let mut errors = vec![];
     let field: HashSet<_> = field.into_iter().collect();
     let language: HashSet<_> = language.into_iter().collect();
-    let kanji: Vec<_> = literal
+    let kanji: Vec<_> = literals
         .chars()
         .filter_map(|s| match cache.kanji.get(&s) {
             Some(character) => Some(CharacterResponse::new(&character, &field, &language)),
             None => {
-                errors.push(format!("Could not find kanji: {}", literal));
+                errors.push(format!("Could not find kanji: {}", literals));
                 None
             }
         })
