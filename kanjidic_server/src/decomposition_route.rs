@@ -1,6 +1,4 @@
-use crate::{
-    cache::Cache, character_response::CharacterResponse, field::Field, shared::string_to_char,
-};
+use crate::{cache::Cache, character_response::CharacterResponse, field::Field};
 use rocket::{serde::json::Json, State};
 use serde::Serialize;
 use std::collections::HashSet;
@@ -14,7 +12,7 @@ pub struct RadicalsResponse<'a> {
     pub kanji: Vec<CharacterResponse<'a>>,
 }
 
-#[get("/kanji/decomposition/<radicals>&<field>&<language>&<page>&<limit>")]
+#[get("/kanji/decomposition/<radicals>?<field>&<language>&<page>&<limit>")]
 pub async fn decomposition<'a>(
     radicals: String,
     field: Vec<Field>,
@@ -53,6 +51,7 @@ pub async fn decomposition<'a>(
                 }
             })
             .collect();
+        println!("{}", decomposition_sets.len());
         let first = decomposition_sets.pop();
         (decomposition_sets, first)
     };
@@ -61,28 +60,33 @@ pub async fn decomposition<'a>(
         Some(first) => first
             .kanji
             .iter()
-            .filter(|&kanji| {
-                decomposition_sets
+            .filter_map(|kanji_literal| {
+                let kanji_contains_all_radicals = decomposition_sets
                     .iter()
-                    .all(|&set| set.kanji.contains(kanji))
-            })
-            .filter_map(|literal| match cache.kanji.get(literal) {
-                Some(character) => {
-                    valid_next.extend(character.decomposition.iter());
-                    Some(CharacterResponse::new(&character, &field, &language))
-                }
-                None => {
-                    errors.push(format!("Could not find kanji: {}", literal));
+                    .all(|&set| set.kanji.contains(kanji_literal));
+                if kanji_contains_all_radicals {
+                    match cache.kanji.get(kanji_literal) {
+                        Some(kanji) => {
+                            valid_next.extend(kanji.decomposition.iter());
+                            Some(CharacterResponse::new(&kanji, &field, &language))
+                        }
+                        None => {
+                            errors.push(format!("Could not find kanji: {}", kanji_literal));
+                            None
+                        }
+                    }
+                } else {
                     None
                 }
             })
-            .skip(page * limit)
-            .take(limit)
+            // Can't do skip/take here because we need the side
+            // effects from the closure.
             .collect(),
         None => vec![],
     };
-    for radical in radical.iter() {
-        let _ = valid_next.remove(radical);
+    let kanji: Vec<_> = kanji.into_iter().skip(page * limit).take(limit).collect();
+    for radical in radicals.chars() {
+        let _ = valid_next.remove(&radical);
     }
     let response = RadicalsResponse {
         errors,
