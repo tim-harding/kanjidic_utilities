@@ -59,23 +59,18 @@ pub async fn decomposition<'a>(
         Some(first) => first
             .kanji
             .iter()
-            .filter(predicate)
-            .filter_map(|kanji_literal| {
-                let kanji_contains_all_radicals = decomposition_sets
+            .filter(|kanji_literal| {
+                decomposition_sets
                     .iter()
-                    .all(|&set| set.kanji.contains(kanji_literal));
-                if kanji_contains_all_radicals {
-                    match cache.kanji.get(kanji_literal) {
-                        Some(kanji) => {
-                            valid_next.extend(kanji.decomposition.iter());
-                            Some(CharacterResponse::new(&kanji, &field, &language))
-                        }
-                        None => {
-                            errors.push(format!("Could not find kanji: {}", kanji_literal));
-                            None
-                        }
-                    }
-                } else {
+                    .all(|&set| set.kanji.contains(kanji_literal))
+            })
+            .filter_map(|kanji_literal| match cache.kanji.get(kanji_literal) {
+                Some(kanji) => {
+                    valid_next.extend(kanji.decomposition.iter());
+                    Some(CharacterResponse::new(&kanji, &field, &language))
+                }
+                None => {
+                    errors.push(format!("Could not find kanji: {}", kanji_literal));
                     None
                 }
             })
