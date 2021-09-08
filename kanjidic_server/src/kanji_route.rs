@@ -30,8 +30,8 @@ pub async fn kanji<'a>(
         None => 0,
     } as usize;
     let mut errors = vec![];
-    let fields: HashSet<_> = field.into_iter().collect();
-    let languages: HashSet<_> = language.into_iter().collect();
+    let field: HashSet<_> = field.into_iter().collect();
+    let language: HashSet<_> = language.into_iter().collect();
     let kanji: Vec<_> = literal
         .into_iter()
         .filter_map(|s| {
@@ -43,7 +43,7 @@ pub async fn kanji<'a>(
                 }
             };
             match cache.kanji.get(&literal) {
-                Some(character) => Some(CharacterResponse::new(&character, &fields, &languages)),
+                Some(character) => Some(CharacterResponse::new(&character, &field, &language)),
                 None => {
                     errors.push(format!("Could not find kanji: {}", literal));
                     None

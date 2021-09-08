@@ -32,8 +32,8 @@ pub async fn decomposition<'a>(
         None => 0,
     } as usize;
     let mut errors = vec![];
-    let fields: HashSet<_> = field.into_iter().collect();
-    let languages: HashSet<_> = language.into_iter().collect();
+    let field: HashSet<_> = field.into_iter().collect();
+    let language: HashSet<_> = language.into_iter().collect();
     if radical.is_empty() {
         let valid_next: HashSet<_> = cache.radk.keys().map(|&k| k).collect();
         return Ok(Json(RadicalsResponse {
@@ -79,7 +79,7 @@ pub async fn decomposition<'a>(
             .filter_map(|literal| match cache.kanji.get(literal) {
                 Some(character) => {
                     valid_next.extend(character.decomposition.iter());
-                    Some(CharacterResponse::new(&character, &fields, &languages))
+                    Some(CharacterResponse::new(&character, &field, &language))
                 }
                 None => {
                     errors.push(format!("Could not find kanji: {}", literal));

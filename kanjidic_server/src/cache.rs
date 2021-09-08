@@ -4,6 +4,7 @@ use std::collections::{HashMap, HashSet};
 
 pub type KanjiCache = HashMap<char, Character>;
 pub type RadkCache = HashMap<char, Radk>;
+pub type TranslationCache = HashMap<String, Vec<char>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct Radk {
@@ -16,4 +17,5 @@ pub struct Radk {
 pub struct Cache {
     pub kanji: KanjiCache,
     pub radk: RadkCache,
+    pub translations: TranslationCache,
 }

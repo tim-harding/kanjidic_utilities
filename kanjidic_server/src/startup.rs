@@ -1,4 +1,4 @@
-use crate::cache::{Cache, KanjiCache, Radk, RadkCache};
+use crate::cache::{Cache, KanjiCache, Radk, RadkCache, TranslationCache};
 use futures::stream::TryStreamExt;
 use kanjidic_types::Character;
 use mongodb::{bson::doc, options::ClientOptions, Client, Database};
@@ -32,7 +32,7 @@ pub async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
 
 pub async fn init_cache(rocket: Rocket<Build>) -> fairing::Result {
     let db = rocket.state::<Database>().unwrap();
-    let kanji = match get_kanji_data(db).await {
+    let (kanji, translations) = match get_kanji_data(db).await {
         Ok(kanji) => kanji,
         Err(()) => return Err(rocket),
     };
@@ -40,7 +40,7 @@ pub async fn init_cache(rocket: Rocket<Build>) -> fairing::Result {
         Ok(radk) => radk,
         Err(()) => return Err(rocket),
     };
-    let cache = Cache { kanji, radk };
+    let cache = Cache { kanji, translations, radk };
     Ok(rocket.manage(cache))
 }
 
@@ -69,7 +69,7 @@ async fn get_radk_data(db: &Database) -> Result<RadkCache, ()> {
     Ok(cache)
 }
 
-async fn get_kanji_data(db: &Database) -> Result<KanjiCache, ()> {
+async fn get_kanji_data(db: &Database) -> Result<(KanjiCache, TranslationCache), ()> {
     let filter = doc! {};
     let mut cursor = match db.collection::<Character>("kanji").find(filter, None).await {
         Ok(cursor) => cursor,
@@ -79,10 +79,25 @@ async fn get_kanji_data(db: &Database) -> Result<KanjiCache, ()> {
         }
     };
     let mut kanji = KanjiCache::default();
+    let mut translations = TranslationCache::default();
     loop {
         match cursor.try_next().await {
             Ok(Some(character)) => {
-                let literal = character.literal.clone();
+                let literal = character.literal;
+                for language in character.translations.values() {
+                    for translation in language.iter() {
+                        for part in translation.split(' ') {
+                            match translations.entry(part.to_owned()) {
+                                std::collections::hash_map::Entry::Occupied(mut entry) => {
+                                    entry.get_mut().push(literal);
+                                }
+                                std::collections::hash_map::Entry::Vacant(entry) => {
+                                    entry.insert(vec![literal]);
+                                }
+                            }
+                        }
+                    }
+                }
                 kanji.insert(literal, character);
             }
             Ok(None) => break,
@@ -92,5 +107,5 @@ async fn get_kanji_data(db: &Database) -> Result<KanjiCache, ()> {
             }
         }
     }
-    Ok(kanji)
+    Ok((kanji, translations))
 }
