@@ -4,7 +4,7 @@ use crate::{
     stroke_count, translation, variant, CodepointError, GradeError, PosError, QueryCodeError,
     RadicalError, ReadingError, ReferenceError, StrokeCountError, TranslationError, VariantError,
 };
-use kanjidic_types::{Character, Translations};
+use kanjidic_types::{Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations, Variant};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -34,6 +34,137 @@ pub enum CharacterError {
     NanoriText(PosError),
     #[error("(Character) Expected a single char")]
     NonCharString,
+}
+
+struct CharacterBuilder {
+    /// The character itself.
+    pub literal: Option<char>,
+    /// Alternate encodings for the character.
+    pub codepoints: Option<Vec<Codepoint>>,
+    /// Alternate classifications for the character by radical.
+    pub radicals: Option<Vec<Radical>>,
+    /// The kanji grade level.
+    pub grade: Option<Grade>,
+    /// The stroke count of the character.
+    pub stroke_counts: Option<StrokeCount>,
+    /// Cross-references to other characters or alternative indexings.
+    pub variants: Option<Vec<Variant>>,
+    /// A ranking of how often the character appears in newspapers.
+    pub frequency: Option<u16>,
+    /// The kanji's name as a radical if it is one.
+    pub radical_names: Option<Vec<String>>,
+    /// Old JLPT level of the kanji. Based on pre-2010 test levels
+    /// that go up to four, not five.
+    pub jlpt: Option<u8>,
+    /// Indexes into dictionaries and other instructional books
+    pub references: Option<Vec<Reference>>,
+    /// Codes used to identify the kanji
+    pub query_codes: Option<Vec<QueryCode>>,
+    /// Different ways the kanji can be read.
+    pub readings: Option<Vec<Reading>>,
+    /// Translations of the kanji into different languages.
+    pub translations: Option<Translations>,
+    /// Japanese readings associated with names.
+    pub nanori: Option<Vec<String>>,
+    /// The constituent radicals in the kanji
+    pub decomposition: Option<Vec<char>>,
+}
+
+impl CharacterBuilder {
+    pub fn new() -> Self {
+        Self {
+            literal: None,
+            codepoints: None,
+            radicals: None,
+            grade: None,
+            stroke_counts: None,
+            variants: None,
+            frequency: None,
+            radical_names: None,
+            jlpt: None,
+            references: None,
+            query_codes: None,
+            readings: None,
+            translations: None,
+            nanori: None,
+            decomposition: None,
+        }
+    }
+
+    pub fn literal(mut self, literal: char) -> Self {
+        self.literal = Some(literal);
+        self
+    }
+
+    pub fn codepoints(mut self, codepoints: Vec<Codepoint>) -> Self {
+        self.codepoints = Some(codepoints);
+        self
+    }
+
+    pub fn radicals(mut self, radicals: Vec<Radical>) -> Self {
+        self.radicals = Some(radicals);
+        self
+    }
+
+    pub fn grade(mut self, grade: Grade) -> Self {
+        self.grade = Some(grade);
+        self
+    }
+
+    pub fn stroke_counts(mut self, stroke_counts: StrokeCount) -> Self {
+        self.stroke_counts = Some(stroke_counts);
+        self
+    }
+
+    pub fn variants(mut self, variants: Vec<Variant>) -> Self {
+        self.variants = Some(variants);
+        self
+    }
+
+    pub fn frequency(mut self, frequency: u16) -> Self {
+        self.frequency = Some(frequency);
+        self
+    }
+
+    pub fn radical_names(mut self, radical_names: Vec<String>) -> Self {
+        self.radical_names = Some(radical_names);
+        self
+    }
+
+    pub fn jlpt(mut self, jlpt: u8) -> Self {
+        self.jlpt = Some(jlpt);
+        self
+    }
+
+    pub fn references(mut self, references: Vec<Reference>) -> Self {
+        self.references = Some(references);
+        self
+    }
+
+    pub fn query_codes(mut self, query_codes: Vec<QueryCode>) -> Self {
+        self.query_codes = Some(query_codes);
+        self
+    }
+
+    pub fn readings(mut self, readings: Vec<Reading>) -> Self {
+        self.readings = Some(readings);
+        self
+    }
+
+    pub fn translations(mut self, translations: Translations) -> Self {
+        self.translations = Some(translations);
+        self
+    }
+
+    pub fn nanori(mut self, nanori: Vec<String>) -> Self {
+        self.nanori = Some(nanori);
+        self
+    }
+
+    pub fn decomposition(mut self, decomposition: Vec<char>) -> Self {
+        self.decomposition = Some(decomposition);
+        self
+    }
 }
 
 pub fn string_to_char(s: &str) -> Result<char, CharacterError> {

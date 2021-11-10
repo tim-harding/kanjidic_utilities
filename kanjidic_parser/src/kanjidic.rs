@@ -1,5 +1,4 @@
 use kanjidic_types::Character;
-use rayon::prelude::*;
 use roxmltree::{Document, Node};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -43,7 +42,7 @@ impl<'a> TryFrom<&'a Document<'a>> for Kanjidic {
             .children()
             .filter(|child| child.has_tag_name("character"))
             .collect::<Vec<Node>>()
-            .par_iter()
+            .iter()
             .map(|node| character::from(*node))
             .collect::<Result<Vec<Character>, CharacterError>>();
         let characters = characters?;
