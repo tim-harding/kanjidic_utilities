@@ -1,4 +1,4 @@
-use clap::Clap;
+use clap::{Parser};
 use kanjidic_parser::{Kanjidic, KanjidicError};
 use std::{convert::TryFrom, fs};
 use thiserror::Error;
@@ -17,7 +17,7 @@ enum KdcError {
     Json(Box<dyn std::error::Error>),
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     #[clap(short, long)]
     input: String,
