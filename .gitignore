@@ -1,5 +1,5 @@
 /target
 Cargo.lock
 **/*.code-workspace
-profiling_info
 **/*.svg
+assets/kanjidic2.json
