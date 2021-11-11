@@ -10,37 +10,41 @@ pub enum TranslationError {
     Shared(#[from] SharedError),
 }
 
-pub fn from(node: Node) -> Result<Translations, TranslationError> {
-    let mut translations = Translations::default();
-    let tmp: Result<Vec<(_, _)>, TranslationError> = node
-        .children()
-        .filter(|child| child.has_tag_name("meaning"))
-        .map(|child| -> Result<(_, _), TranslationError> {
-            let text = shared::text(child)?.to_owned();
-            let language = child.attribute("m_lang").unwrap_or("en");
-            Ok((language, text))
-        })
-        .collect();
-    let tmp = tmp?;
-    for translation in tmp {
-        match translations.entry(translation.0.to_owned()) {
-            std::collections::hash_map::Entry::Occupied(mut entry) => {
-                entry.get_mut().push(translation.1);
-            }
-            std::collections::hash_map::Entry::Vacant(entry) => {
-                entry.insert(vec![translation.1.to_owned()]);
-            }
+pub fn add_meaning(
+    translations: &mut Translations,
+    meaning: &Node,
+) -> Result<(), TranslationError> {
+    let text = shared::text(meaning)?.to_owned();
+    let language = meaning.attribute("m_lang").unwrap_or("en").to_owned();
+    match translations.entry(language) {
+        std::collections::hash_map::Entry::Occupied(mut entry) => {
+            entry.get_mut().push(text);
+        }
+        std::collections::hash_map::Entry::Vacant(entry) => {
+            entry.insert(vec![text]);
         }
     }
-    Ok(translations)
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use std::{collections::HashMap, iter::FromIterator};
+    use kanjidic_types::Translations;
+    use roxmltree::Node;
+    use crate::{TranslationError, add_meaning, test_shared::DOC};
 
-    use super::from;
-    use crate::test_shared::DOC;
+    // Just keeping this around for now for the test
+    pub fn from(node: Node) -> Result<Translations, TranslationError> {
+        let mut translations = Translations::default();
+        for child in node
+            .children()
+            .filter(|child| child.has_tag_name("meaning"))
+        {
+            add_meaning(&mut translations, &child)?;
+        }
+        Ok(translations)
+    }
 
     #[test]
     fn translation() {

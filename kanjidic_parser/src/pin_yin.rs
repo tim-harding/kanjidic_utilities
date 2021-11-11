@@ -17,8 +17,8 @@ pub enum PinYinError {
 }
 
 pub fn from(node: Node) -> Result<PinYin, PinYinError> {
-    let text = shared::text(node)?;
-    PinYin::try_from(text).map_err(|err| PinYinError::Parse(PosError::from(node), err))
+    let text = shared::text(&node)?;
+    PinYin::try_from(text).map_err(|err| PinYinError::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]

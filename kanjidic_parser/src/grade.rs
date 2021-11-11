@@ -22,8 +22,8 @@ pub enum GradeU8Error {
 }
 
 pub fn from(node: Node) -> Result<Grade, GradeError> {
-    let n: u8 = text_uint(node)?;
-    from_u8(n).map_err(|err| GradeError::Parse(PosError::from(node), err))
+    let n: u8 = text_uint(&node)?;
+    from_u8(n).map_err(|err| GradeError::Parse(PosError::from(&node), err))
 }
 
 fn from_u8(n: u8) -> Result<Grade, GradeU8Error> {

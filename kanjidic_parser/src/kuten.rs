@@ -17,7 +17,7 @@ pub enum KutenError {
 }
 
 pub fn from(node: Node) -> Result<Kuten, KutenError> {
-    Kuten::try_from(text(node)?).map_err(|err| KutenError::Parse(PosError::from(node), err))
+    Kuten::try_from(text(&node)?).map_err(|err| KutenError::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]

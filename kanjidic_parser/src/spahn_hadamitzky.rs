@@ -16,8 +16,8 @@ pub enum ShError {
 }
 
 pub fn from(node: Node) -> Result<ShDesc, ShError> {
-    let text = shared::text(node)?;
-    ShDesc::try_from(text).map_err(|err| ShError::Parse(PosError::from(node), err))
+    let text = shared::text(&node)?;
+    ShDesc::try_from(text).map_err(|err| ShError::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]

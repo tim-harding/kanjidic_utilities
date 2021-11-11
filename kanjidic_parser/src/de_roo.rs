@@ -16,7 +16,7 @@ pub enum DeRooError {
 }
 
 pub fn from(node: Node) -> Result<DeRoo, DeRooError> {
-    DeRoo::try_from(text(node)?).map_err(|err| DeRooError::Str(PosError::from(node), err))
+    DeRoo::try_from(text(&node)?).map_err(|err| DeRooError::Str(PosError::from(&node), err))
 }
 
 #[cfg(test)]

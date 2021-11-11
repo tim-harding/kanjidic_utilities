@@ -14,11 +14,11 @@ pub enum StrokeCountError {
     Accepted(PosError),
 }
 
-pub fn from(node: Node) -> Result<StrokeCount, StrokeCountError> {
+pub fn from(node: &Node) -> Result<StrokeCount, StrokeCountError> {
     let mut children = node
         .children()
         .filter(|child| child.has_tag_name("stroke_count"))
-        .map(|child| Ok(text_uint(child)?));
+        .map(|child| Ok(text_uint(&child)?));
     let accepted = children
         .next()
         .ok_or_else(|| StrokeCountError::Accepted(PosError::from(node)))??;

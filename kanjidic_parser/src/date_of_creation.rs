@@ -36,7 +36,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for DateOfCreation {
     type Error = DateOfCreationError;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
-        let text = shared::text(node)?;
+        let text = shared::text(&node)?;
         Ok(map_res(take_db_version, map_db_version)(text).map(|(_, s)| s)?)
     }
 }

@@ -27,7 +27,7 @@ pub enum QueryCodeError {
 }
 
 pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
-    let qc_type = attr(node, "qc_type")?;
+    let qc_type = attr(&node, "qc_type")?;
     match qc_type {
         "skip" => {
             if let Some(misclass_kind) = node.attribute("skip_misclass") {
@@ -48,7 +48,7 @@ pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
                         kind: MisclassificationKind::Ambiguous,
                         skip: skip::from(node)?,
                     }),
-                    _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(
+                    _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(&
                         node,
                     ))),
                 }?))
@@ -59,7 +59,7 @@ pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
         "sh_desc" => Ok(QueryCode::SpahnHadamitzky(spahn_hadamitzky::from(node)?)),
         "four_corner" => Ok(QueryCode::FourCorner(four_corner::from(node)?)),
         "deroo" => Ok(QueryCode::DeRoo(de_roo::from(node)?)),
-        _ => Err(QueryCodeError::UnknownType(PosError::from(node))),
+        _ => Err(QueryCodeError::UnknownType(PosError::from(&node))),
     }
 }
 

@@ -21,8 +21,8 @@ impl fmt::Display for PosError {
 
 impl Error for PosError {}
 
-impl<'a, 'input> From<Node<'a, 'input>> for PosError {
-    fn from(node: Node<'a, 'input>) -> Self {
+impl<'a, 'input> From<&Node<'a, 'input>> for PosError {
+    fn from(node: &Node<'a, 'input>) -> Self {
         let position = node.document().text_pos_at(node.range().start);
         Self { position }
     }

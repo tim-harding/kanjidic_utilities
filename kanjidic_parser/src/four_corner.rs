@@ -18,8 +18,8 @@ pub enum FourCornerError {
 }
 
 pub fn from(node: Node) -> Result<FourCorner, FourCornerError> {
-    let text = shared::text(node)?;
-    FourCorner::try_from(text).map_err(|err| FourCornerError::Str(PosError::from(node), err))
+    let text = shared::text(&node)?;
+    FourCorner::try_from(text).map_err(|err| FourCornerError::Str(PosError::from(&node), err))
 }
 
 #[cfg(test)]

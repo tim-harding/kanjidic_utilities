@@ -17,8 +17,8 @@ pub enum BusyPeopleError {
 }
 
 pub fn from(node: Node) -> Result<BusyPeople, BusyPeopleError> {
-    let text = shared::text(node)?;
-    BusyPeople::try_from(text).map_err(|err| BusyPeopleError::Parse(PosError::from(node), err))
+    let text = shared::text(&node)?;
+    BusyPeople::try_from(text).map_err(|err| BusyPeopleError::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]

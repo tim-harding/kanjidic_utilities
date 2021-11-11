@@ -19,17 +19,8 @@ pub enum SharedError {
     Hex(PosError),
 }
 
-pub fn child<'a, 'input>(
-    node: Node<'a, 'input>,
-    tag: &'static str,
-) -> Result<Node<'a, 'input>, SharedError> {
-    node.children()
-        .find(|child| child.has_tag_name(tag))
-        .ok_or_else(|| SharedError::MissingChild(PosError::from(node), tag))
-}
-
 pub fn children<'a, 'input, T, E, F>(
-    node: Node<'a, 'input>,
+    node: &Node<'a, 'input>,
     tag: &'static str,
     cb: F,
 ) -> Result<Vec<T>, E>
@@ -43,24 +34,24 @@ where
         .collect()
 }
 
-pub fn text_uint<T: FromStr>(node: Node) -> Result<T, SharedError> {
+pub fn text_uint<T: FromStr>(node: &Node) -> Result<T, SharedError> {
     text(node)?
         .parse::<T>()
         .map_err(|_| SharedError::TextUint(PosError::from(node)))
 }
 
-pub fn text_hex(node: Node) -> Result<u32, SharedError> {
+pub fn text_hex(node: &Node) -> Result<u32, SharedError> {
     let text = text(node)?;
     u32::from_str_radix(text, 16).map_err(|_| SharedError::Hex(PosError::from(node)))
 }
 
-pub fn text<'a, 'input>(node: Node<'a, 'input>) -> Result<&'a str, SharedError> {
+pub fn text<'a, 'input>(node: &Node<'a, 'input>) -> Result<&'a str, SharedError> {
     node.text()
         .ok_or_else(|| SharedError::NoText(PosError::from(node)))
 }
 
 pub fn attr<'a, 'input>(
-    node: Node<'a, 'input>,
+    node: &Node<'a, 'input>,
     attribute: &'static str,
 ) -> Result<&'a str, SharedError> {
     node.attribute(attribute)
@@ -68,7 +59,7 @@ pub fn attr<'a, 'input>(
 }
 
 pub fn attr_uint<T: FromStr>(
-    node: Node,
+    node: &Node,
     attribute: &'static str,
 ) -> Result<Option<T>, SharedError> {
     match node.attribute(attribute) {

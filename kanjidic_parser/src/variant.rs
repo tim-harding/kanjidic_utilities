@@ -27,18 +27,18 @@ pub enum VariantError {
 }
 
 pub fn from(node: Node) -> Result<Variant, VariantError> {
-    let variant_type = attr(node, "var_type")?;
+    let variant_type = attr(&node, "var_type")?;
     match variant_type {
         "jis208" => Ok(Variant::Jis208(kuten::from(node)?)),
         "jis212" => Ok(Variant::Jis212(kuten::from(node)?)),
         "jis213" => Ok(Variant::Jis213(kuten::from(node)?)),
         "deroo" => Ok(Variant::DeRoo(de_roo::from(node)?)),
-        "njecd" => Ok(Variant::Halpern(text_uint::<u16>(node)?)),
+        "njecd" => Ok(Variant::Halpern(text_uint::<u16>(&node)?)),
         "s_h" => Ok(Variant::SpahnHadamitzky(spahn_hadamitzky::from(node)?)),
-        "nelson_c" => Ok(Variant::Nelson(text_uint::<u16>(node)?)),
+        "nelson_c" => Ok(Variant::Nelson(text_uint::<u16>(&node)?)),
         "oneill" => Ok(Variant::ONeill(oneill::from(node)?)),
-        "ucs" => Ok(Variant::Unicode(text_hex(node)?)),
-        _ => Err(VariantError::UnknownVariant(PosError::from(node))),
+        "ucs" => Ok(Variant::Unicode(text_hex(&node)?)),
+        _ => Err(VariantError::UnknownVariant(PosError::from(&node))),
     }
 }
 

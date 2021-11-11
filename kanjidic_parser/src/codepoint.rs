@@ -15,13 +15,13 @@ pub enum CodepointError {
 }
 
 pub fn from(node: Node) -> Result<Codepoint, CodepointError> {
-    let text = shared::text(node)?;
-    let encoding = attr(node, "cp_type")?;
+    let text = shared::text(&node)?;
+    let encoding = attr(&node, "cp_type")?;
     match encoding {
         "jis208" => Ok(Codepoint::Jis208(Kuten::try_from(text)?)),
         "jis212" => Ok(Codepoint::Jis212(Kuten::try_from(text)?)),
         "jis213" => Ok(Codepoint::Jis213(Kuten::try_from(text)?)),
-        "ucs" => Ok(Codepoint::Unicode(text_hex(node)?)),
+        "ucs" => Ok(Codepoint::Unicode(text_hex(&node)?)),
         _ => Err(CodepointError::Encoding),
     }
 }

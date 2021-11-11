@@ -35,7 +35,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for DatabaseVersion {
     type Error = DatabaseVersionError;
 
     fn try_from(node: Node) -> Result<DatabaseVersion, DatabaseVersionError> {
-        let text = shared::text(node)?;
+        let text = shared::text(&node)?;
         Ok(map_res(take_db_version, map_db_version)(text).map(|(_, s)| s)?)
     }
 }

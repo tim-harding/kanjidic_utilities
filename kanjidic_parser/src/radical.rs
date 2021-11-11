@@ -18,9 +18,9 @@ pub enum RadicalError {
 }
 
 pub fn from(node: Node) -> Result<Radical, RadicalError> {
-    let kang_xi_number: u8 = text_uint(node)?;
+    let kang_xi_number: u8 = text_uint(&node)?;
     let kang_xi = KangXi::try_from(kang_xi_number)?;
-    let tag = attr(node, "rad_type")?;
+    let tag = attr(&node, "rad_type")?;
     match tag {
         "classical" => Ok(Radical {
             kind: RadicalKind::Classical,
@@ -30,7 +30,7 @@ pub fn from(node: Node) -> Result<Radical, RadicalError> {
             kind: RadicalKind::Nelson,
             radical: kang_xi,
         }),
-        _ => Err(RadicalError::Kind(PosError::from(node))),
+        _ => Err(RadicalError::Kind(PosError::from(&node))),
     }
 }
 

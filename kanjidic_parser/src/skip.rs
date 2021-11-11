@@ -16,8 +16,8 @@ pub enum SkipError {
 }
 
 pub fn from(node: Node) -> Result<Skip, SkipError> {
-    let text = shared::text(node)?;
-    Skip::try_from(text).map_err(|err| SkipError::Parse(PosError::from(node), err))
+    let text = shared::text(&node)?;
+    Skip::try_from(text).map_err(|err| SkipError::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]

@@ -17,5 +17,5 @@ pub enum OneillError {
 }
 
 pub fn from(node: Node) -> Result<Oneill, OneillError> {
-    Oneill::try_from(text(node)?).map_err(|err| OneillError::Parse(PosError::from(node), err))
+    Oneill::try_from(text(&node)?).map_err(|err| OneillError::Parse(PosError::from(&node), err))
 }

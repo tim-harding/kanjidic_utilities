@@ -1,10 +1,8 @@
-use crate::{
-    codepoint, grade, query_code, radical, reading, reference,
-    shared::{child, children, text, text_uint, SharedError},
-    stroke_count, translation, variant, CodepointError, GradeError, PosError, QueryCodeError,
-    RadicalError, ReadingError, ReferenceError, StrokeCountError, TranslationError, VariantError,
+use crate::{CodepointError, GradeError, PosError, QueryCodeError, RadicalError, ReadingError, ReferenceError, StrokeCountError, TranslationError, VariantError, codepoint, grade, query_code, radical, reading, reference, shared::{children, text, text_uint, SharedError}, stroke_count, translation, variant};
+use kanjidic_types::{
+    Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations,
+    Variant,
 };
-use kanjidic_types::{Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations, Variant};
 use roxmltree::Node;
 use thiserror::Error;
 
@@ -34,6 +32,8 @@ pub enum CharacterError {
     NanoriText(PosError),
     #[error("(Character) Expected a single char")]
     NonCharString,
+    #[error("(Character) Character did not have non-optional fields")]
+    IncompleteCharacter,
 }
 
 struct CharacterBuilder {
@@ -91,79 +91,42 @@ impl CharacterBuilder {
         }
     }
 
-    pub fn literal(mut self, literal: char) -> Self {
-        self.literal = Some(literal);
-        self
-    }
+    fn build(self) -> Result<Character, CharacterError> {
+        let literal = self.literal.ok_or(CharacterError::IncompleteCharacter)?;
+        let codepoints = self.codepoints.unwrap_or(vec![]);
+        let radicals = self.radicals.unwrap_or(vec![]);
+        let grade = self.grade;
+        let stroke_counts = self
+            .stroke_counts
+            .ok_or(CharacterError::IncompleteCharacter)?;
+        let variants = self.variants.unwrap_or(vec![]);
+        let frequency = self.frequency;
+        let radical_names = self.radical_names.unwrap_or(vec![]);
+        let jlpt = self.jlpt;
+        let references = self.references.unwrap_or(vec![]);
+        let query_codes = self.query_codes.unwrap_or(vec![]);
+        let readings = self.readings.unwrap_or(vec![]);
+        let translations = self.translations.unwrap_or(Translations::default());
+        let nanori = self.nanori.unwrap_or(vec![]);
+        let decomposition = self.decomposition.unwrap_or(vec![]);
 
-    pub fn codepoints(mut self, codepoints: Vec<Codepoint>) -> Self {
-        self.codepoints = Some(codepoints);
-        self
-    }
-
-    pub fn radicals(mut self, radicals: Vec<Radical>) -> Self {
-        self.radicals = Some(radicals);
-        self
-    }
-
-    pub fn grade(mut self, grade: Grade) -> Self {
-        self.grade = Some(grade);
-        self
-    }
-
-    pub fn stroke_counts(mut self, stroke_counts: StrokeCount) -> Self {
-        self.stroke_counts = Some(stroke_counts);
-        self
-    }
-
-    pub fn variants(mut self, variants: Vec<Variant>) -> Self {
-        self.variants = Some(variants);
-        self
-    }
-
-    pub fn frequency(mut self, frequency: u16) -> Self {
-        self.frequency = Some(frequency);
-        self
-    }
-
-    pub fn radical_names(mut self, radical_names: Vec<String>) -> Self {
-        self.radical_names = Some(radical_names);
-        self
-    }
-
-    pub fn jlpt(mut self, jlpt: u8) -> Self {
-        self.jlpt = Some(jlpt);
-        self
-    }
-
-    pub fn references(mut self, references: Vec<Reference>) -> Self {
-        self.references = Some(references);
-        self
-    }
-
-    pub fn query_codes(mut self, query_codes: Vec<QueryCode>) -> Self {
-        self.query_codes = Some(query_codes);
-        self
-    }
-
-    pub fn readings(mut self, readings: Vec<Reading>) -> Self {
-        self.readings = Some(readings);
-        self
-    }
-
-    pub fn translations(mut self, translations: Translations) -> Self {
-        self.translations = Some(translations);
-        self
-    }
-
-    pub fn nanori(mut self, nanori: Vec<String>) -> Self {
-        self.nanori = Some(nanori);
-        self
-    }
-
-    pub fn decomposition(mut self, decomposition: Vec<char>) -> Self {
-        self.decomposition = Some(decomposition);
-        self
+        Ok(Character {
+            literal,
+            codepoints,
+            radicals,
+            grade,
+            stroke_counts,
+            variants,
+            frequency,
+            radical_names,
+            jlpt,
+            references,
+            query_codes,
+            readings,
+            translations,
+            nanori,
+            decomposition,
+        })
     }
 }
 
@@ -176,77 +139,118 @@ pub fn string_to_char(s: &str) -> Result<char, CharacterError> {
     }
 }
 
-pub fn from(node: Node) -> Result<Character, CharacterError> {
-    let literal = string_to_char(text(child(node, "literal")?)?)?.to_owned();
-    let codepoints = children(child(node, "codepoint")?, "cp_value", codepoint::from)?;
-    let radicals = children(child(node, "radical")?, "rad_value", radical::from)?;
-    let misc = child(node, "misc")?;
-    let grade = coalesce(child(misc, "grade").ok().map(grade::from))?;
-    let stroke_counts = stroke_count::from(misc)?;
-    let variants = children(misc, "variant", variant::from)?;
-    let frequency = coalesce(child(misc, "freq").ok().map(text_uint::<u16>))?;
-    let radical_names =
-        children::<_, SharedError, _>(misc, "rad_name", |child| Ok(text(child)?.to_owned()))?;
-    let jlpt = coalesce(child(misc, "jlpt").ok().map(text_uint::<u8>))?;
-    let references = match child(node, "dic_number") {
-        Ok(dic_number) => Ok(children(dic_number, "dic_ref", reference::from)?),
-        Err(SharedError::MissingChild(_, _)) => Ok(vec![]),
-        Err(other) => Err(other),
-    }?;
-    let query_codes = children(child(node, "query_code")?, "q_code", query_code::from)?;
-    let (readings, nanori, translations) = match child(node, "reading_meaning") {
-        Ok(reading_meaning) => {
-            let rmgroup = child(reading_meaning, "rmgroup")?;
-            let readings = children(rmgroup, "reading", reading::from)?;
-            let translations = translation::from(rmgroup)?;
-            let nanori = children(reading_meaning, "nanori", |child| {
-                text(child)
-                    .map(|s: &str| s.to_owned())
-                    .map_err(|_| CharacterError::NanoriText(PosError::from(reading_meaning)))
-            })?;
-            (readings, nanori, translations)
+pub fn from(character_node: Node) -> Result<Character, CharacterError> {
+    let mut builder = CharacterBuilder::new();
+    // TODO: Is there something more performant than a match here?
+    for child in character_node.children() {
+        match child.tag_name().name() {
+            "literal" => {
+                let literal = string_to_char(text(&child)?)?;
+                builder.literal = Some(literal);
+                builder.decomposition = Some(decomposition(literal));
+            }
+            "codepoint" => {
+                builder.codepoints = Some(children(&child, "cp_value", codepoint::from)?);
+            }
+            "radical" => {
+                builder.radicals = Some(children(&child, "rad_value", radical::from)?);
+            }
+            "misc" => {
+                unpack_misc(&child, &mut builder)?;
+            }
+            "dic_number" => {
+                builder.references = Some(children(&child, "dic_ref", reference::from)?);
+            }
+            "query_code" => {
+                builder.query_codes = Some(children(&child, "q_code", query_code::from)?);
+            }
+            "reading_meaning" => {
+                unpack_reading_meaning(&child, &mut builder)?;
+            }
+            _ => {},
         }
-        Err(_) => (vec![], vec![], Translations::default()),
-    };
-    let decomposition = decomposition(literal);
-    Ok(Character {
-        literal,
-        codepoints,
-        radicals,
-        grade,
-        stroke_counts,
-        variants,
-        frequency,
-        radical_names,
-        jlpt,
-        references,
-        query_codes,
-        nanori,
-        readings,
-        translations,
-        decomposition,
-    })
+    }
+    builder.build()
+}
+
+fn unpack_reading_meaning(reading_meaning: &Node, builder: &mut CharacterBuilder) -> Result<(), CharacterError> {
+    let mut nanori = vec![];
+    for child in reading_meaning.children() {
+        match child.tag_name().name() {
+            "rmgroup" => {
+                unpack_rmgroup(&child, builder)?;
+            }
+            "nanori" => {
+                nanori.push(
+                    text(&child)
+                        .map(|s: &str| s.to_owned())
+                        .map_err(|_| CharacterError::NanoriText(PosError::from(reading_meaning)))?,
+                );
+            }
+            _ => {},
+        }
+    }
+    builder.nanori = Some(nanori);
+    Ok(())
+}
+
+fn unpack_rmgroup(rmgroup: &Node, builder: &mut CharacterBuilder) -> Result<(), CharacterError> {
+    let mut readings = vec![];
+    let mut translations = Translations::default();
+    for child in rmgroup.children() {
+        match child.tag_name().name() {
+            "reading" => {
+                readings.push(reading::from(child)?);
+            }
+            "meaning" => {
+                translation::add_meaning(&mut translations, &child)?;
+            }
+            _ => {},
+        }
+    }
+    builder.readings = Some(readings);
+    builder.translations = Some(translations);
+    Ok(())
+}
+
+fn unpack_misc(misc: &Node, builder: &mut CharacterBuilder) -> Result<(), CharacterError> {
+    let mut variants = vec![];
+    let mut radical_names = vec![];
+    for child in misc.children() {
+        match child.tag_name().name() {
+            "grade" => {
+                builder.grade = Some(grade::from(child)?);
+            },
+            "variant" => {
+                variants.push(variant::from(child)?)
+            },
+            "freq" => {
+                builder.frequency = Some(text_uint::<u16>(&child)?);
+            },
+            "rad_name" => {
+                radical_names.push(text(&child)?.to_owned());
+            },
+            "jlpt" => {
+                builder.jlpt = Some(text_uint::<u8>(&child)?);
+            },
+            _ => {},
+        }
+    }
+    builder.variants = Some(variants);
+    builder.radical_names = Some(radical_names);
+    // TODO
+    builder.stroke_counts = Some(stroke_count::from(&misc)?);
+    Ok(())
 }
 
 fn decomposition(literal: char) -> Vec<char> {
     for decomposition in kradical_static::DECOMPOSITIONS {
         if decomposition.kanji == literal {
-            let out: Vec<char> = decomposition
-                .radicals
-                .iter()
-                .map(|&c| c)
-                .collect();
+            let out: Vec<char> = decomposition.radicals.iter().map(|&c| c).collect();
             return out;
         }
     }
     vec![]
-}
-
-fn coalesce<T, E: std::error::Error>(opt: Option<Result<T, E>>) -> Result<Option<T>, E> {
-    Ok(match opt {
-        Some(v) => Some(v?),
-        None => None,
-    })
 }
 
 #[cfg(test)]

@@ -18,10 +18,10 @@ pub enum MoroError {
 }
 
 pub fn from(node: Node) -> Result<Moro, MoroError> {
-    let (_i, (index, suffix)) = parse_index(text(node)?)
-        .map_err(|err| MoroError::Format(PosError::from(node), err.into()))?;
-    let volume = attr_uint::<u8>(node, "m_vol")?;
-    let page = attr_uint::<u16>(node, "m_page")?;
+    let (_i, (index, suffix)) = parse_index(text(&node)?)
+        .map_err(|err| MoroError::Format(PosError::from(&node), err.into()))?;
+    let volume = attr_uint::<u8>(&node, "m_vol")?;
+    let page = attr_uint::<u16>(&node, "m_page")?;
     Ok(Moro {
         volume,
         page,
