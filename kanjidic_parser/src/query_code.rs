@@ -48,8 +48,8 @@ pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
                         kind: MisclassificationKind::Ambiguous,
                         skip: skip::from(node)?,
                     }),
-                    _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(&
-                        node,
+                    _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(
+                        &node,
                     ))),
                 }?))
             } else {

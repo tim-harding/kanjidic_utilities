@@ -1,4 +1,4 @@
-use clap::{Parser};
+use clap::Parser;
 use kanjidic_parser::{Kanjidic, KanjidicError};
 use std::{convert::TryFrom, fs};
 use thiserror::Error;

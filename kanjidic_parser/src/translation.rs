@@ -29,10 +29,10 @@ pub fn add_meaning(
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap, iter::FromIterator};
+    use crate::{add_meaning, test_shared::DOC, TranslationError};
     use kanjidic_types::Translations;
     use roxmltree::Node;
-    use crate::{TranslationError, add_meaning, test_shared::DOC};
+    use std::{collections::HashMap, iter::FromIterator};
 
     // Just keeping this around for now for the test
     pub fn from(node: Node) -> Result<Translations, TranslationError> {

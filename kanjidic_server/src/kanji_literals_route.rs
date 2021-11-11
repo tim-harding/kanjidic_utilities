@@ -1,6 +1,4 @@
-use crate::{
-    cache::Cache, character_response::CharacterResponse, field::Field,
-};
+use crate::{cache::Cache, character_response::CharacterResponse, field::Field};
 use rocket::{serde::json::Json, State};
 use serde::Serialize;
 use std::collections::HashSet;

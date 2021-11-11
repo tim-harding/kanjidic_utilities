@@ -40,7 +40,11 @@ pub async fn init_cache(rocket: Rocket<Build>) -> fairing::Result {
         Ok(radk) => radk,
         Err(()) => return Err(rocket),
     };
-    let cache = Cache { kanji, translations, radk };
+    let cache = Cache {
+        kanji,
+        translations,
+        radk,
+    };
     Ok(rocket.manage(cache))
 }
 

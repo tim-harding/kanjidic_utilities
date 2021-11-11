@@ -76,7 +76,7 @@ impl<'a, 'input> TryFrom<Node<'a, 'input>> for Header {
                 "file_version" => {
                     builder.file_version = Some(text_uint(&child)?);
                 }
-                _ => {},
+                _ => {}
             }
         }
         builder.build()

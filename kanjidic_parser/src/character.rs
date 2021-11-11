@@ -1,9 +1,9 @@
 use crate::{
     codepoint, grade, query_code, radical, reading, reference,
     shared::{children, text, text_uint, SharedError},
-    translation, variant, CodepointError, GradeError, PosError, QueryCodeError,
-    RadicalError, ReadingError, ReferenceError, StrokeCountBuilder, StrokeCountError,
-    TranslationError, VariantError,
+    translation, variant, CodepointError, GradeError, PosError, QueryCodeError, RadicalError,
+    ReadingError, ReferenceError, StrokeCountBuilder, StrokeCountError, TranslationError,
+    VariantError,
 };
 use kanjidic_types::{
     Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations,
