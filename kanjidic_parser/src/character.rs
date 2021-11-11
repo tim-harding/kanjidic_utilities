@@ -99,22 +99,22 @@ impl CharacterBuilder {
 
     fn build(self) -> Result<Character, CharacterError> {
         let literal = self.literal.ok_or(CharacterError::IncompleteCharacter)?;
-        let codepoints = self.codepoints.unwrap_or(vec![]);
-        let radicals = self.radicals.unwrap_or(vec![]);
+        let codepoints = self.codepoints.unwrap_or_default();
+        let radicals = self.radicals.unwrap_or_default();
         let grade = self.grade;
         let stroke_counts = self
             .stroke_counts
             .ok_or(CharacterError::IncompleteCharacter)?;
-        let variants = self.variants.unwrap_or(vec![]);
+        let variants = self.variants.unwrap_or_default();
         let frequency = self.frequency;
-        let radical_names = self.radical_names.unwrap_or(vec![]);
+        let radical_names = self.radical_names.unwrap_or_default();
         let jlpt = self.jlpt;
-        let references = self.references.unwrap_or(vec![]);
-        let query_codes = self.query_codes.unwrap_or(vec![]);
-        let readings = self.readings.unwrap_or(vec![]);
-        let translations = self.translations.unwrap_or(Translations::default());
-        let nanori = self.nanori.unwrap_or(vec![]);
-        let decomposition = self.decomposition.unwrap_or(vec![]);
+        let references = self.references.unwrap_or_default();
+        let query_codes = self.query_codes.unwrap_or_default();
+        let readings = self.readings.unwrap_or_default();
+        let translations = self.translations.unwrap_or_default();
+        let nanori = self.nanori.unwrap_or_default();
+        let decomposition = self.decomposition.unwrap_or_default();
 
         Ok(Character {
             literal,
@@ -224,7 +224,7 @@ fn unpack_rmgroup(rmgroup: &Node, builder: &mut CharacterBuilder) -> Result<(), 
 fn unpack_misc(misc: &Node, builder: &mut CharacterBuilder) -> Result<(), CharacterError> {
     let mut variants = vec![];
     let mut radical_names = vec![];
-    let mut stroke_counts = StrokeCountBuilder::new();
+    let mut stroke_counts = StrokeCountBuilder::default();
     for child in misc.children() {
         match child.tag_name().name() {
             "grade" => {
@@ -255,7 +255,7 @@ fn unpack_misc(misc: &Node, builder: &mut CharacterBuilder) -> Result<(), Charac
 fn decomposition(literal: char) -> Vec<char> {
     for decomposition in kradical_static::DECOMPOSITIONS {
         if decomposition.kanji == literal {
-            let out: Vec<char> = decomposition.radicals.iter().map(|&c| c).collect();
+            let out: Vec<char> = decomposition.radicals.iter().copied().collect();
             return out;
         }
     }

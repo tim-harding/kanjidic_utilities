@@ -16,19 +16,13 @@ pub enum StrokeCountError {
     Incomplete,
 }
 
+#[derive(Default)]
 pub struct StrokeCountBuilder {
     accepted: Option<u8>,
     miscounts: Vec<u8>,
 }
 
 impl StrokeCountBuilder {
-    pub fn new() -> Self {
-        Self {
-            accepted: None,
-            miscounts: vec![],
-        }
-    }
-
     pub fn add_from_node(&mut self, node: &Node) -> Result<(), StrokeCountError> {
         let count = text_uint(node)?;
         match self.accepted {

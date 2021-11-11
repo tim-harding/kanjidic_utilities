@@ -61,7 +61,7 @@ async fn get_radk_data(db: &Database) -> Result<RadkCache, ()> {
     loop {
         match cursor.try_next().await {
             Ok(Some(radk)) => {
-                cache.insert(radk.radical.clone(), radk);
+                cache.insert(radk.radical, radk);
             }
             Ok(None) => break,
             Err(err) => {

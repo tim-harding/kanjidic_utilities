@@ -63,7 +63,7 @@ impl TryFrom<&str> for Kunyomi {
         let mut iter = pieces.into_iter();
         let reading = iter.next().ok_or(KunyomiParseError::IncorrectPieces)?;
         let okurigana = iter.next();
-        if let Some(_) = iter.next() {
+        if iter.next().is_some() {
             return Err(KunyomiParseError::IncorrectPieces);
         }
         Ok(Kunyomi {

@@ -20,35 +20,35 @@ pub async fn radicals_some<'a>(
     field: Vec<Field>,
     cache: &'a State<Cache>,
 ) -> Result<Json<RadicalSomeResponse<'a>>, &'static str> {
-    let mut errors = vec![];
-    let literals: Vec<_> = literal
+    let mut errors_literals = vec![];
+    let mut errors_radicals = vec![];
+    let radicals: Vec<_> = literal
         .into_iter()
         .filter_map(|s| {
             let literal = string_to_char(&s);
             if literal.is_none() {
-                errors.push(format!("Literals should be one unicode codepoint: {}", s));
+                errors_literals.push(format!("Literals should be one unicode codepoint: {}", s));
             }
             literal
         })
-        .collect();
-    let radicals: Vec<_> = literals
-        .into_iter()
         .filter_map(|literal| {
             let response = cache
                 .radk
                 .get(&literal)
-                .map(|radical| RadicalResponse::new(&radical, &field));
+                .map(|radical| RadicalResponse::new(radical, &field));
             if response.is_none() {
-                errors.push(format!("Could not find literal: {}", literal))
+                errors_radicals.push(format!("Could not find literal: {}", literal))
             }
             response
         })
         .collect();
+    let mut errors = errors_literals;
+    errors.extend(errors_radicals);
     let response = RadicalSomeResponse { radicals, errors };
     Ok(Json(response))
 }
 
-#[derive(Debug, Clone, Serialize, Hash)]
+#[derive(Debug, Clone, Serialize)]
 pub struct AllRadical {
     strokes: u8,
     literals: Vec<char>,

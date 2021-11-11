@@ -25,15 +25,12 @@ pub async fn decomposition<'a>(
         Some(limit) => std::cmp::min(limit, 16),
         None => 16,
     } as usize;
-    let page = match page {
-        Some(page) => page,
-        None => 0,
-    } as usize;
+    let page = page.unwrap_or(0);
     let mut errors = vec![];
     let field: HashSet<_> = field.into_iter().collect();
     let language: HashSet<_> = language.into_iter().collect();
-    if radicals.len() == 0 {
-        let valid_next: HashSet<_> = cache.radk.keys().map(|&k| k).collect();
+    if radicals.is_empty() {
+        let valid_next: HashSet<_> = cache.radk.keys().copied().collect();
         return Ok(Json(RadicalsResponse {
             errors,
             valid_next,
@@ -67,7 +64,7 @@ pub async fn decomposition<'a>(
             .filter_map(|kanji_literal| match cache.kanji.get(kanji_literal) {
                 Some(kanji) => {
                     valid_next.extend(kanji.decomposition.iter());
-                    Some(CharacterResponse::new(&kanji, &field, &language))
+                    Some(CharacterResponse::new(kanji, &field, &language))
                 }
                 None => {
                     errors.push(format!("Could not find kanji: {}", kanji_literal));
@@ -79,7 +76,11 @@ pub async fn decomposition<'a>(
             .collect(),
         None => vec![],
     };
-    let kanji: Vec<_> = kanji.into_iter().skip(page * limit).take(limit).collect();
+    let kanji: Vec<_> = kanji
+        .into_iter()
+        .skip(page as usize * limit)
+        .take(limit)
+        .collect();
     for radical in radicals.chars() {
         let _ = valid_next.remove(&radical);
     }

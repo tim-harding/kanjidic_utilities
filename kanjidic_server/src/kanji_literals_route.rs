@@ -23,23 +23,20 @@ pub async fn kanji<'a>(
         Some(limit) => std::cmp::min(limit, 16),
         None => 16,
     } as usize;
-    let page = match page {
-        Some(page) => page,
-        None => 0,
-    } as usize;
+    let page = page.unwrap_or(0);
     let mut errors = vec![];
     let field: HashSet<_> = field.into_iter().collect();
     let language: HashSet<_> = language.into_iter().collect();
     let kanji: Vec<_> = literals
         .chars()
         .filter_map(|s| match cache.kanji.get(&s) {
-            Some(character) => Some(CharacterResponse::new(&character, &field, &language)),
+            Some(character) => Some(CharacterResponse::new(character, &field, &language)),
             None => {
                 errors.push(format!("Could not find kanji: {}", literals));
                 None
             }
         })
-        .skip(page * limit)
+        .skip(page as usize * limit)
         .take(limit)
         .collect();
     let response = KanjiResponse { errors, kanji };

@@ -44,7 +44,7 @@ pub struct CharacterResponse<'a> {
 
 fn none_or_empty(value: &Option<&[impl std::any::Any]>) -> bool {
     match value {
-        Some(array) => array.len() == 0,
+        Some(array) => array.is_empty(),
         None => true,
     }
 }
@@ -78,8 +78,10 @@ impl<'a, 'b> CharacterResponse<'a> {
         fields: &'b Fields,
         languages: &'b Languages,
     ) -> Self {
-        let mut out = CharacterResponse::default();
-        out.literal = character.literal;
+        let mut out = CharacterResponse {
+            literal: character.literal,
+            ..Default::default()
+        };
         if fields.contains(&Field::Codepoints) {
             out.codepoints = Some(&character.codepoints);
         }
@@ -129,8 +131,8 @@ impl<'a, 'b> CharacterResponse<'a> {
         translations: &'a Translations,
         languages: &'b Languages,
     ) -> TranslationsResponse<'a> {
-        if languages.len() == 0 {
-            TranslationsResponse::All(&translations)
+        if languages.is_empty() {
+            TranslationsResponse::All(translations)
         } else {
             TranslationsResponse::Some(Self::filtered_translations(translations, languages))
         }
