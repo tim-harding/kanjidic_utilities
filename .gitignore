@@ -2,4 +2,4 @@
 Cargo.lock
 **/*.code-workspace
 **/*.svg
-assets/kanjidic2.json
+**/*.json
