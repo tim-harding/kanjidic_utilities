@@ -1,4 +1,10 @@
-use crate::{CodepointError, GradeError, PosError, QueryCodeError, RadicalError, ReadingError, ReferenceError, StrokeCountError, TranslationError, VariantError, codepoint, grade, query_code, radical, reading, reference, shared::{children, text, text_uint, SharedError}, stroke_count, translation, variant};
+use crate::{
+    codepoint, grade, query_code, radical, reading, reference,
+    shared::{children, text, text_uint, SharedError},
+    translation, variant, CodepointError, GradeError, PosError, QueryCodeError,
+    RadicalError, ReadingError, ReferenceError, StrokeCountBuilder, StrokeCountError,
+    TranslationError, VariantError,
+};
 use kanjidic_types::{
     Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations,
     Variant,
@@ -141,7 +147,6 @@ pub fn string_to_char(s: &str) -> Result<char, CharacterError> {
 
 pub fn from(character_node: Node) -> Result<Character, CharacterError> {
     let mut builder = CharacterBuilder::new();
-    // TODO: Is there something more performant than a match here?
     for child in character_node.children() {
         match child.tag_name().name() {
             "literal" => {
@@ -167,13 +172,16 @@ pub fn from(character_node: Node) -> Result<Character, CharacterError> {
             "reading_meaning" => {
                 unpack_reading_meaning(&child, &mut builder)?;
             }
-            _ => {},
+            _ => {}
         }
     }
     builder.build()
 }
 
-fn unpack_reading_meaning(reading_meaning: &Node, builder: &mut CharacterBuilder) -> Result<(), CharacterError> {
+fn unpack_reading_meaning(
+    reading_meaning: &Node,
+    builder: &mut CharacterBuilder,
+) -> Result<(), CharacterError> {
     let mut nanori = vec![];
     for child in reading_meaning.children() {
         match child.tag_name().name() {
@@ -187,7 +195,7 @@ fn unpack_reading_meaning(reading_meaning: &Node, builder: &mut CharacterBuilder
                         .map_err(|_| CharacterError::NanoriText(PosError::from(reading_meaning)))?,
                 );
             }
-            _ => {},
+            _ => {}
         }
     }
     builder.nanori = Some(nanori);
@@ -205,7 +213,7 @@ fn unpack_rmgroup(rmgroup: &Node, builder: &mut CharacterBuilder) -> Result<(), 
             "meaning" => {
                 translation::add_meaning(&mut translations, &child)?;
             }
-            _ => {},
+            _ => {}
         }
     }
     builder.readings = Some(readings);
@@ -216,30 +224,31 @@ fn unpack_rmgroup(rmgroup: &Node, builder: &mut CharacterBuilder) -> Result<(), 
 fn unpack_misc(misc: &Node, builder: &mut CharacterBuilder) -> Result<(), CharacterError> {
     let mut variants = vec![];
     let mut radical_names = vec![];
+    let mut stroke_counts = StrokeCountBuilder::new();
     for child in misc.children() {
         match child.tag_name().name() {
             "grade" => {
                 builder.grade = Some(grade::from(child)?);
-            },
-            "variant" => {
-                variants.push(variant::from(child)?)
-            },
+            }
+            "variant" => variants.push(variant::from(child)?),
             "freq" => {
                 builder.frequency = Some(text_uint::<u16>(&child)?);
-            },
+            }
             "rad_name" => {
                 radical_names.push(text(&child)?.to_owned());
-            },
+            }
             "jlpt" => {
                 builder.jlpt = Some(text_uint::<u8>(&child)?);
-            },
-            _ => {},
+            }
+            "stroke_count" => {
+                stroke_counts.add_from_node(&child)?;
+            }
+            _ => {}
         }
     }
     builder.variants = Some(variants);
     builder.radical_names = Some(radical_names);
-    // TODO
-    builder.stroke_counts = Some(stroke_count::from(&misc)?);
+    builder.stroke_counts = Some(stroke_counts.build()?);
     Ok(())
 }
 
