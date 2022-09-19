@@ -8,7 +8,7 @@ use thiserror::Error;
 // Todo: Enum for radical
 
 /// Descriptor code for The Kanji Dictionary.
-/// The code reference can be found here: http://www.edrdg.org/wiki/index.php/KANJIDIC_Project
+/// The code reference can be found here: <http://www.edrdg.org/wiki/index.php/KANJIDIC_Project>
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ShDesc {

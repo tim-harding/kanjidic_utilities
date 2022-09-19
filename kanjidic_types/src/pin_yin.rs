@@ -23,7 +23,7 @@ pub struct PinYin {
 }
 
 /// One of the four tones of Mandarin.
-/// https://en.wikipedia.org/wiki/Standard_Chinese_phonology#Tones
+/// <https://en.wikipedia.org/wiki/Standard_Chinese_phonology#Tones>
 #[derive(
     Debug,
     PartialEq,

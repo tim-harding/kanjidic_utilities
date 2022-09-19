@@ -6,7 +6,7 @@ use std::convert::TryFrom;
 use thiserror::Error;
 
 /// A kuten representation of a JIS X 0213 character.
-/// http://unicode-iphone.blogspot.com/2010/05/kuten-code-to-unicode.html
+/// <http://unicode-iphone.blogspot.com/2010/05/kuten-code-to-unicode.html>
 #[derive(Debug, PartialEq, Clone, Copy, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Kuten {

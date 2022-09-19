@@ -7,7 +7,7 @@ use std::convert::TryFrom;
 use thiserror::Error;
 
 /// Kanji code from the SKIP system of indexing.
-/// http://www.edrdg.org/wwwjdic/SKIP.html
+/// <http://www.edrdg.org/wwwjdic/SKIP.html>
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 #[serde(tag = "tag", content = "content")]
 pub enum Skip {

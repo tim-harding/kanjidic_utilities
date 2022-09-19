@@ -6,7 +6,7 @@ use std::{convert::TryFrom, str::Chars};
 use thiserror::Error;
 
 /// A kanji classification using the Four Corner system.
-/// http://www.edrdg.org/wwwjdic/FOURCORNER.html
+/// <http://www.edrdg.org/wwwjdic/FOURCORNER.html>
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FourCorner {

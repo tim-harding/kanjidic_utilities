@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 use thiserror::Error;
 
 /// Identification of a kanji in the De Roo system.
-/// http://www.edrdg.org/wwwjdic/deroo.html
+/// <http://www.edrdg.org/wwwjdic/deroo.html>
 #[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DeRoo {
