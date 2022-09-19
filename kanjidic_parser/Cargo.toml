@@ -4,12 +4,12 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-thiserror = "1"
-roxmltree = "0.14"
-nom = "6"
-kanjidic_types = { path = "../kanjidic_types" }
-serde = { version = "1.0", features = ["derive"] }
-kradical_static = "0"
+thiserror = "1.0.35"
+roxmltree = "0.15.0"
+nom = "7.1.1"
+kanjidic_types = "0.1.1"
+serde = { version = "1.0.144", features = ["derive"] }
+kradical_static = "0.2.0"
 
 [dev-dependencies]
 lazy_static = "1.4"
