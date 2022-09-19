@@ -2,10 +2,15 @@
 name = "kanjidic_server"
 version = "0.1.0"
 edition = "2018"
+license = "CC-BY-NC-SA-3.0"
+description = "A REST API server for Kanjidic and EDRDG radical decompositions."
+homepage = "https://github.com/tim-harding/kanjidic_utilities"
+repository = "https://github.com/tim-harding/kanjidic_utilities"
+readme = "README.md"
 
 [dependencies]
 rocket = { version = "0.5.0-rc.2", features = [ "json" ] }
-kanjidic_types = { path = "../kanjidic_types"}
+kanjidic_types = "0.1.1"
 serde = { version = "1.0.144", features = ["derive"] }
 serde_json = "1.0.85"
 kradical_static = "0.2.0"
