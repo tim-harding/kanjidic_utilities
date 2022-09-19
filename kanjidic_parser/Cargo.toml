@@ -2,6 +2,11 @@
 name = "kanjidic_parser"
 version = "0.1.0"
 edition = "2018"
+license = "CC-BY-NC-SA-3.0"
+description = "A parser for the Kanjidic XML format."
+homepage = "https://github.com/tim-harding/kanjidic_utilities"
+repository = "https://github.com/tim-harding/kanjidic_utilities"
+readme = "README.md"
 
 [dependencies]
 thiserror = "1.0.35"
@@ -12,4 +17,4 @@ serde = { version = "1.0.144", features = ["derive"] }
 kradical_static = "0.2.0"
 
 [dev-dependencies]
-lazy_static = "1.4"
+lazy_static = "1.4.0"
