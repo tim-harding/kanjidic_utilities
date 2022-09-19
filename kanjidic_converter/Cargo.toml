@@ -2,9 +2,14 @@
 name = "kanjidic_converter"
 version = "0.1.0"
 edition = "2018"
+license = "CC-BY-NC-SA-3.0"
+description = "A program to convert from the Kanjidic XML format to a JSON format."
+homepage = "https://github.com/tim-harding/kanjidic_utilities"
+repository = "https://github.com/tim-harding/kanjidic_utilities"
+readme = "README.md"
 
 [dependencies]
-kanjidic_parser = { path = "../kanjidic_parser"}
+kanjidic_parser = "0.1.0"
 thiserror = "1.0.35"
 serde_json = "1.0.85"
 clap = { version = "3.2.22", features = ["derive"] }
