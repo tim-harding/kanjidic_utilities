@@ -15,11 +15,11 @@ pub struct RadicalSomeResponse<'a> {
 }
 
 #[get("/radicals/literals?<literal>&<field>")]
-pub async fn radicals_some<'a>(
+pub async fn radicals_some(
     literal: Vec<String>,
     field: Vec<Field>,
-    cache: &'a State<Cache>,
-) -> Result<Json<RadicalSomeResponse<'a>>, &'static str> {
+    cache: &State<Cache>,
+) -> Result<Json<RadicalSomeResponse>, &'static str> {
     let mut errors_literals = vec![];
     let mut errors_radicals = vec![];
     let radicals: Vec<_> = literal
@@ -64,7 +64,7 @@ impl Eq for AllRadical {}
 
 impl PartialOrd for AllRadical {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.strokes.partial_cmp(&other.strokes)
+        Some(self.cmp(other))
     }
 }
 
@@ -75,9 +75,7 @@ impl Ord for AllRadical {
 }
 
 #[get("/radicals/all")]
-pub async fn radicals_all<'a>(
-    cache: &'a State<Cache>,
-) -> Result<Json<Vec<AllRadical>>, &'static str> {
+pub async fn radicals_all(cache: &State<Cache>) -> Result<Json<Vec<AllRadical>>, &'static str> {
     let mut collect: HashMap<u8, Vec<char>> = HashMap::default();
     for radical in cache.radk.values() {
         match collect.entry(radical.stroke) {

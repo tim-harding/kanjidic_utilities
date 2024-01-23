@@ -13,14 +13,14 @@ pub struct RadicalsResponse<'a> {
 }
 
 #[get("/kanji/decomposition/<radicals>?<field>&<language>&<page>&<limit>")]
-pub async fn decomposition<'a>(
+pub async fn decomposition(
     radicals: String,
     field: Vec<Field>,
     language: Vec<String>,
     page: Option<u16>,
     limit: Option<u16>,
-    cache: &'a State<Cache>,
-) -> Result<Json<RadicalsResponse<'a>>, &'static str> {
+    cache: &State<Cache>,
+) -> Result<Json<RadicalsResponse>, &'static str> {
     let limit = match limit {
         Some(limit) => std::cmp::min(limit, 16),
         None => 16,

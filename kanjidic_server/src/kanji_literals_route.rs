@@ -11,14 +11,14 @@ pub struct KanjiResponse<'a> {
 }
 
 #[get("/kanji/literals/<literals>?<field>&<language>&<limit>&<page>")]
-pub async fn kanji<'a>(
+pub async fn kanji(
     literals: String,
     field: Vec<Field>,
     language: Vec<String>,
     limit: Option<u16>,
     page: Option<u16>,
-    cache: &'a State<Cache>,
-) -> Result<Json<KanjiResponse<'a>>, &'static str> {
+    cache: &State<Cache>,
+) -> Result<Json<KanjiResponse>, &'static str> {
     let limit = match limit {
         Some(limit) => std::cmp::min(limit, 16),
         None => 16,
