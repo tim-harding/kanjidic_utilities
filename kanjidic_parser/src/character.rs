@@ -255,7 +255,7 @@ fn unpack_misc(misc: &Node, builder: &mut CharacterBuilder) -> Result<(), Charac
 fn decomposition(literal: char) -> Vec<char> {
     for decomposition in kradical_static::DECOMPOSITIONS {
         if decomposition.kanji == literal {
-            let out: Vec<char> = decomposition.radicals.iter().copied().collect();
+            let out: Vec<char> = decomposition.radicals.to_vec();
             return out;
         }
     }

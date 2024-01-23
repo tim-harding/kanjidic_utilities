@@ -44,13 +44,13 @@ pub fn text_hex(node: &Node) -> Result<u32, SharedError> {
     u32::from_str_radix(text, 16).map_err(|_| SharedError::Hex(PosError::from(node)))
 }
 
-pub fn text<'a, 'input>(node: &Node<'a, 'input>) -> Result<&'a str, SharedError> {
+pub fn text<'a>(node: &Node<'a, '_>) -> Result<&'a str, SharedError> {
     node.text()
         .ok_or_else(|| SharedError::NoText(PosError::from(node)))
 }
 
-pub fn attr<'a, 'input>(
-    node: &Node<'a, 'input>,
+pub fn attr<'a>(
+    node: &Node<'a, '_>,
     attribute: &'static str,
 ) -> Result<&'a str, SharedError> {
     node.attribute(attribute)

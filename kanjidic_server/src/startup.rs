@@ -36,12 +36,12 @@ pub async fn init_cache(rocket: Rocket<Build>, kanji_path: String) -> fairing::R
 
 fn get_radk_data() -> RadkCache {
     kradical_static::MEMBERSHIPS
-        .into_iter()
+        .iter()
         .map(|membership| {
             let radk = Radk {
                 radical: membership.radical,
                 stroke: membership.strokes,
-                kanji: membership.kanji.into_iter().cloned().collect(),
+                kanji: membership.kanji.iter().cloned().collect(),
             };
             (radk.radical, radk)
         })
