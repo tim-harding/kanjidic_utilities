@@ -1,33 +1,29 @@
-use std::convert::TryFrom;
-
 use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{FourCorner, FourCornerParseError};
+use kanjidic_types::{four_corner, FourCorner};
 use roxmltree::Node;
+use std::convert::TryFrom;
 
-use thiserror::Error;
-
-#[derive(Debug, Error, PartialEq, Eq)]
-pub enum FourCornerError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum Error {
     #[error("(Four corner) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Four corner) Parsing: {0}, {1}")]
-    Str(PosError, FourCornerParseError),
+    Str(PosError, four_corner::ParseError),
 }
 
-pub fn from(node: Node) -> Result<FourCorner, FourCornerError> {
+pub fn from(node: Node) -> Result<FourCorner, Error> {
     let text = shared::text(&node)?;
-    FourCorner::try_from(text).map_err(|err| FourCornerError::Str(PosError::from(&node), err))
+    FourCorner::try_from(text).map_err(|err| Error::Str(PosError::from(&node), err))
 }
 
 #[cfg(test)]
 mod tests {
-    use kanjidic_types::{FourCorner, Stroke};
-
     use super::from;
     use crate::test_shared::DOC;
+    use kanjidic_types::{four_corner::Stroke, FourCorner};
 
     #[test]
     fn four_corner() {

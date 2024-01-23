@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use crate::{Kunyomi, PinYin};
+use serde::{Deserialize, Serialize};
 
 /// A particular reading or pronunciation of a kanji.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

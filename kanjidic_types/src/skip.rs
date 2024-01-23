@@ -88,7 +88,7 @@ pub enum SolidSubpattern {
 }
 
 #[derive(Error, Debug, PartialEq, Eq)]
-pub enum SkipParseError {
+pub enum ParseError {
     #[error("(Skip) Invalid solid pattern: {0}")]
     InvalidSolidPattern(#[from] TryFromPrimitiveError<SolidSubpattern>),
     #[error("(Skip) Format: {0}")]
@@ -97,14 +97,14 @@ pub enum SkipParseError {
     SkipKind,
 }
 
-impl<'a> From<NomErr<'a>> for SkipParseError {
+impl<'a> From<NomErr<'a>> for ParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
 }
 
 impl TryFrom<&str> for Skip {
-    type Error = SkipParseError;
+    type Error = ParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, (pattern_kind, _, first, _, second)) = parts(text)?;
@@ -128,7 +128,7 @@ impl TryFrom<&str> for Skip {
                     solid_subpattern,
                 }))
             }
-            _ => Err(SkipParseError::SkipKind),
+            _ => Err(ParseError::SkipKind),
         }
     }
 }

@@ -151,7 +151,7 @@ pub enum ExtremeBottom {
 }
 
 #[derive(Debug, Error, Eq, PartialEq, Clone)]
-pub enum DeRooParseError {
+pub enum ParseError {
     #[error("(De Roo) Should be three or four digits, not {0}")]
     InvalidLength(usize),
     #[error("(De Roo) Could not parse part of the code as a number")]
@@ -165,26 +165,26 @@ pub enum DeRooParseError {
 }
 
 impl TryFrom<&str> for DeRoo {
-    type Error = DeRooParseError;
+    type Error = ParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         match text.len() {
             3 => from_slices(text, 1),
             4 => from_slices(text, 2),
-            n => Err(DeRooParseError::InvalidLength(n)),
+            n => Err(ParseError::InvalidLength(n)),
         }
     }
 }
 
-fn from_slices(text: &str, first: usize) -> Result<DeRoo, DeRooParseError> {
+fn from_slices(text: &str, first: usize) -> Result<DeRoo, ParseError> {
     let top = ExtremeTop::try_from(u8_from_slice(text, 0, first)?)?;
     let bottom = ExtremeBottom::try_from(u8_from_slice(text, first, 2)?)?;
     Ok(DeRoo { top, bottom })
 }
 
-fn u8_from_slice(text: &str, start: usize, count: usize) -> Result<u8, DeRooParseError> {
+fn u8_from_slice(text: &str, start: usize, count: usize) -> Result<u8, ParseError> {
     let top = &text.as_bytes()[start..start + count];
     let top = std::str::from_utf8(top)?;
-    let top: u8 = top.parse().map_err(|_| DeRooParseError::Number)?;
+    let top: u8 = top.parse().map_err(|_| ParseError::Number)?;
     Ok(top)
 }

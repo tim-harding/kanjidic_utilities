@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
-use serde::{Deserialize, Serialize};
-
 use crate::{Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Variant};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 pub type Translations = HashMap<String, Vec<String>>;
 

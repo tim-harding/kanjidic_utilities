@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use crate::Kuten;
+use serde::{Deserialize, Serialize};
 
 /// The code of a kanji in a given character set standard.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

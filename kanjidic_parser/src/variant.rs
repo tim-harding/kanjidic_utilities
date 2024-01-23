@@ -1,32 +1,29 @@
 use crate::{
-    de_roo::{self, DeRooError},
-    kuten, oneill,
+    de_roo, kuten, oneill,
     pos_error::PosError,
     shared::{attr, text_hex, text_uint, SharedError},
     spahn_hadamitzky::{self, ShError},
-    KutenError, OneillError,
 };
 use kanjidic_types::Variant;
 use roxmltree::Node;
-use thiserror::Error;
 
-#[derive(Error, Debug, Clone, PartialEq, Eq)]
-pub enum VariantError {
+#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
+pub enum Error {
     #[error("(Variant) var_type not recognized: {0}")]
     UnknownVariant(PosError),
     #[error("(Variant) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Variant) Kuten code: {0}")]
-    Kuten(#[from] KutenError),
+    Kuten(#[from] kuten::Error),
     #[error("(Variant) De Roo code: {0}")]
-    DeRoo(#[from] DeRooError),
+    DeRoo(#[from] de_roo::Error),
     #[error("(Variant) Spahn Hadamitzky descriptor: {0}")]
     SpahnHadamitzky(#[from] ShError),
     #[error("(Variant) ONeill: {0}")]
-    ONeill(#[from] OneillError),
+    ONeill(#[from] oneill::Error),
 }
 
-pub fn from(node: Node) -> Result<Variant, VariantError> {
+pub fn from(node: Node) -> Result<Variant, Error> {
     let variant_type = attr(&node, "var_type")?;
     match variant_type {
         "jis208" => Ok(Variant::Jis208(kuten::from(node)?)),
@@ -38,7 +35,7 @@ pub fn from(node: Node) -> Result<Variant, VariantError> {
         "nelson_c" => Ok(Variant::Nelson(text_uint::<u16>(&node)?)),
         "oneill" => Ok(Variant::ONeill(oneill::from(node)?)),
         "ucs" => Ok(Variant::Unicode(text_hex(&node)?)),
-        _ => Err(VariantError::UnknownVariant(PosError::from(&node))),
+        _ => Err(Error::UnknownVariant(PosError::from(&node))),
     }
 }
 

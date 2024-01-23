@@ -1,31 +1,29 @@
-use std::convert::TryFrom;
-
 use crate::{
     pos_error::PosError,
-    shared::{self, SharedError},
+    shared::{text, SharedError},
 };
-use kanjidic_types::{BusyPeople, BusyPeopleParseError};
+use kanjidic_types::{busy_people, BusyPeople};
 use roxmltree::Node;
-use thiserror::Error;
+use std::convert::TryFrom;
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum BusyPeopleError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq, Clone)]
+pub enum Error {
     #[error("(Busy people) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Busy people) Parsing: {0}, {1}")]
-    Parse(PosError, BusyPeopleParseError),
+    Parse(PosError, busy_people::ParseError),
 }
 
-pub fn from(node: Node) -> Result<BusyPeople, BusyPeopleError> {
-    let text = shared::text(&node)?;
-    BusyPeople::try_from(text).map_err(|err| BusyPeopleError::Parse(PosError::from(&node), err))
+pub fn from(node: Node) -> Result<BusyPeople, Error> {
+    let text = text(&node)?;
+    BusyPeople::try_from(text).map_err(|err| Error::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]
 mod tests {
     use super::from;
     use crate::test_shared::DOC;
-    use kanjidic_types::{BusyPeople, Chapter};
+    use kanjidic_types::BusyPeople;
 
     #[test]
     fn busy_people() {
@@ -44,7 +42,7 @@ mod tests {
             busy_people,
             Ok(BusyPeople {
                 volume: 3,
-                chapter: Chapter::Numbered(14),
+                chapter: Some(14),
             })
         )
     }

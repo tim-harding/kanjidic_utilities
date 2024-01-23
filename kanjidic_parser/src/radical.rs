@@ -2,13 +2,12 @@ use crate::{
     pos_error::PosError,
     shared::{attr, text_uint, SharedError},
 };
-use kanjidic_types::{KangXi, Radical, RadicalKind, TryFromPrimitiveError};
+use kanjidic_types::{radical::RadicalKind, KangXi, Radical, TryFromPrimitiveError};
 use roxmltree::Node;
 use std::convert::TryFrom;
-use thiserror::Error;
 
-#[derive(Debug, PartialEq, Eq, Clone, Error)]
-pub enum RadicalError {
+#[derive(Debug, PartialEq, Eq, Clone, thiserror::Error)]
+pub enum Error {
     #[error("(Radical) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Radical) Radical is not in a valid range: {0}")]
@@ -17,7 +16,7 @@ pub enum RadicalError {
     Kind(PosError),
 }
 
-pub fn from(node: Node) -> Result<Radical, RadicalError> {
+pub fn from(node: Node) -> Result<Radical, Error> {
     let kang_xi_number: u8 = text_uint(&node)?;
     let kang_xi = KangXi::try_from(kang_xi_number)?;
     let tag = attr(&node, "rad_type")?;
@@ -30,7 +29,7 @@ pub fn from(node: Node) -> Result<Radical, RadicalError> {
             kind: RadicalKind::Nelson,
             radical: kang_xi,
         }),
-        _ => Err(RadicalError::Kind(PosError::from(&node))),
+        _ => Err(Error::Kind(PosError::from(&node))),
     }
 }
 
@@ -38,7 +37,7 @@ pub fn from(node: Node) -> Result<Radical, RadicalError> {
 mod tests {
     use super::from;
     use crate::test_shared::DOC;
-    use kanjidic_types::{KangXi, Radical, RadicalKind};
+    use kanjidic_types::{radical::RadicalKind, KangXi, Radical};
 
     #[test]
     fn parse_radical() {

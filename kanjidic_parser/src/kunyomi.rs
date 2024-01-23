@@ -1,31 +1,29 @@
-use std::convert::TryFrom;
-
 use crate::{
     pos_error::PosError,
-    shared::{self, SharedError},
+    shared::{text, SharedError},
 };
-use kanjidic_types::{Kunyomi, KunyomiParseError};
+use kanjidic_types::{kunyomi, Kunyomi};
 use roxmltree::Node;
-use thiserror::Error;
+use std::convert::TryFrom;
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum KunyomiError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq, Clone)]
+pub enum Error {
     #[error("(Kunyomi) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Kunyomi) Parsing: {0}, {1}")]
-    Parse(PosError, KunyomiParseError),
+    Parse(PosError, kunyomi::ParseError),
 }
 
-pub fn from(node: Node) -> Result<Kunyomi, KunyomiError> {
-    let text = shared::text(&node)?;
-    Kunyomi::try_from(text).map_err(|err| KunyomiError::Parse(PosError::from(&node), err))
+pub fn from(node: Node) -> Result<Kunyomi, Error> {
+    let text = text(&node)?;
+    Kunyomi::try_from(text).map_err(|err| Error::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]
 mod tests {
     use super::from;
     use crate::test_shared::DOC;
-    use kanjidic_types::{Kunyomi, KunyomiKind};
+    use kanjidic_types::{kunyomi::KunyomiKind, Kunyomi};
 
     #[test]
     fn kunyomi() {
@@ -43,8 +41,9 @@ mod tests {
         assert_eq!(
             kunyomi,
             Ok(Kunyomi {
-                okurigana: vec!["つ".into(), "ぐ".into(),],
                 kind: KunyomiKind::Normal,
+                reading: "つ".into(),
+                okurigana: Some("ぐ".into()),
             })
         )
     }

@@ -1,5 +1,5 @@
 use roxmltree::{Node, TextPos};
-use std::{error::Error, fmt};
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PosError {
@@ -19,7 +19,7 @@ impl fmt::Display for PosError {
     }
 }
 
-impl Error for PosError {}
+impl std::error::Error for PosError {}
 
 impl<'a, 'input> From<&Node<'a, 'input>> for PosError {
     fn from(node: &Node<'a, 'input>) -> Self {

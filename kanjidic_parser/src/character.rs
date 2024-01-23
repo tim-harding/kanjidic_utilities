@@ -1,39 +1,39 @@
 use crate::{
-    codepoint, grade, query_code, radical, reading, reference,
+    codepoint, grade,
+    pos_error::PosError,
+    query_code, radical, reading, reference,
     shared::{children, text, text_uint, SharedError},
-    translation, variant, CodepointError, GradeError, PosError, QueryCodeError, RadicalError,
-    ReadingError, ReferenceError, StrokeCountBuilder, StrokeCountError, TranslationError,
-    VariantError,
+    stroke_count::{self, StrokeCountBuilder},
+    translation, variant,
 };
 use kanjidic_types::{
-    Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations,
-    Variant,
+    character::Translations, Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference,
+    StrokeCount, Variant,
 };
 use roxmltree::Node;
-use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Eq)]
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum CharacterError {
     #[error("(Character) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Character) Codepoint: {0}")]
-    Codepoint(#[from] CodepointError),
+    Codepoint(#[from] codepoint::Error),
     #[error("(Character) Radical: {0}")]
-    Radical(#[from] RadicalError),
+    Radical(#[from] radical::Error),
     #[error("(Character) Grade: {0}")]
-    Grade(#[from] GradeError),
+    Grade(#[from] grade::Error),
     #[error("(Character) Stroke count: {0}")]
-    StrokeCount(#[from] StrokeCountError),
+    StrokeCount(#[from] stroke_count::Error),
     #[error("(Character) Variant: {0}")]
-    Variant(#[from] VariantError),
+    Variant(#[from] variant::Error),
     #[error("(Character) Translation: {0}")]
-    Translation(#[from] TranslationError),
+    Translation(#[from] translation::Error),
     #[error("(Character) Reading: {0}")]
-    Reading(#[from] ReadingError),
+    Reading(#[from] reading::Error),
     #[error("(Character) Query code: {0}")]
-    QueryCode(#[from] QueryCodeError),
+    QueryCode(#[from] query_code::Error),
     #[error("(Character) Dictionary reference: {0}")]
-    DictionaryReference(#[from] ReferenceError),
+    DictionaryReference(#[from] reference::Error),
     #[error("(Character) Nanori node missing text: {0}")]
     NanoriText(PosError),
     #[error("(Character) Expected a single char")]
@@ -264,17 +264,22 @@ fn decomposition(literal: char) -> Vec<char> {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap, iter::FromIterator};
-
-    use kanjidic_types::{
-        Character, Codepoint, DeRoo, ExtremeBottom, ExtremeTop, FourCorner, Grade, KangXi, Kunyomi,
-        KunyomiKind, Kuten, Moro, MoroSuffix, Oneill, OneillSuffix, PinYin, QueryCode, Radical,
-        RadicalKind, Reading, Reference, ShDesc, Skip, SkipSolid, SolidSubpattern, Stroke,
-        StrokeCount, Tone, Variant,
-    };
-
     use super::from;
     use crate::test_shared::DOC;
+    use kanjidic_types::{
+        de_roo::{ExtremeBottom, ExtremeTop},
+        four_corner::Stroke,
+        kunyomi::KunyomiKind,
+        moro::MoroSuffix,
+        oneill::OneillSuffix,
+        pin_yin::Tone,
+        radical::RadicalKind,
+        skip::{SkipSolid, SolidSubpattern},
+        Character, Codepoint, DeRoo, FourCorner, Grade, KangXi, Kunyomi, Kuten, Moro, Oneill,
+        PinYin, QueryCode, Radical, Reading, Reference, ShDesc, ShRadical, Skip, StrokeCount,
+        Variant,
+    };
+    use std::{collections::HashMap, iter::FromIterator};
 
     #[test]
     fn character() {
@@ -286,8 +291,8 @@ mod tests {
         assert_eq!(
             character,
             Ok(Character {
-                literal: "亜".into(),
-                decomposition: Some(vec!["｜".into(), "一".into(), "口".into()]),
+                literal: '亜',
+                decomposition: vec!['｜', '一', '口'],
                 codepoints: vec![
                     Codepoint::Unicode(20124),
                     Codepoint::Jis208(Kuten {
@@ -355,7 +360,7 @@ mod tests {
                     })),
                     QueryCode::SpahnHadamitzky(ShDesc {
                         radical_strokes: 0,
-                        radical: 'a',
+                        radical: ShRadical::A,
                         other_strokes: 7,
                         sequence: 14,
                     }),
@@ -385,7 +390,8 @@ mod tests {
                     Reading::Onyomi("ア".into()),
                     Reading::Kunyomi(Kunyomi {
                         kind: KunyomiKind::Normal,
-                        okurigana: vec!["つ".into(), "ぐ".into(),]
+                        reading: "つ".into(),
+                        okurigana: Some("ぐ".into()),
                     })
                 ],
                 translations: HashMap::from_iter([

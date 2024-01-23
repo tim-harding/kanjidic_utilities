@@ -52,7 +52,7 @@ pub enum Tone {
 }
 
 #[derive(Error, Debug, PartialEq, Eq, Clone)]
-pub enum PinYinParseError {
+pub enum ParseError {
     #[error("(Pin yin) Tone not recognized: {0}")]
     InvalidTone(#[from] TryFromPrimitiveError<Tone>),
     #[error("(Pin yin) Format: {0}")]
@@ -61,14 +61,14 @@ pub enum PinYinParseError {
 
 // Todo: move this one back to parsing and check for others
 
-impl<'a> From<NomErr<'a>> for PinYinParseError {
+impl<'a> From<NomErr<'a>> for ParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
 }
 
 impl TryFrom<&str> for PinYin {
-    type Error = PinYinParseError;
+    type Error = ParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, (romanization, tone)) = parts(text)?;

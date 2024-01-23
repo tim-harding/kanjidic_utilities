@@ -1,5 +1,5 @@
 use clap::Parser;
-use kanjidic_parser::{Kanjidic, KanjidicError};
+use kanjidic_parser::kanjidic::{self, Kanjidic};
 use std::{convert::TryFrom, fs};
 use thiserror::Error;
 
@@ -8,7 +8,7 @@ enum KdcError {
     #[error("Error reading or writing file: {0}")]
     Io(#[from] std::io::Error),
     #[error("Error parsing file: {0}")]
-    Parse(#[from] KanjidicError),
+    Parse(#[from] kanjidic::Error),
     #[error("Could not skip DTD section")]
     DtdSkip,
     #[error("Failed to get back UTF8 after skipping DTD: {0}")]

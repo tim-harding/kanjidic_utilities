@@ -41,21 +41,21 @@ impl OneillSuffix {
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum OneillParseError {
+pub enum ParseError {
     #[error("(Oneill) Unknown reference suffix")]
     UnknownSuffix,
     #[error("(Oneill) Format: {0}")]
     Format(NomErrorReason),
 }
 
-impl<'a> From<NomErr<'a>> for OneillParseError {
+impl<'a> From<NomErr<'a>> for ParseError {
     fn from(err: NomErr<'a>) -> Self {
-        OneillParseError::Format(err.into())
+        ParseError::Format(err.into())
     }
 }
 
 impl TryFrom<&str> for Oneill {
-    type Error = OneillParseError;
+    type Error = ParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, index) = parse(text)?;
@@ -78,6 +78,6 @@ fn suffix(s: &str) -> IResult<OneillSuffix> {
     map_res(take_while(|c: char| c.is_ascii_alphabetic()), |v| match v {
         "A" => Ok(OneillSuffix::A),
         "" => Ok(OneillSuffix::None),
-        _ => Err(OneillParseError::UnknownSuffix),
+        _ => Err(ParseError::UnknownSuffix),
     })(s)
 }

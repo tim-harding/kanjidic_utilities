@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use crate::KangXi;
+use serde::{Deserialize, Serialize};
 
 /// A kanji classification based on its radical.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord, Serialize, Deserialize)]

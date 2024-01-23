@@ -2,17 +2,16 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{ShDesc, ShParseError};
+use kanjidic_types::{spahn_hadamitzky, ShDesc};
 use roxmltree::Node;
 use std::convert::TryFrom;
-use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
+#[derive(Debug, thiserror::Error, PartialEq, Eq, Clone)]
 pub enum ShError {
     #[error("(Spahn Hadamitzky) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Spahn Hadamitzky) Parsing: {0}, {1}")]
-    Parse(PosError, ShParseError),
+    Parse(PosError, spahn_hadamitzky::descriptor::ParseError),
 }
 
 pub fn from(node: Node) -> Result<ShDesc, ShError> {
@@ -43,7 +42,7 @@ mod tests {
             sh,
             Ok(ShDesc {
                 radical_strokes: 2,
-                radical: 'k',
+                radical: kanjidic_types::ShRadical::K,
                 other_strokes: 4,
                 sequence: 6,
             })

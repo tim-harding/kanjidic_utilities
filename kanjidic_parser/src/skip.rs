@@ -1,22 +1,21 @@
 use crate::{
     pos_error::PosError,
-    shared::{self, SharedError},
+    shared::{text, SharedError},
 };
-use kanjidic_types::{Skip, SkipParseError};
+use kanjidic_types::{skip, Skip};
 use roxmltree::Node;
 use std::convert::TryFrom;
-use thiserror::Error;
 
-#[derive(Error, Debug, PartialEq, Eq)]
+#[derive(thiserror::Error, Debug, PartialEq, Eq)]
 pub enum SkipError {
     #[error("(Skip) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Skip) Parsing: {0}, {1}")]
-    Parse(PosError, SkipParseError),
+    Parse(PosError, skip::ParseError),
 }
 
 pub fn from(node: Node) -> Result<Skip, SkipError> {
-    let text = shared::text(&node)?;
+    let text = text(&node)?;
     Skip::try_from(text).map_err(|err| SkipError::Parse(PosError::from(&node), err))
 }
 
@@ -24,7 +23,10 @@ pub fn from(node: Node) -> Result<Skip, SkipError> {
 mod tests {
     use super::from;
     use crate::test_shared::DOC;
-    use kanjidic_types::{Skip, SkipSolid, SolidSubpattern};
+    use kanjidic_types::{
+        skip::{SkipSolid, SolidSubpattern},
+        Skip,
+    };
 
     #[test]
     fn skip() {

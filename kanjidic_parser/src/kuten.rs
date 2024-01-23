@@ -1,23 +1,21 @@
-use std::convert::TryFrom;
-
 use crate::{
     pos_error::PosError,
     shared::{text, SharedError},
 };
-use kanjidic_types::{Kuten, KutenParseError};
+use kanjidic_types::{kuten, Kuten};
 use roxmltree::Node;
-use thiserror::Error;
+use std::convert::TryFrom;
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum KutenError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq, Clone)]
+pub enum Error {
     #[error("(Kuten) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Kuten) Parsing: {0}, {1}")]
-    Parse(PosError, KutenParseError),
+    Parse(PosError, kuten::ParseError),
 }
 
-pub fn from(node: Node) -> Result<Kuten, KutenError> {
-    Kuten::try_from(text(&node)?).map_err(|err| KutenError::Parse(PosError::from(&node), err))
+pub fn from(node: Node) -> Result<Kuten, Error> {
+    Kuten::try_from(text(&node)?).map_err(|err| Error::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]

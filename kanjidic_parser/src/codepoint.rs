@@ -1,20 +1,19 @@
 use crate::shared::{self, attr, text_hex, SharedError};
-use kanjidic_types::{Codepoint, Kuten, KutenParseError};
+use kanjidic_types::{kuten, Codepoint, Kuten};
 use roxmltree::Node;
 use std::convert::TryFrom;
-use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum CodepointError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq, Clone)]
+pub enum Error {
     #[error("(Codepoint) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Codepoint) Unrecognized encoding")]
     Encoding,
     #[error("(Codepoint) Kuten: {0}")]
-    Kuten(#[from] KutenParseError),
+    Kuten(#[from] kuten::ParseError),
 }
 
-pub fn from(node: Node) -> Result<Codepoint, CodepointError> {
+pub fn from(node: Node) -> Result<Codepoint, Error> {
     let text = shared::text(&node)?;
     let encoding = attr(&node, "cp_type")?;
     match encoding {
@@ -22,7 +21,7 @@ pub fn from(node: Node) -> Result<Codepoint, CodepointError> {
         "jis212" => Ok(Codepoint::Jis212(Kuten::try_from(text)?)),
         "jis213" => Ok(Codepoint::Jis213(Kuten::try_from(text)?)),
         "ucs" => Ok(Codepoint::Unicode(text_hex(&node)?)),
-        _ => Err(CodepointError::Encoding),
+        _ => Err(Error::Encoding),
     }
 }
 

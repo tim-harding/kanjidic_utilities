@@ -2,30 +2,28 @@ use crate::{
     pos_error::PosError,
     shared::{self, SharedError},
 };
-use kanjidic_types::{PinYin, PinYinParseError};
-
+use kanjidic_types::{pin_yin, PinYin};
 use roxmltree::Node;
 use std::convert::TryFrom;
-use thiserror::Error;
 
-#[derive(Error, Debug, PartialEq, Eq, Clone)]
-pub enum PinYinError {
+#[derive(thiserror::Error, Debug, PartialEq, Eq, Clone)]
+pub enum Error {
     #[error("(Pin Yin) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Pin Yin) Parsing: {0}, {1}")]
-    Parse(PosError, PinYinParseError),
+    Parse(PosError, pin_yin::ParseError),
 }
 
-pub fn from(node: Node) -> Result<PinYin, PinYinError> {
+pub fn from(node: Node) -> Result<PinYin, Error> {
     let text = shared::text(&node)?;
-    PinYin::try_from(text).map_err(|err| PinYinError::Parse(PosError::from(&node), err))
+    PinYin::try_from(text).map_err(|err| Error::Parse(PosError::from(&node), err))
 }
 
 #[cfg(test)]
 mod tests {
     use super::from;
     use crate::test_shared::DOC;
-    use kanjidic_types::{PinYin, Tone};
+    use kanjidic_types::{pin_yin::Tone, PinYin};
 
     #[test]
     fn pin_yin() {

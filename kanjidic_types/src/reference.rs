@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use crate::{BusyPeople, Moro, Oneill};
+use serde::{Deserialize, Serialize};
 
 /// An index number into a particular kanji dictionary or reference book.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

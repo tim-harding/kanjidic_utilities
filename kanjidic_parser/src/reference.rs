@@ -2,27 +2,25 @@ use crate::{
     busy_people, moro, oneill,
     pos_error::PosError,
     shared::{attr, text_uint, SharedError},
-    BusyPeopleError, MoroError, OneillError,
 };
 use kanjidic_types::Reference;
 use roxmltree::Node;
-use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum ReferenceError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq, Clone)]
+pub enum Error {
     #[error("(Reference) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Reference) Unknown dr_type string: {0}")]
     UnknownType(PosError),
     #[error("(Reference) Moro: {0}")]
-    Moro(#[from] MoroError),
+    Moro(#[from] moro::Error),
     #[error("(Reference) Busy People: {0}")]
-    BusyPeople(#[from] BusyPeopleError),
+    BusyPeople(#[from] busy_people::Error),
     #[error("(Reference) Oneill: {0}")]
-    Oneill(#[from] OneillError),
+    Oneill(#[from] oneill::Error),
 }
 
-pub fn from(node: Node) -> Result<Reference, ReferenceError> {
+pub fn from(node: Node) -> Result<Reference, Error> {
     match attr(&node, "dr_type")? {
         "nelson_c" => Ok(Reference::NelsonClassic(text_uint(&node)?)),
         "nelson_n" => Ok(Reference::NelsonNew(text_uint(&node)?)),
@@ -48,7 +46,7 @@ pub fn from(node: Node) -> Result<Reference, ReferenceError> {
         "busy_people" => Ok(Reference::BusyPeople(busy_people::from(node)?)),
         "kodansha_compact" => Ok(Reference::KodanshaCompact(text_uint(&node)?)),
         "maniette" => Ok(Reference::Maniette(text_uint(&node)?)),
-        _ => Err(ReferenceError::UnknownType(PosError::from(&node))),
+        _ => Err(Error::UnknownType(PosError::from(&node))),
     }
 }
 

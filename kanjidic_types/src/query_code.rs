@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use crate::{DeRoo, FourCorner, ShDesc, Skip};
+use serde::{Deserialize, Serialize};
 
 /// Information relating to a kanji that can be
 /// used for identification and lookup.

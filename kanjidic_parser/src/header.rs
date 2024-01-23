@@ -1,20 +1,19 @@
 use crate::{
-    database_version::{DatabaseVersion, DatabaseVersionError},
-    date_of_creation::{DateOfCreation, DateOfCreationError},
+    database_version::{self, DatabaseVersion},
+    date_of_creation::{self, DateOfCreation},
     shared::{text_uint, SharedError},
 };
 use roxmltree::Node;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
-use thiserror::Error;
 
 /// Error while parsing the header.
-#[derive(Debug, Error, PartialEq, Eq)]
-pub enum HeaderError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum Error {
     #[error("(Header) Database version: {0}")]
-    DatabaseVersion(#[from] DatabaseVersionError),
+    DatabaseVersion(#[from] database_version::Error),
     #[error("(Header) Date of creation: {0}")]
-    DateOfCreation(#[from] DateOfCreationError),
+    DateOfCreation(#[from] date_of_creation::Error),
     #[error("(Header) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Header) Incomplete header provided")]
@@ -47,10 +46,10 @@ impl HeaderBuilder {
         }
     }
 
-    pub fn build(self) -> Result<Header, HeaderError> {
-        let database_version = self.database_version.ok_or(HeaderError::Incomplete)?;
-        let date_of_creation = self.date_of_creation.ok_or(HeaderError::Incomplete)?;
-        let file_version = self.file_version.ok_or(HeaderError::Incomplete)?;
+    pub fn build(self) -> Result<Header, Error> {
+        let database_version = self.database_version.ok_or(Error::Incomplete)?;
+        let date_of_creation = self.date_of_creation.ok_or(Error::Incomplete)?;
+        let file_version = self.file_version.ok_or(Error::Incomplete)?;
 
         Ok(Header {
             database_version,
@@ -61,7 +60,7 @@ impl HeaderBuilder {
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for Header {
-    type Error = HeaderError;
+    type Error = Error;
 
     fn try_from(node: Node) -> Result<Self, Self::Error> {
         let mut builder = HeaderBuilder::new();

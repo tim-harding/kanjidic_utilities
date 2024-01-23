@@ -1,9 +1,8 @@
 use crate::pos_error::PosError;
 use roxmltree::Node;
 use std::str::FromStr;
-use thiserror::Error;
 
-#[derive(Debug, Clone, PartialEq, Eq, Error)]
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum SharedError {
     #[error("(Shared) No node with the given tag: {0}, attribute '{1}'")]
     MissingChild(PosError, &'static str),

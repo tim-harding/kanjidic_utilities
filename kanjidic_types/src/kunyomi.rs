@@ -35,36 +35,38 @@ pub enum KunyomiKind {
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum KunyomiParseError {
+pub enum ParseError {
     #[error("(Kunyomi) Format: {0}")]
     Format(NomErrorReason),
     #[error("(Kunyomi) Expected one or two kunyomi reading pieces")]
     IncorrectPieces,
 }
 
-impl<'a> From<NomErr<'a>> for KunyomiParseError {
+impl<'a> From<NomErr<'a>> for ParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
 }
 
 impl TryFrom<&str> for Kunyomi {
-    type Error = KunyomiParseError;
+    type Error = ParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, (pre, pieces, post)) = parts(text)?;
-        let kind = if pre {
+
+        let kind = if post {
             KunyomiKind::Prefix
-        } else if post {
+        } else if pre {
             KunyomiKind::Suffix
         } else {
             KunyomiKind::Normal
         };
+
         let mut iter = pieces.into_iter();
-        let reading = iter.next().ok_or(KunyomiParseError::IncorrectPieces)?;
+        let reading = iter.next().ok_or(ParseError::IncorrectPieces)?;
         let okurigana = iter.next();
         if iter.next().is_some() {
-            return Err(KunyomiParseError::IncorrectPieces);
+            return Err(ParseError::IncorrectPieces);
         }
         Ok(Kunyomi {
             reading,

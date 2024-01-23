@@ -2,31 +2,33 @@ use crate::{
     de_roo, four_corner,
     pos_error::PosError,
     shared::{attr, SharedError},
-    skip, spahn_hadamitzky, DeRooError, FourCornerError, ShError, SkipError,
+    skip, spahn_hadamitzky,
 };
-use kanjidic_types::{Misclassification, MisclassificationKind, QueryCode};
+use kanjidic_types::{
+    query_code::{Misclassification, MisclassificationKind},
+    QueryCode,
+};
 use roxmltree::Node;
-use thiserror::Error;
 
-#[derive(Debug, Error, PartialEq, Eq)]
-pub enum QueryCodeError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum Error {
     #[error("(Query code) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Query code) Unknown qc_type attribute: {0}")]
     UnknownType(PosError),
     #[error("(Query code) Skip code: {0}")]
-    Skip(#[from] SkipError),
+    Skip(#[from] skip::SkipError),
     #[error("(Query code) Spahn Hadamitzky descriptor: {0}")]
-    SpahnHadamitzky(#[from] ShError),
+    SpahnHadamitzky(#[from] spahn_hadamitzky::ShError),
     #[error("(Query code) Four corner code: {0}")]
-    FourCorner(#[from] FourCornerError),
+    FourCorner(#[from] four_corner::Error),
     #[error("(Query code) De Roo code: {0}")]
-    DeRoo(#[from] DeRooError),
+    DeRoo(#[from] de_roo::Error),
     #[error("(Query code) Unrecognized skip_misclass value: {0}")]
     UnknownMisclassification(PosError),
 }
 
-pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
+pub fn from(node: Node) -> Result<QueryCode, Error> {
     let qc_type = attr(&node, "qc_type")?;
     match qc_type {
         "skip" => {
@@ -48,9 +50,7 @@ pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
                         kind: MisclassificationKind::Ambiguous,
                         skip: skip::from(node)?,
                     }),
-                    _ => Err(QueryCodeError::UnknownMisclassification(PosError::from(
-                        &node,
-                    ))),
+                    _ => Err(Error::UnknownMisclassification(PosError::from(&node))),
                 }?))
             } else {
                 Ok(QueryCode::Skip(skip::from(node)?))
@@ -59,7 +59,7 @@ pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
         "sh_desc" => Ok(QueryCode::SpahnHadamitzky(spahn_hadamitzky::from(node)?)),
         "four_corner" => Ok(QueryCode::FourCorner(four_corner::from(node)?)),
         "deroo" => Ok(QueryCode::DeRoo(de_roo::from(node)?)),
-        _ => Err(QueryCodeError::UnknownType(PosError::from(&node))),
+        _ => Err(Error::UnknownType(PosError::from(&node))),
     }
 }
 
@@ -67,7 +67,10 @@ pub fn from(node: Node) -> Result<QueryCode, QueryCodeError> {
 mod tests {
     use super::from;
     use crate::test_shared::DOC;
-    use kanjidic_types::{QueryCode, Skip, SkipSolid, SolidSubpattern};
+    use kanjidic_types::{
+        skip::{SkipSolid, SolidSubpattern},
+        QueryCode, Skip,
+    };
 
     #[test]
     fn query_code() {

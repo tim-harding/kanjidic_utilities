@@ -19,19 +19,19 @@ pub struct Kuten {
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum KutenParseError {
+pub enum ParseError {
     #[error("(Kuten) Format: {0}")]
     Format(NomErrorReason),
 }
 
-impl<'a> From<NomErr<'a>> for KutenParseError {
+impl<'a> From<NomErr<'a>> for ParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
 }
 
 impl TryFrom<&str> for Kuten {
-    type Error = KutenParseError;
+    type Error = ParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, o) = kuten_parts(text)?;

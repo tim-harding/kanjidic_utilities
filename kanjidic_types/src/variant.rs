@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use crate::{DeRoo, Kuten, Oneill, ShDesc};
+use serde::{Deserialize, Serialize};
 
 /// Represents either of the following:
 /// - A cross-reference to another kanji usually regarded as a variant

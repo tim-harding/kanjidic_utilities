@@ -4,11 +4,10 @@ use nom::{character::complete::char, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
-use thiserror::Error;
 
 /// Error while parsing the database version
-#[derive(Debug, Error, PartialEq, Eq)]
-pub enum DatabaseVersionError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum Error {
     #[error("(Database version) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Database version) Format: {0}")]
@@ -25,16 +24,16 @@ pub struct DatabaseVersion {
     pub version: u16,
 }
 
-impl<'a> From<NomErr<'a>> for DatabaseVersionError {
+impl<'a> From<NomErr<'a>> for Error {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
 }
 
 impl<'a, 'input> TryFrom<Node<'a, 'input>> for DatabaseVersion {
-    type Error = DatabaseVersionError;
+    type Error = Error;
 
-    fn try_from(node: Node) -> Result<DatabaseVersion, DatabaseVersionError> {
+    fn try_from(node: Node) -> Result<DatabaseVersion, Error> {
         let text = shared::text(&node)?;
         Ok(map_res(take_db_version, map_db_version)(text).map(|(_, s)| s)?)
     }
@@ -46,14 +45,14 @@ fn take_db_version(s: &str) -> IResult<DbVersionParts> {
     tuple((take_uint, char('-'), take_uint))(s)
 }
 
-fn map_db_version(parts: DbVersionParts) -> Result<DatabaseVersion, DatabaseVersionError> {
+fn map_db_version(parts: DbVersionParts) -> Result<DatabaseVersion, Error> {
     let (year, _, version) = parts;
     Ok(DatabaseVersion { year, version })
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{test_shared::DOC, DatabaseVersion};
+    use crate::{database_version::DatabaseVersion, test_shared::DOC};
     use std::convert::TryFrom;
 
     #[test]

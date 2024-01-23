@@ -1,3 +1,4 @@
+use crate::{IResult, NomErr, NomErrorReason};
 use nom::{
     branch::alt,
     bytes::complete::take_while1,
@@ -8,8 +9,6 @@ use nom::{
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-
-use crate::{IResult, NomErr, NomErrorReason};
 
 /// A location in Japanese for Busy People.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -23,19 +22,19 @@ pub struct BusyPeople {
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum BusyPeopleParseError {
+pub enum ParseError {
     #[error("(Busy people) Format: {0}")]
     Format(NomErrorReason),
 }
 
-impl<'a> From<NomErr<'a>> for BusyPeopleParseError {
+impl<'a> From<NomErr<'a>> for ParseError {
     fn from(err: NomErr<'a>) -> Self {
         Self::Format(err.into())
     }
 }
 
 impl TryFrom<&str> for BusyPeople {
-    type Error = BusyPeopleParseError;
+    type Error = ParseError;
 
     fn try_from(text: &str) -> Result<Self, Self::Error> {
         let (_i, o) = parts(text)?;

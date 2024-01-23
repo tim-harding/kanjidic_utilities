@@ -2,13 +2,12 @@ use crate::{
     pos_error::PosError,
     shared::{attr_uint, text, SharedError},
 };
-use kanjidic_types::{take_uint, IResult, Moro, MoroSuffix, NomErrorReason};
+use kanjidic_types::{moro::MoroSuffix, take_uint, IResult, Moro, NomErrorReason};
 use nom::{bytes::complete::take_while, combinator::map_res, sequence::tuple};
 use roxmltree::Node;
-use thiserror::Error;
 
-#[derive(Error, Debug, PartialEq, Eq, Clone)]
-pub enum MoroError {
+#[derive(thiserror::Error, Debug, PartialEq, Eq, Clone)]
+pub enum Error {
     #[error("(Moro) Shared: {0}")]
     Shared(#[from] SharedError),
     #[error("(Moro) Unknown index suffix")]
@@ -17,9 +16,9 @@ pub enum MoroError {
     Format(PosError, NomErrorReason),
 }
 
-pub fn from(node: Node) -> Result<Moro, MoroError> {
+pub fn from(node: Node) -> Result<Moro, Error> {
     let (_i, (index, suffix)) = parse_index(text(&node)?)
-        .map_err(|err| MoroError::Format(PosError::from(&node), err.into()))?;
+        .map_err(|err| Error::Format(PosError::from(&node), err.into()))?;
     let volume = attr_uint::<u8>(&node, "m_vol")?;
     let page = attr_uint::<u16>(&node, "m_page")?;
     Ok(Moro {
@@ -42,17 +41,16 @@ fn index_suffix(s: &str) -> IResult<MoroSuffix> {
             "P" => Ok(MoroSuffix::P),
             "PX" => Ok(MoroSuffix::PX),
             "" => Ok(MoroSuffix::None),
-            _ => Err(MoroError::IndexSuffix),
+            _ => Err(Error::IndexSuffix),
         },
     )(s)
 }
 
 #[cfg(test)]
 mod tests {
-    use kanjidic_types::{Moro, MoroSuffix};
-
     use super::from;
     use crate::test_shared::DOC;
+    use kanjidic_types::{moro::MoroSuffix, Moro};
 
     #[test]
     fn pin_yin() {

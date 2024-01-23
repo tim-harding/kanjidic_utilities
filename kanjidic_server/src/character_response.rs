@@ -1,6 +1,6 @@
 use kanjidic_types::{
-    Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference, StrokeCount, Translations,
-    Variant,
+    character::Translations, Character, Codepoint, Grade, QueryCode, Radical, Reading, Reference,
+    StrokeCount, Variant,
 };
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};

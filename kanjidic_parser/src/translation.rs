@@ -1,19 +1,14 @@
-use kanjidic_types::Translations;
-use roxmltree::Node;
-use thiserror::Error;
-
 use crate::shared::{self, SharedError};
+use kanjidic_types::character::Translations;
+use roxmltree::Node;
 
-#[derive(Debug, Error, PartialEq, Eq, Clone)]
-pub enum TranslationError {
+#[derive(Debug, thiserror::Error, PartialEq, Eq, Clone)]
+pub enum Error {
     #[error("Translation shared: {0}")]
     Shared(#[from] SharedError),
 }
 
-pub fn add_meaning(
-    translations: &mut Translations,
-    meaning: &Node,
-) -> Result<(), TranslationError> {
+pub fn add_meaning(translations: &mut Translations, meaning: &Node) -> Result<(), Error> {
     let text = shared::text(meaning)?.to_owned();
     let language = meaning.attribute("m_lang").unwrap_or("en").to_owned();
     match translations.entry(language) {
@@ -29,13 +24,14 @@ pub fn add_meaning(
 
 #[cfg(test)]
 mod tests {
-    use crate::{add_meaning, test_shared::DOC, TranslationError};
-    use kanjidic_types::Translations;
+    use super::{add_meaning, Error};
+    use crate::test_shared::DOC;
+    use kanjidic_types::character::Translations;
     use roxmltree::Node;
     use std::{collections::HashMap, iter::FromIterator};
 
     // Just keeping this around for now for the test
-    pub fn from(node: Node) -> Result<Translations, TranslationError> {
+    pub fn from(node: Node) -> Result<Translations, Error> {
         let mut translations = Translations::default();
         for child in node
             .children()
