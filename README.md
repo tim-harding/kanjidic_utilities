@@ -1,7 +1,7 @@
-[![Crates.io Version](https://img.shields.io/crates/v/kanjidic_types)](https://crates.io/crates/kanjidic_types/)
-[![Crates.io Version](https://img.shields.io/crates/v/kanjidic_parser)](https://crates.io/crates/kanjidic_parser/)
-[![Crates.io Version](https://img.shields.io/crates/v/kanjidic_converter)](https://crates.io/crates/kanjidic_converter/)
-[![Crates.io Version](https://img.shields.io/crates/v/kanjidic_server)](https://crates.io/crates/kanjidic_server/)
+| **`kanjidic_types`** | [![Crates.io Version](https://img.shields.io/crates/v/kanjidic_types)](https://crates.io/crates/kanjidic_types/) |
+| **`kanjidic_parser`** | [![Crates.io Version](https://img.shields.io/crates/v/kanjidic_parser)](https://crates.io/crates/kanjidic_parser/) |
+| **`kanjidic_converter`** | [![Crates.io Version](https://img.shields.io/crates/v/kanjidic_converter)](https://crates.io/crates/kanjidic_converter/) |
+| **`kanjidic_server`** | [![Crates.io Version](https://img.shields.io/crates/v/kanjidic_server)](https://crates.io/crates/kanjidic_server/) |
 
 # Kanjidic Utilities
 
