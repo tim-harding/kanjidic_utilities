@@ -1,8 +1,8 @@
 [package]
 name = "kanjidic_types"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2018"
-license = "CC-BY-NC-SA-3.0"
+license = "CC-BY-SA-3.0"
 description = "A collection of types encompassing the variety of data about kanji available from Kanjidic."
 homepage = "https://github.com/tim-harding/kanjidic_utilities"
 repository = "https://github.com/tim-harding/kanjidic_utilities"

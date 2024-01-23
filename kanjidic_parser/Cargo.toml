@@ -1,8 +1,8 @@
 [package]
 name = "kanjidic_parser"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2018"
-license = "CC-BY-NC-SA-3.0"
+license = "CC-BY-SA-3.0"
 description = "A parser for the Kanjidic XML format."
 homepage = "https://github.com/tim-harding/kanjidic_utilities"
 repository = "https://github.com/tim-harding/kanjidic_utilities"
@@ -12,7 +12,7 @@ readme = "README.md"
 thiserror = "1.0.35"
 roxmltree = "0.15.0"
 nom = "7.1.1"
-kanjidic_types = "0.1.1"
+kanjidic_types = "0.1.2"
 serde = { version = "1.0.144", features = ["derive"] }
 kradical_static = "0.2.0"
 
