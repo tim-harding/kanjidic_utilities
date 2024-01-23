@@ -9,7 +9,7 @@ repository = "https://github.com/tim-harding/kanjidic_utilities"
 readme = "README.md"
 
 [dependencies]
-kanjidic_parser = { version = "0.1.1", path = "../kanjidic_parser" }
+kanjidic_parser = { version = "0.1.2", path = "../kanjidic_parser" }
 thiserror = "1.0.35"
 serde_json = "1.0.85"
 clap = { version = "3.2.22", features = ["derive"] }
