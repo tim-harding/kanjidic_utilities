@@ -9,8 +9,8 @@ repository = "https://github.com/tim-harding/kanjidic_utilities"
 readme = "README.md"
 
 [dependencies]
-thiserror = "1.0.35"
-roxmltree = "0.19.0"
+thiserror = "2.0.9"
+roxmltree = "0.20.0"
 nom = "7.1.1"
 kanjidic_types = { version = "0.1.4", path = "../kanjidic_types" }
 serde = { version = "1.0.144", features = ["derive"] }

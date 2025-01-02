@@ -13,4 +13,4 @@ num_enum = "0.7.2"
 serde = { version = "1.0.144", features = ["derive"] }
 serde_repr = "0.1.9"
 nom = "7.1.1"
-thiserror = "1.0.35"
+thiserror = "2.0.9"
